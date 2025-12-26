@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
 import { LabeledInput } from "../components/LabeledInput";
+import { LabeledSlider } from "../components/LabeledSlider";
 import { useWizard } from "../context/WizardContext";
 import { clampPercent, isPercentValid, isRequiredTextValid } from "../utils/validation";
 import { createThoughtRecord } from "../storage/thoughtRecordsRepo";
@@ -17,8 +18,8 @@ export const WizardStep7Screen: React.FC<
     draft.beliefAfterMainThought?.toString() || ""
   );
 
-  const updateEmotionAfter = (id: string, value: string) => {
-    const intensity = clampPercent(Number(value));
+  const updateEmotionAfter = (id: string, value: number) => {
+    const intensity = clampPercent(value);
     setDraft((current) => ({
       ...current,
       emotions: current.emotions.map((emotion) =>
@@ -63,12 +64,11 @@ export const WizardStep7Screen: React.FC<
 
       <Text style={styles.subTitle}>Re-rate emotions</Text>
       {draft.emotions.map((emotion) => (
-        <LabeledInput
+        <LabeledSlider
           key={emotion.id}
           label={`${emotion.label} (after)`}
-          keyboardType="numeric"
-          value={(emotion.intensityAfter ?? 0).toString()}
-          onChangeText={(value) => updateEmotionAfter(emotion.id, value)}
+          value={emotion.intensityAfter ?? emotion.intensityBefore}
+          onChange={(value) => updateEmotionAfter(emotion.id, value)}
         />
       ))}
 
