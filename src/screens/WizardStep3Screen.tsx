@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
 import { LabeledInput } from "../components/LabeledInput";
+import { LabeledSlider } from "../components/LabeledSlider";
 import { useWizard } from "../context/WizardContext";
 import { clampPercent } from "../utils/validation";
 import { generateId } from "../utils/uuid";
@@ -13,10 +14,10 @@ export const WizardStep3Screen: React.FC<
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft } = useWizard();
   const [thoughtText, setThoughtText] = useState("");
-  const [beliefText, setBeliefText] = useState("50");
+  const [beliefValue, setBeliefValue] = useState(50);
 
   const addThought = () => {
-    const belief = clampPercent(Number(beliefText));
+    const belief = clampPercent(beliefValue);
     if (!thoughtText.trim()) {
       return;
     }
@@ -39,11 +40,10 @@ export const WizardStep3Screen: React.FC<
         value={thoughtText}
         onChangeText={setThoughtText}
       />
-      <LabeledInput
+      <LabeledSlider
         label="Belief (0-100)"
-        keyboardType="numeric"
-        value={beliefText}
-        onChangeText={setBeliefText}
+        value={beliefValue}
+        onChange={setBeliefValue}
       />
       <Button title="Add thought" onPress={addThought} />
 
