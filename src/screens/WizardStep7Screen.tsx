@@ -3,10 +3,9 @@ import { View, Text, Button, StyleSheet, Alert } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
-import { LabeledInput } from "../components/LabeledInput";
 import { LabeledSlider } from "../components/LabeledSlider";
 import { useWizard } from "../context/WizardContext";
-import { clampPercent, isPercentValid, isRequiredTextValid } from "../utils/validation";
+import { clampPercent, isRequiredTextValid } from "../utils/validation";
 import { createThoughtRecord } from "../storage/thoughtRecordsRepo";
 import { nowIso } from "../utils/date";
 
@@ -14,8 +13,8 @@ export const WizardStep7Screen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep7">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft, clearDraft } = useWizard();
-  const [beliefAfterText, setBeliefAfterText] = useState(
-    draft.beliefAfterMainThought?.toString() || ""
+  const [beliefAfterValue, setBeliefAfterValue] = useState(
+    draft.beliefAfterMainThought ?? 0
   );
 
   const updateEmotionAfter = (id: string, value: number) => {
@@ -29,11 +28,6 @@ export const WizardStep7Screen: React.FC<
   };
 
   const handleSave = async () => {
-    const beliefAfter = beliefAfterText ? Number(beliefAfterText) : undefined;
-    if (beliefAfter !== undefined && !isPercentValid(beliefAfter)) {
-      Alert.alert("Check belief value", "Belief must be between 0 and 100.");
-      return;
-    }
     if (!isRequiredTextValid(draft.situationText)) {
       Alert.alert("Missing situation", "Add a situation before saving.");
       return;
@@ -41,7 +35,7 @@ export const WizardStep7Screen: React.FC<
 
     const record = {
       ...draft,
-      beliefAfterMainThought: beliefAfter,
+      beliefAfterMainThought: clampPercent(beliefAfterValue),
       updatedAt: nowIso()
     };
 
@@ -55,11 +49,10 @@ export const WizardStep7Screen: React.FC<
       <WizardProgress step={7} total={7} />
       <Text style={styles.title}>Outcome</Text>
 
-      <LabeledInput
+      <LabeledSlider
         label="Belief in main thought after (0-100)"
-        keyboardType="numeric"
-        value={beliefAfterText}
-        onChangeText={setBeliefAfterText}
+        value={beliefAfterValue}
+        onChange={setBeliefAfterValue}
       />
 
       <Text style={styles.subTitle}>Re-rate emotions</Text>
@@ -79,9 +72,7 @@ export const WizardStep7Screen: React.FC<
             onPress={async () => {
               const nextDraft = {
                 ...draft,
-                beliefAfterMainThought: beliefAfterText
-                  ? clampPercent(Number(beliefAfterText))
-                  : undefined
+                beliefAfterMainThought: clampPercent(beliefAfterValue)
               };
               setDraft(nextDraft);
               await persistDraft(nextDraft);

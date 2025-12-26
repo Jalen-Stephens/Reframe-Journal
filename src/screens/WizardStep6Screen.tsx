@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
 import { LabeledInput } from "../components/LabeledInput";
+import { LabeledSlider } from "../components/LabeledSlider";
 import { useWizard } from "../context/WizardContext";
 import { clampPercent } from "../utils/validation";
 import { generateId } from "../utils/uuid";
@@ -43,8 +44,8 @@ export const WizardStep6Screen: React.FC<
     });
   };
 
-  const updateBelief = (promptKey: string, value: string) => {
-    const belief = clampPercent(Number(value));
+  const updateBelief = (promptKey: string, value: number) => {
+    const belief = clampPercent(value);
     setDraft((current) => {
       const existing = current.adaptiveResponses.find(
         (item) => item.promptKey === promptKey
@@ -88,11 +89,10 @@ export const WizardStep6Screen: React.FC<
               multiline
               style={styles.multiline}
             />
-            <LabeledInput
+            <LabeledSlider
               label="Belief in response (0-100)"
-              keyboardType="numeric"
-              value={(response?.beliefInResponse ?? 0).toString()}
-              onChangeText={(value) => updateBelief(prompt.key, value)}
+              value={response?.beliefInResponse ?? 0}
+              onChange={(value) => updateBelief(prompt.key, value)}
             />
           </View>
         );
