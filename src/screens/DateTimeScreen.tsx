@@ -1,12 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Platform,
   Pressable,
-  Modal,
-  Switch
+  Modal
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -21,39 +20,32 @@ export const DateTimeScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep1">
 > = ({ navigation }) => {
   const { draft, persistDraft } = useWizard();
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const [selectedDate, setSelectedDate] = useState(new Date(draft.createdAt));
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [useCurrent, setUseCurrent] = useState(true);
-
-  useEffect(() => {
-    setSelectedDate(new Date(draft.createdAt));
-  }, [draft.createdAt]);
-
-  useEffect(() => {
-    if (useCurrent) {
-      setSelectedDate(new Date());
-    }
-  }, [useCurrent]);
 
   const handleDateChange = (event: unknown, date?: Date) => {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+    }
     if (date) {
       const next = new Date(selectedDate);
       next.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
       setSelectedDate(next);
     }
-    setShowDatePicker(false);
   };
 
   const handleTimeChange = (event: unknown, date?: Date) => {
+    if (Platform.OS === "android") {
+      setShowTimePicker(false);
+    }
     if (date) {
       const next = new Date(selectedDate);
       next.setHours(date.getHours(), date.getMinutes(), 0, 0);
       setSelectedDate(next);
     }
-    setShowTimePicker(false);
   };
 
   const formattedDate = selectedDate.toLocaleDateString(undefined, {
@@ -76,87 +68,133 @@ export const DateTimeScreen: React.FC<
         </Text>
 
         <View style={styles.card}>
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Use current date & time</Text>
-            <Switch value={useCurrent} onValueChange={setUseCurrent} />
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Selected</Text>
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => setSelectedDate(new Date())}
+            >
+              <Text style={styles.resetText}>Reset to now</Text>
+            </Pressable>
           </View>
 
           <Pressable
             style={styles.row}
-            onPress={() => {
-              if (!useCurrent) {
-                setShowDatePicker(true);
-              }
-            }}
+            accessibilityRole="button"
+            accessibilityLabel="Select date"
+            onPress={() => setShowDatePicker(true)}
           >
-            <View style={styles.iconBubble}>
-              <Text style={styles.iconText}>D</Text>
-            </View>
             <View style={styles.rowText}>
               <Text style={styles.rowLabel}>Date</Text>
               <Text style={styles.rowValue}>{formattedDate}</Text>
             </View>
+            <Text style={styles.chevron}>{">"}</Text>
           </Pressable>
 
           <Pressable
             style={styles.row}
-            onPress={() => {
-              if (!useCurrent) {
-                setShowTimePicker(true);
-              }
-            }}
+            accessibilityRole="button"
+            accessibilityLabel="Select time"
+            onPress={() => setShowTimePicker(true)}
           >
-            <View style={styles.iconBubble}>
-              <Text style={styles.iconText}>T</Text>
-            </View>
             <View style={styles.rowText}>
               <Text style={styles.rowLabel}>Time</Text>
               <Text style={styles.rowValue}>{formattedTime}</Text>
             </View>
+            <Text style={styles.chevron}>{">"}</Text>
           </Pressable>
         </View>
 
-        <Modal
-          visible={showDatePicker}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowDatePicker(false)}
-        >
-          <Pressable
-            style={styles.modalBackdrop}
-            onPress={() => setShowDatePicker(false)}
-          >
-            <Pressable style={styles.modalSheet}>
+        {Platform.OS === "ios" ? (
+          <>
+            <Modal
+              visible={showDatePicker}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setShowDatePicker(false)}
+            >
+              <Pressable
+                style={styles.modalBackdrop}
+                onPress={() => setShowDatePicker(false)}
+              >
+                {/* iOS inline calendar is low-contrast in light mode; use spinner in a modal card. */}
+                <Pressable style={styles.modalSheet}>
+                  <SafeAreaView edges={["bottom"]}>
+                    <Text style={styles.modalTitle}>Select date</Text>
+                  <DateTimePicker
+                    mode="date"
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    display="inline"
+                    textColor={theme.textPrimary}
+                    themeVariant={resolvedTheme}
+                  />
+                    <Pressable
+                      accessibilityRole="button"
+                      style={styles.modalDone}
+                      onPress={() => setShowDatePicker(false)}
+                    >
+                      <Text style={styles.modalDoneText}>Done</Text>
+                    </Pressable>
+                  </SafeAreaView>
+                </Pressable>
+              </Pressable>
+            </Modal>
+
+            <Modal
+              visible={showTimePicker}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setShowTimePicker(false)}
+            >
+              <Pressable
+                style={styles.modalBackdrop}
+                onPress={() => setShowTimePicker(false)}
+              >
+                <Pressable style={styles.modalSheet}>
+                  <SafeAreaView edges={["bottom"]}>
+                    <Text style={styles.modalTitle}>Select time</Text>
+                  <DateTimePicker
+                    mode="time"
+                    value={selectedDate}
+                    onChange={handleTimeChange}
+                    display="spinner"
+                    textColor={theme.textPrimary}
+                    themeVariant={resolvedTheme}
+                  />
+                    <Pressable
+                      accessibilityRole="button"
+                      style={styles.modalDone}
+                      onPress={() => setShowTimePicker(false)}
+                    >
+                      <Text style={styles.modalDoneText}>Done</Text>
+                    </Pressable>
+                  </SafeAreaView>
+                </Pressable>
+              </Pressable>
+            </Modal>
+          </>
+        ) : (
+          <>
+            {showDatePicker ? (
               <DateTimePicker
                 mode="date"
                 value={selectedDate}
                 onChange={handleDateChange}
-                display={Platform.OS === "ios" ? "inline" : "default"}
+                display="default"
               />
-            </Pressable>
-          </Pressable>
-        </Modal>
-
-        <Modal
-          visible={showTimePicker}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowTimePicker(false)}
-        >
-          <Pressable
-            style={styles.modalBackdrop}
-            onPress={() => setShowTimePicker(false)}
-          >
-            <Pressable style={styles.modalSheet}>
+            ) : null}
+            {showTimePicker ? (
               <DateTimePicker
                 mode="time"
                 value={selectedDate}
                 onChange={handleTimeChange}
-                display={Platform.OS === "ios" ? "spinner" : "default"}
+                display="default"
               />
-            </Pressable>
-          </Pressable>
-        </Modal>
+            ) : null}
+          </>
+        )}
       </View>
 
       <View style={styles.bottomBar}>
@@ -205,27 +243,30 @@ const createStyles = (theme: ThemeTokens) =>
       borderColor: theme.border,
       padding: 12
     },
-    toggleRow: {
+    cardHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingBottom: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.muted
+      paddingBottom: 10
     },
-    toggleLabel: {
-      fontSize: 14,
-      color: theme.textPrimary
+    cardTitle: {
+      fontSize: 13,
+      color: theme.textSecondary
+    },
+    resetText: {
+      fontSize: 13,
+      color: theme.accent
     },
     row: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "space-between",
       paddingVertical: 14,
       borderBottomWidth: 1,
       borderBottomColor: theme.muted
     },
     rowText: {
-      marginLeft: 12
+      flex: 1
     },
     rowLabel: {
       fontSize: 12,
@@ -236,16 +277,9 @@ const createStyles = (theme: ThemeTokens) =>
       color: theme.textPrimary,
       marginTop: 2
     },
-    iconBubble: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-      backgroundColor: theme.muted,
-      alignItems: "center",
-      justifyContent: "center"
-    },
-    iconText: {
-      fontSize: 12,
+    chevron: {
+      marginLeft: 12,
+      fontSize: 18,
       color: theme.textSecondary
     },
     modalBackdrop: {
@@ -258,6 +292,20 @@ const createStyles = (theme: ThemeTokens) =>
       padding: 16,
       borderTopLeftRadius: 16,
       borderTopRightRadius: 16
+    },
+    modalTitle: {
+      fontSize: 14,
+      color: theme.textPrimary,
+      marginBottom: 8
+    },
+    modalDone: {
+      alignSelf: "flex-end",
+      paddingVertical: 8,
+      paddingHorizontal: 6
+    },
+    modalDoneText: {
+      fontSize: 14,
+      color: theme.accent
     },
     bottomBar: {
       padding: 16,
