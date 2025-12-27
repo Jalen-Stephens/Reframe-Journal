@@ -4,6 +4,7 @@ import { AppNavigator } from "./src/navigation/AppNavigator";
 import { initDb } from "./src/storage/db";
 import { WizardProvider } from "./src/context/WizardContext";
 import { ActivityIndicator, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -32,10 +33,12 @@ export default function App() {
   }
 
   return (
-    <WizardProvider>
-      <NavigationContainer>
-        <AppNavigator />
-      </NavigationContainer>
-    </WizardProvider>
+    <SafeAreaProvider>
+      <WizardProvider>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </WizardProvider>
+    </SafeAreaProvider>
   );
 }

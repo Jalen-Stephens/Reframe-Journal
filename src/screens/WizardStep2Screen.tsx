@@ -1,5 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, Button, Pressable, StyleSheet, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { LabeledInput } from "../components/LabeledInput";
@@ -40,122 +52,138 @@ export const WizardStep2Screen: React.FC<
   };
 
   return (
-    <View style={styles.container}>
-      <WizardProgress step={2} total={7} />
-      <LabeledInput
-        label="Situation"
-        placeholder="What happened?"
-        multiline
-        value={situationText}
-        onChangeText={setSituationText}
-        style={styles.multiline}
-      />
-      <Text style={styles.label}>Physical sensations</Text>
-      <Pressable
-        style={styles.dropdownTrigger}
-        onPress={() => setShowDropdown((current) => !current)}
-      >
-        <Text style={styles.dropdownText}>Select common sensations</Text>
-        <Text style={styles.dropdownChevron}>{showDropdown ? "▲" : "▼"}</Text>
-      </Pressable>
-      {showDropdown ? (
-        <View style={styles.dropdownList}>
-          {COMMON_SENSATIONS.map((sensation) => (
-            <Pressable
-              key={sensation}
-              style={styles.dropdownItem}
-              onPress={() => {
-                addSensation(sensation);
-                setShowDropdown(false);
-                setShowCustomInput(false);
-              }}
-            >
-              <Text style={styles.dropdownText}>{sensation}</Text>
-            </Pressable>
-          ))}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <WizardProgress step={2} total={6} />
+          <Text style={styles.helper}>
+            What led to the unpleasant emotion? What distressing physical sensations
+            did you have?
+          </Text>
+          <LabeledInput
+            label="Situation"
+            placeholder="What happened?"
+            multiline
+            value={situationText}
+            onChangeText={setSituationText}
+            style={styles.multiline}
+          />
+          <Text style={styles.label}>Physical sensations</Text>
           <Pressable
-            style={styles.dropdownItem}
-            onPress={() => setShowCustomInput((current) => !current)}
+            style={styles.dropdownTrigger}
+            onPress={() => setShowDropdown((current) => !current)}
           >
-            <Text style={styles.dropdownText}>Custom...</Text>
+            <Text style={styles.dropdownText}>Select common sensations</Text>
+            <Text style={styles.dropdownChevron}>{showDropdown ? "▲" : "▼"}</Text>
           </Pressable>
-          {showCustomInput ? (
-            <View style={styles.customRow}>
-              <TextInput
-                style={styles.customInput}
-                placeholder="Type a sensation"
-                value={customSensation}
-                onChangeText={setCustomSensation}
-                onSubmitEditing={() => {
-                  addSensation(customSensation);
-                  setCustomSensation("");
-                  setShowDropdown(false);
-                  setShowCustomInput(false);
-                }}
-              />
+          {showDropdown ? (
+            <View style={styles.dropdownList}>
+              {COMMON_SENSATIONS.map((sensation) => (
+                <Pressable
+                  key={sensation}
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    addSensation(sensation);
+                    setShowDropdown(false);
+                    setShowCustomInput(false);
+                  }}
+                >
+                  <Text style={styles.dropdownText}>{sensation}</Text>
+                </Pressable>
+              ))}
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => setShowCustomInput((current) => !current)}
+              >
+                <Text style={styles.dropdownText}>Custom...</Text>
+              </Pressable>
+              {showCustomInput ? (
+                <View style={styles.customRow}>
+                  <TextInput
+                    style={styles.customInput}
+                    placeholder="Type a sensation"
+                    value={customSensation}
+                    onChangeText={setCustomSensation}
+                    onSubmitEditing={() => {
+                      addSensation(customSensation);
+                      setCustomSensation("");
+                      setShowDropdown(false);
+                      setShowCustomInput(false);
+                    }}
+                    returnKeyType="done"
+                    blurOnSubmit
+                  />
+                  <Button
+                    title="Add"
+                    onPress={() => {
+                      addSensation(customSensation);
+                      setCustomSensation("");
+                      setShowDropdown(false);
+                      setShowCustomInput(false);
+                    }}
+                  />
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+          <View style={styles.list}>
+            {sensations.map((item) => (
+              <View key={item} style={styles.listRow}>
+                <Text style={styles.listItem}>{item}</Text>
+                <Pressable
+                  onPress={() =>
+                    setSensations((current) =>
+                      current.filter((value) => value !== item)
+                    )
+                  }
+                >
+                  <Text style={styles.removeText}>Remove</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.actions}>
+            <View style={styles.actionButton}>
               <Button
-                title="Add"
-                onPress={() => {
-                  addSensation(customSensation);
-                  setCustomSensation("");
-                  setShowDropdown(false);
-                  setShowCustomInput(false);
+                title="Back"
+                onPress={async () => {
+                  const nextDraft = {
+                    ...draft,
+                    situationText,
+                    sensations
+                  };
+                  setDraft(nextDraft);
+                  await persistDraft(nextDraft);
+                  navigation.goBack();
                 }}
               />
             </View>
-          ) : null}
-        </View>
-      ) : null}
-      <View style={styles.list}>
-        {sensations.map((item) => (
-          <View key={item} style={styles.listRow}>
-            <Text style={styles.listItem}>{item}</Text>
-            <Pressable
-              onPress={() =>
-                setSensations((current) =>
-                  current.filter((value) => value !== item)
-                )
-              }
-            >
-              <Text style={styles.removeText}>Remove</Text>
-            </Pressable>
+            <View style={styles.actionButton}>
+              <Button
+                title="Next"
+                onPress={async () => {
+                  const nextDraft = {
+                    ...draft,
+                    situationText,
+                    sensations
+                  };
+                  setDraft(nextDraft);
+                  await persistDraft(nextDraft);
+                  navigation.navigate("WizardStep3");
+                }}
+              />
+            </View>
           </View>
-        ))}
-      </View>
-
-      <View style={styles.actions}>
-        <View style={styles.actionButton}>
-          <Button
-            title="Back"
-            onPress={async () => {
-              const nextDraft = {
-                ...draft,
-                situationText,
-                sensations
-              };
-              setDraft(nextDraft);
-              await persistDraft(nextDraft);
-              navigation.goBack();
-            }}
-          />
-        </View>
-        <View style={styles.actionButton}>
-          <Button
-            title="Next"
-            onPress={async () => {
-              const nextDraft = {
-                ...draft,
-                situationText,
-                sensations
-              };
-              setDraft(nextDraft);
-              await persistDraft(nextDraft);
-              navigation.navigate("WizardStep3");
-            }}
-          />
-        </View>
-      </View>
-    </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -165,10 +193,19 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#FAFAFA"
   },
+  scrollContent: {
+    paddingBottom: 24
+  },
   label: {
     fontSize: 14,
     color: "#4A4A4A",
     marginBottom: 6
+  },
+  helper: {
+    fontSize: 13,
+    color: "#6B6B6B",
+    marginBottom: 12,
+    lineHeight: 18
   },
   dropdownTrigger: {
     borderWidth: 1,

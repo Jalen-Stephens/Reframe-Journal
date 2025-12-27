@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
@@ -32,50 +42,67 @@ export const WizardStep3Screen: React.FC<
   };
 
   return (
-    <View style={styles.container}>
-      <WizardProgress step={3} total={7} />
-      <LabeledInput
-        label="Automatic thought"
-        placeholder="I'm going to mess this up"
-        value={thoughtText}
-        onChangeText={setThoughtText}
-      />
-      <LabeledSlider
-        label="Belief (0-100)"
-        value={beliefValue}
-        onChange={setBeliefValue}
-      />
-      <Button title="Add thought" onPress={addThought} />
-
-      <View style={styles.list}>
-        {draft.automaticThoughts.map((thought) => (
-          <Text key={thought.id} style={styles.listItem}>
-            {thought.text} ({thought.beliefBefore}%)
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <WizardProgress step={3} total={6} />
+          <Text style={styles.helper}>
+            What thought/s or image/s went through your mind? How much did you
+            believe the thought at the time (0-100%)?
           </Text>
-        ))}
-      </View>
+          <LabeledInput
+            label="Automatic thought"
+            placeholder="I'm going to mess this up"
+            value={thoughtText}
+            onChangeText={setThoughtText}
+            returnKeyType="done"
+            blurOnSubmit
+          />
+          <LabeledSlider
+            label="Belief (0-100)"
+            value={beliefValue}
+            onChange={setBeliefValue}
+          />
+          <Text style={styles.hint}>0 = not at all, 100 = completely</Text>
+          <Button title="Add thought" onPress={addThought} />
 
-      <View style={styles.actions}>
-        <View style={styles.actionButton}>
-          <Button
-            title="Back"
-            onPress={async () => {
-              await persistDraft();
-              navigation.goBack();
-            }}
-          />
-        </View>
-        <View style={styles.actionButton}>
-          <Button
-            title="Next"
-            onPress={async () => {
-              await persistDraft();
-              navigation.navigate("WizardStep4");
-            }}
-          />
-        </View>
-      </View>
-    </View>
+          <View style={styles.list}>
+            {draft.automaticThoughts.map((thought) => (
+              <Text key={thought.id} style={styles.listItem}>
+                {thought.text} ({thought.beliefBefore}%)
+              </Text>
+            ))}
+          </View>
+
+          <View style={styles.actions}>
+            <View style={styles.actionButton}>
+              <Button
+                title="Back"
+                onPress={async () => {
+                  await persistDraft();
+                  navigation.goBack();
+                }}
+              />
+            </View>
+            <View style={styles.actionButton}>
+              <Button
+                title="Next"
+                onPress={async () => {
+                  await persistDraft();
+                  navigation.navigate("WizardStep4");
+                }}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -84,6 +111,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: "#FAFAFA"
+  },
+  scrollContent: {
+    paddingBottom: 24
+  },
+  helper: {
+    fontSize: 13,
+    color: "#6B6B6B",
+    marginBottom: 12,
+    lineHeight: 18
+  },
+  hint: {
+    fontSize: 12,
+    color: "#8A8A8A",
+    marginTop: -6,
+    marginBottom: 12
   },
   list: {
     marginTop: 16
