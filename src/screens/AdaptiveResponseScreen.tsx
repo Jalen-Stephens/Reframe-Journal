@@ -39,7 +39,7 @@ const PROMPTS = [
   }
 ];
 
-export const WizardStep6Screen: React.FC<
+export const AdaptiveResponseScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep6">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft } = useWizard();

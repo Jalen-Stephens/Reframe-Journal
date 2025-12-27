@@ -5,6 +5,7 @@ import {
   Button,
   Pressable,
   StyleSheet,
+  TextInput,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -13,62 +14,45 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
-import { WizardProgress } from "../components/WizardProgress";
 import { LabeledInput } from "../components/LabeledInput";
-import { LabeledSlider } from "../components/LabeledSlider";
+import { WizardProgress } from "../components/WizardProgress";
 import { useWizard } from "../context/WizardContext";
-import { clampPercent } from "../utils/validation";
-import { generateId } from "../utils/uuid";
 import { useTheme } from "../context/ThemeProvider";
 import { ThemeTokens } from "../theme/theme";
 
-const COMMON_EMOTIONS = [
-  "Anxious",
-  "Sad",
-  "Angry",
-  "Frustrated",
-  "Shame",
-  "Guilty",
-  "Lonely",
-  "Overwhelmed",
-  "Embarrassed",
-  "Hopeless"
+const COMMON_SENSATIONS = [
+  "Tight chest",
+  "Racing heart",
+  "Sweaty palms",
+  "Shallow breathing",
+  "Nausea",
+  "Headache",
+  "Tense shoulders",
+  "Butterflies",
+  "Restlessness",
+  "Fatigue"
 ];
 
-export const WizardStep4Screen: React.FC<
-  NativeStackScreenProps<RootStackParamList, "WizardStep4">
+export const SituationScreen: React.FC<
+  NativeStackScreenProps<RootStackParamList, "WizardStep2">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft } = useWizard();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const [emotionLabel, setEmotionLabel] = useState("");
-  const [customEmotion, setCustomEmotion] = useState("");
-  const [intensityValue, setIntensityValue] = useState(50);
+  const [situationText, setSituationText] = useState(draft.situationText);
+  const [sensations, setSensations] = useState<string[]>(draft.sensations);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customSensation, setCustomSensation] = useState("");
 
-  const addEmotion = () => {
-    const intensity = clampPercent(intensityValue);
-    const label =
-      emotionLabel === "Custom"
-        ? customEmotion.trim()
-        : emotionLabel.trim();
-    if (!label) {
+  const addSensation = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
       return;
     }
-    setDraft((current) => ({
-      ...current,
-      emotions: [
-        ...current.emotions,
-        {
-          id: generateId(),
-          label,
-          intensityBefore: intensity
-        }
-      ]
-    }));
-    setEmotionLabel("");
-    setCustomEmotion("");
-    setIntensityValue(50);
+    setSensations((current) =>
+      current.includes(trimmed) ? current : [...current, trimmed]
+    );
   };
 
   return (
@@ -81,76 +65,88 @@ export const WizardStep4Screen: React.FC<
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <WizardProgress step={4} total={6} />
+          <WizardProgress step={2} total={6} />
           <Text style={styles.helper}>
-            What emotion/s did you feel at the time? How intense was the emotion
-            (0-100%)?
+            What led to the unpleasant emotion? What distressing physical sensations
+            did you have?
           </Text>
-          <Text style={styles.label}>Emotion</Text>
+          <LabeledInput
+            label="Situation"
+            placeholder="What happened?"
+            multiline
+            value={situationText}
+            onChangeText={setSituationText}
+            style={styles.multiline}
+          />
+          <Text style={styles.label}>Physical sensations</Text>
           <Pressable
             style={styles.dropdownTrigger}
             onPress={() => setShowDropdown((current) => !current)}
           >
-            <Text style={styles.dropdownText}>
-              {emotionLabel || "Select an emotion"}
-            </Text>
+            <Text style={styles.dropdownText}>Select common sensations</Text>
             <Text style={styles.dropdownChevron}>{showDropdown ? "▲" : "▼"}</Text>
           </Pressable>
           {showDropdown ? (
             <View style={styles.dropdownList}>
-              {COMMON_EMOTIONS.map((emotion) => (
+              {COMMON_SENSATIONS.map((sensation) => (
                 <Pressable
-                  key={emotion}
+                  key={sensation}
                   style={styles.dropdownItem}
                   onPress={() => {
-                    setEmotionLabel(emotion);
+                    addSensation(sensation);
                     setShowDropdown(false);
+                    setShowCustomInput(false);
                   }}
                 >
-                  <Text style={styles.dropdownText}>{emotion}</Text>
+                  <Text style={styles.dropdownText}>{sensation}</Text>
                 </Pressable>
               ))}
               <Pressable
                 style={styles.dropdownItem}
-                onPress={() => {
-                  setEmotionLabel("Custom");
-                  setShowDropdown(false);
-                }}
+                onPress={() => setShowCustomInput((current) => !current)}
               >
                 <Text style={styles.dropdownText}>Custom...</Text>
               </Pressable>
+              {showCustomInput ? (
+                <View style={styles.customRow}>
+                  <TextInput
+                    style={styles.customInput}
+                    placeholder="Type a sensation"
+                    value={customSensation}
+                    onChangeText={setCustomSensation}
+                    placeholderTextColor={theme.textSecondary}
+                    onSubmitEditing={() => {
+                      addSensation(customSensation);
+                      setCustomSensation("");
+                      setShowDropdown(false);
+                      setShowCustomInput(false);
+                    }}
+                    returnKeyType="done"
+                    blurOnSubmit
+                  />
+                  <Button
+                    title="Add"
+                    color={theme.accent}
+                    onPress={() => {
+                      addSensation(customSensation);
+                      setCustomSensation("");
+                      setShowDropdown(false);
+                      setShowCustomInput(false);
+                    }}
+                  />
+                </View>
+              ) : null}
             </View>
           ) : null}
-          {emotionLabel === "Custom" ? (
-            <LabeledInput
-              label="Custom emotion"
-              placeholder="Describe your emotion"
-              value={customEmotion}
-              onChangeText={setCustomEmotion}
-              returnKeyType="done"
-              blurOnSubmit
-            />
-          ) : null}
-          <LabeledSlider
-            label="Intensity (0-100)"
-            value={intensityValue}
-            onChange={setIntensityValue}
-          />
-          <Text style={styles.hint}>0 = not at all, 100 = most intense</Text>
-          <Button title="Add emotion" onPress={addEmotion} color={theme.accent} />
-
           <View style={styles.list}>
-            {draft.emotions.map((emotion) => (
-              <View key={emotion.id} style={styles.listRow}>
-                <Text style={styles.listItem}>
-                  {emotion.label} ({emotion.intensityBefore}%)
-                </Text>
+            {sensations.map((item) => (
+              <View key={item} style={styles.listRow}>
+                <Text style={styles.listItem}>{item}</Text>
                 <Pressable
                   onPress={() =>
-                    setDraft((current) => ({
-                      ...current,
-                      emotions: current.emotions.filter((item) => item.id !== emotion.id)
-                    }))
+                    setSensations((current) =>
+                      current.filter((value) => value !== item)
+                    )
                   }
                 >
                   <Text style={styles.removeText}>Remove</Text>
@@ -165,7 +161,13 @@ export const WizardStep4Screen: React.FC<
                 title="Back"
                 color={theme.accent}
                 onPress={async () => {
-                  await persistDraft();
+                  const nextDraft = {
+                    ...draft,
+                    situationText,
+                    sensations
+                  };
+                  setDraft(nextDraft);
+                  await persistDraft(nextDraft);
                   navigation.goBack();
                 }}
               />
@@ -175,8 +177,14 @@ export const WizardStep4Screen: React.FC<
                 title="Next"
                 color={theme.accent}
                 onPress={async () => {
-                  await persistDraft();
-                  navigation.navigate("WizardStep6");
+                  const nextDraft = {
+                    ...draft,
+                    situationText,
+                    sensations
+                  };
+                  setDraft(nextDraft);
+                  await persistDraft(nextDraft);
+                  navigation.navigate("WizardStep3");
                 }}
               />
             </View>
@@ -197,22 +205,16 @@ const createStyles = (theme: ThemeTokens) =>
     scrollContent: {
       paddingBottom: 24
     },
-    helper: {
-      fontSize: 13,
-      color: theme.textSecondary,
-      marginBottom: 12,
-      lineHeight: 18
-    },
     label: {
       fontSize: 14,
       color: theme.textSecondary,
       marginBottom: 6
     },
-    hint: {
-      fontSize: 12,
+    helper: {
+      fontSize: 13,
       color: theme.textSecondary,
-      marginTop: -6,
-      marginBottom: 12
+      marginBottom: 12,
+      lineHeight: 18
     },
     dropdownTrigger: {
       borderWidth: 1,
@@ -245,8 +247,22 @@ const createStyles = (theme: ThemeTokens) =>
       fontSize: 12,
       marginLeft: 8
     },
+    customRow: {
+      padding: 10,
+      borderTopWidth: 1,
+      borderTopColor: theme.muted
+    },
+    customInput: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      padding: 10,
+      borderRadius: 6,
+      backgroundColor: theme.card,
+      color: theme.textPrimary,
+      marginBottom: 8
+    },
     list: {
-      marginTop: 16
+      marginTop: 8
     },
     listRow: {
       flexDirection: "row",
@@ -263,6 +279,10 @@ const createStyles = (theme: ThemeTokens) =>
       fontSize: 12,
       color: theme.textSecondary,
       marginLeft: 12
+    },
+    multiline: {
+      minHeight: 100,
+      textAlignVertical: "top"
     },
     actions: {
       marginTop: 16

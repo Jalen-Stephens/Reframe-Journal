@@ -21,7 +21,7 @@ import { generateId } from "../utils/uuid";
 import { useTheme } from "../context/ThemeProvider";
 import { ThemeTokens } from "../theme/theme";
 
-export const WizardStep3Screen: React.FC<
+export const AutomaticThoughtsScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep3">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft } = useWizard();

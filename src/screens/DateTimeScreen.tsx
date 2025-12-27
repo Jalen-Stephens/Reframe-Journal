@@ -17,7 +17,7 @@ import { WizardProgress } from "../components/WizardProgress";
 import { useTheme } from "../context/ThemeProvider";
 import { ThemeTokens } from "../theme/theme";
 
-export const WizardStep1Screen: React.FC<
+export const DateTimeScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep1">
 > = ({ navigation }) => {
   const { draft, persistDraft } = useWizard();

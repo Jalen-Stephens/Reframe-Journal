@@ -11,7 +11,7 @@ import { nowIso } from "../utils/date";
 import { useTheme } from "../context/ThemeProvider";
 import { ThemeTokens } from "../theme/theme";
 
-export const WizardStep7Screen: React.FC<
+export const OutcomeScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep7">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft, clearDraft } = useWizard();

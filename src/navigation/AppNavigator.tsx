@@ -2,12 +2,12 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "../screens/HomeScreen";
 import { EntryDetailScreen } from "../screens/EntryDetailScreen";
-import { WizardStep1Screen } from "../screens/WizardStep1Screen";
-import { WizardStep2Screen } from "../screens/WizardStep2Screen";
-import { WizardStep3Screen } from "../screens/WizardStep3Screen";
-import { WizardStep4Screen } from "../screens/WizardStep4Screen";
-import { WizardStep6Screen } from "../screens/WizardStep6Screen";
-import { WizardStep7Screen } from "../screens/WizardStep7Screen";
+import { DateTimeScreen } from "../screens/DateTimeScreen";
+import { SituationScreen } from "../screens/SituationScreen";
+import { AutomaticThoughtsScreen } from "../screens/AutomaticThoughtsScreen";
+import { EmotionsScreen } from "../screens/EmotionsScreen";
+import { AdaptiveResponseScreen } from "../screens/AdaptiveResponseScreen";
+import { OutcomeScreen } from "../screens/OutcomeScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 
 export type RootStackParamList = {
@@ -31,32 +31,32 @@ export const AppNavigator = () => {
       <Stack.Screen name="EntryDetail" component={EntryDetailScreen} />
       <Stack.Screen
         name="WizardStep1"
-        component={WizardStep1Screen}
+        component={DateTimeScreen}
         options={{ title: "Date & Time" }}
       />
       <Stack.Screen
         name="WizardStep2"
-        component={WizardStep2Screen}
+        component={SituationScreen}
         options={{ title: "Situation" }}
       />
       <Stack.Screen
         name="WizardStep3"
-        component={WizardStep3Screen}
+        component={AutomaticThoughtsScreen}
         options={{ title: "Automatic Thoughts" }}
       />
       <Stack.Screen
         name="WizardStep4"
-        component={WizardStep4Screen}
+        component={EmotionsScreen}
         options={{ title: "Emotions" }}
       />
       <Stack.Screen
         name="WizardStep6"
-        component={WizardStep6Screen}
+        component={AdaptiveResponseScreen}
         options={{ title: "Adaptive Response" }}
       />
       <Stack.Screen
         name="WizardStep7"
-        component={WizardStep7Screen}
+        component={OutcomeScreen}
         options={{ title: "Outcome" }}
       />
       <Stack.Screen
