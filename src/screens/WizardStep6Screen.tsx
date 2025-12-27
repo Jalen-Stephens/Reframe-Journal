@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import { LabeledSlider } from "../components/LabeledSlider";
 import { useWizard } from "../context/WizardContext";
 import { clampPercent } from "../utils/validation";
 import { generateId } from "../utils/uuid";
+import { useTheme } from "../context/ThemeProvider";
+import { ThemeTokens } from "../theme/theme";
 
 const PROMPTS = [
   {
@@ -41,6 +43,8 @@ export const WizardStep6Screen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep6">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft } = useWizard();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const updateResponse = (promptKey: string, responseText: string) => {
     setDraft((current) => {
@@ -139,6 +143,7 @@ export const WizardStep6Screen: React.FC<
             <View style={styles.actionButton}>
               <Button
                 title="Back"
+                color={theme.accent}
                 onPress={async () => {
                   await persistDraft();
                   navigation.goBack();
@@ -148,6 +153,7 @@ export const WizardStep6Screen: React.FC<
             <View style={styles.actionButton}>
               <Button
                 title="Next"
+                color={theme.accent}
                 onPress={async () => {
                   await persistDraft();
                   navigation.navigate("WizardStep7");
@@ -161,43 +167,44 @@ export const WizardStep6Screen: React.FC<
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FAFAFA"
-  },
-  scrollContent: {
-    paddingBottom: 24
-  },
-  title: {
-    fontSize: 16,
-    marginBottom: 12,
-    color: "#4A4A4A"
-  },
-  helper: {
-    fontSize: 13,
-    color: "#6B6B6B",
-    marginBottom: 12,
-    lineHeight: 18
-  },
-  promptBlock: {
-    marginBottom: 12
-  },
-  hint: {
-    fontSize: 12,
-    color: "#8A8A8A",
-    marginTop: -6,
-    marginBottom: 8
-  },
-  multiline: {
-    minHeight: 90,
-    textAlignVertical: "top"
-  },
-  actions: {
-    marginTop: 8
-  },
-  actionButton: {
-    marginBottom: 8
-  }
-});
+const createStyles = (theme: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: theme.background
+    },
+    scrollContent: {
+      paddingBottom: 24
+    },
+    title: {
+      fontSize: 16,
+      marginBottom: 12,
+      color: theme.textPrimary
+    },
+    helper: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 12,
+      lineHeight: 18
+    },
+    promptBlock: {
+      marginBottom: 12
+    },
+    hint: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginTop: -6,
+      marginBottom: 8
+    },
+    multiline: {
+      minHeight: 90,
+      textAlignVertical: "top"
+    },
+    actions: {
+      marginTop: 8
+    },
+    actionButton: {
+      marginBottom: 8
+    }
+  });

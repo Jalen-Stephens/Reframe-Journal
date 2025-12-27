@@ -8,6 +8,7 @@ import { WizardStep3Screen } from "../screens/WizardStep3Screen";
 import { WizardStep4Screen } from "../screens/WizardStep4Screen";
 import { WizardStep6Screen } from "../screens/WizardStep6Screen";
 import { WizardStep7Screen } from "../screens/WizardStep7Screen";
+import { SettingsScreen } from "../screens/SettingsScreen";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   WizardStep4: undefined;
   WizardStep6: undefined;
   WizardStep7: undefined;
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -45,7 +47,7 @@ export const AppNavigator = () => {
       <Stack.Screen
         name="WizardStep4"
         component={WizardStep4Screen}
-        options={{ title: "Emotion/s" }}
+        options={{ title: "Emotions" }}
       />
       <Stack.Screen
         name="WizardStep6"
@@ -56,6 +58,11 @@ export const AppNavigator = () => {
         name="WizardStep7"
         component={WizardStep7Screen}
         options={{ title: "Outcome" }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: "Settings" }}
       />
     </Stack.Navigator>
   );

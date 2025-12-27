@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react";
-import { View, Text, Button, FlatList, StyleSheet } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { View, Text, Button, FlatList, Pressable, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -7,6 +7,8 @@ import { EntryListItem } from "../components/EntryListItem";
 import { ThoughtRecord } from "../models/ThoughtRecord";
 import { getDraft, listThoughtRecords } from "../storage/thoughtRecordsRepo";
 import { useWizard } from "../context/WizardContext";
+import { useTheme } from "../context/ThemeProvider";
+import { ThemeTokens } from "../theme/theme";
 
 export const HomeScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "Home">
@@ -14,6 +16,8 @@ export const HomeScreen: React.FC<
   const [entries, setEntries] = useState<ThoughtRecord[]>([]);
   const [hasDraft, setHasDraft] = useState(false);
   const { clearDraft } = useWizard();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const refresh = useCallback(() => {
     listThoughtRecords().then(setEntries);
@@ -28,7 +32,16 @@ export const HomeScreen: React.FC<
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Reframe Journal</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Reframe Journal</Text>
+        <Pressable
+          onPress={() => navigation.navigate("Settings")}
+          style={styles.settingsButton}
+          accessibilityRole="button"
+        >
+          <Text style={styles.settingsButtonText}>Settings</Text>
+        </Pressable>
+      </View>
       <Text style={styles.helper}>
         Capture situations, automatic thoughts, emotions, and outcomes in a
         simple step-by-step flow.
@@ -36,6 +49,7 @@ export const HomeScreen: React.FC<
       <View style={styles.actions}>
         <Button
           title="New Thought Record"
+          color={theme.accent}
           onPress={async () => {
             await clearDraft();
             navigation.navigate("WizardStep1");
@@ -45,6 +59,7 @@ export const HomeScreen: React.FC<
           <View style={styles.draftButton}>
             <Button
               title="Continue Draft"
+              color={theme.accent}
               onPress={() => navigation.navigate("WizardStep1")}
             />
           </View>
@@ -71,42 +86,60 @@ export const HomeScreen: React.FC<
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FAFAFA"
-  },
-  title: {
-    fontSize: 22,
-    marginBottom: 12,
-    color: "#2F2F2F"
-  },
-  helper: {
-    fontSize: 13,
-    color: "#6B6B6B",
-    marginBottom: 16,
-    lineHeight: 18
-  },
-  actions: {
-    marginBottom: 16
-  },
-  draftButton: {
-    marginTop: 8
-  },
-  section: {
-    fontSize: 16,
-    marginTop: 8,
-    marginBottom: 8,
-    color: "#4A4A4A"
-  },
-  empty: {
-    color: "#8A8A8A",
-    marginTop: 12
-  },
-  footerNote: {
-    marginTop: 24,
-    fontSize: 12,
-    color: "#9A9A9A"
-  }
-});
+const createStyles = (theme: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: theme.background
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between"
+    },
+    title: {
+      fontSize: 22,
+      color: theme.textPrimary
+    },
+    settingsButton: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card
+    },
+    settingsButtonText: {
+      fontSize: 12,
+      color: theme.textSecondary
+    },
+    helper: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 16,
+      lineHeight: 18,
+      marginTop: 10
+    },
+    actions: {
+      marginBottom: 16
+    },
+    draftButton: {
+      marginTop: 8
+    },
+    section: {
+      fontSize: 16,
+      marginTop: 8,
+      marginBottom: 8,
+      color: theme.textSecondary
+    },
+    empty: {
+      color: theme.textSecondary,
+      marginTop: 12
+    },
+    footerNote: {
+      marginTop: 24,
+      fontSize: 12,
+      color: theme.textSecondary
+    }
+  });

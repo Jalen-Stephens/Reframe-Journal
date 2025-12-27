@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -18,11 +18,15 @@ import { LabeledSlider } from "../components/LabeledSlider";
 import { useWizard } from "../context/WizardContext";
 import { clampPercent } from "../utils/validation";
 import { generateId } from "../utils/uuid";
+import { useTheme } from "../context/ThemeProvider";
+import { ThemeTokens } from "../theme/theme";
 
 export const WizardStep3Screen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep3">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft } = useWizard();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [thoughtText, setThoughtText] = useState("");
   const [beliefValue, setBeliefValue] = useState(50);
 
@@ -70,7 +74,7 @@ export const WizardStep3Screen: React.FC<
             onChange={setBeliefValue}
           />
           <Text style={styles.hint}>0 = not at all, 100 = completely</Text>
-          <Button title="Add thought" onPress={addThought} />
+          <Button title="Add thought" onPress={addThought} color={theme.accent} />
 
           <View style={styles.list}>
             {draft.automaticThoughts.map((thought) => (
@@ -84,6 +88,7 @@ export const WizardStep3Screen: React.FC<
             <View style={styles.actionButton}>
               <Button
                 title="Back"
+                color={theme.accent}
                 onPress={async () => {
                   await persistDraft();
                   navigation.goBack();
@@ -93,6 +98,7 @@ export const WizardStep3Screen: React.FC<
             <View style={styles.actionButton}>
               <Button
                 title="Next"
+                color={theme.accent}
                 onPress={async () => {
                   await persistDraft();
                   navigation.navigate("WizardStep4");
@@ -106,39 +112,40 @@ export const WizardStep3Screen: React.FC<
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FAFAFA"
-  },
-  scrollContent: {
-    paddingBottom: 24
-  },
-  helper: {
-    fontSize: 13,
-    color: "#6B6B6B",
-    marginBottom: 12,
-    lineHeight: 18
-  },
-  hint: {
-    fontSize: 12,
-    color: "#8A8A8A",
-    marginTop: -6,
-    marginBottom: 12
-  },
-  list: {
-    marginTop: 16
-  },
-  listItem: {
-    fontSize: 14,
-    color: "#4A4A4A",
-    marginBottom: 6
-  },
-  actions: {
-    marginTop: 16
-  },
-  actionButton: {
-    marginBottom: 8
-  }
-});
+const createStyles = (theme: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: theme.background
+    },
+    scrollContent: {
+      paddingBottom: 24
+    },
+    helper: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 12,
+      lineHeight: 18
+    },
+    hint: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginTop: -6,
+      marginBottom: 12
+    },
+    list: {
+      marginTop: 16
+    },
+    listItem: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginBottom: 6
+    },
+    actions: {
+      marginTop: 16
+    },
+    actionButton: {
+      marginBottom: 8
+    }
+  });

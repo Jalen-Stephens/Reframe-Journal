@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,8 @@ import { RootStackParamList } from "../navigation/AppNavigator";
 import { LabeledInput } from "../components/LabeledInput";
 import { WizardProgress } from "../components/WizardProgress";
 import { useWizard } from "../context/WizardContext";
+import { useTheme } from "../context/ThemeProvider";
+import { ThemeTokens } from "../theme/theme";
 
 const COMMON_SENSATIONS = [
   "Tight chest",
@@ -35,6 +37,8 @@ export const WizardStep2Screen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep2">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft } = useWizard();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [situationText, setSituationText] = useState(draft.situationText);
   const [sensations, setSensations] = useState<string[]>(draft.sensations);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -110,6 +114,7 @@ export const WizardStep2Screen: React.FC<
                     placeholder="Type a sensation"
                     value={customSensation}
                     onChangeText={setCustomSensation}
+                    placeholderTextColor={theme.textSecondary}
                     onSubmitEditing={() => {
                       addSensation(customSensation);
                       setCustomSensation("");
@@ -121,6 +126,7 @@ export const WizardStep2Screen: React.FC<
                   />
                   <Button
                     title="Add"
+                    color={theme.accent}
                     onPress={() => {
                       addSensation(customSensation);
                       setCustomSensation("");
@@ -153,6 +159,7 @@ export const WizardStep2Screen: React.FC<
             <View style={styles.actionButton}>
               <Button
                 title="Back"
+                color={theme.accent}
                 onPress={async () => {
                   const nextDraft = {
                     ...draft,
@@ -168,6 +175,7 @@ export const WizardStep2Screen: React.FC<
             <View style={styles.actionButton}>
               <Button
                 title="Next"
+                color={theme.accent}
                 onPress={async () => {
                   const nextDraft = {
                     ...draft,
@@ -187,97 +195,99 @@ export const WizardStep2Screen: React.FC<
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FAFAFA"
-  },
-  scrollContent: {
-    paddingBottom: 24
-  },
-  label: {
-    fontSize: 14,
-    color: "#4A4A4A",
-    marginBottom: 6
-  },
-  helper: {
-    fontSize: 13,
-    color: "#6B6B6B",
-    marginBottom: 12,
-    lineHeight: 18
-  },
-  dropdownTrigger: {
-    borderWidth: 1,
-    borderColor: "#D8D8D8",
-    padding: 10,
-    borderRadius: 6,
-    backgroundColor: "#FFFFFF",
-    marginBottom: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
-  },
-  dropdownList: {
-    borderWidth: 1,
-    borderColor: "#D8D8D8",
-    borderRadius: 6,
-    backgroundColor: "#FFFFFF",
-    marginBottom: 12
-  },
-  dropdownItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EFEFEF"
-  },
-  dropdownText: {
-    color: "#2F2F2F"
-  },
-  dropdownChevron: {
-    color: "#8A8A8A",
-    fontSize: 12,
-    marginLeft: 8
-  },
-  customRow: {
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#EFEFEF"
-  },
-  customInput: {
-    borderWidth: 1,
-    borderColor: "#D8D8D8",
-    padding: 10,
-    borderRadius: 6,
-    backgroundColor: "#FFFFFF",
-    marginBottom: 8
-  },
-  list: {
-    marginTop: 8
-  },
-  listRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6
-  },
-  listItem: {
-    fontSize: 14,
-    color: "#4A4A4A",
-    flex: 1
-  },
-  removeText: {
-    fontSize: 12,
-    color: "#8A8A8A",
-    marginLeft: 12
-  },
-  multiline: {
-    minHeight: 100,
-    textAlignVertical: "top"
-  },
-  actions: {
-    marginTop: 16
-  },
-  actionButton: {
-    marginBottom: 8
-  }
-});
+const createStyles = (theme: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: theme.background
+    },
+    scrollContent: {
+      paddingBottom: 24
+    },
+    label: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginBottom: 6
+    },
+    helper: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 12,
+      lineHeight: 18
+    },
+    dropdownTrigger: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      padding: 10,
+      borderRadius: 6,
+      backgroundColor: theme.card,
+      marginBottom: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between"
+    },
+    dropdownList: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 6,
+      backgroundColor: theme.card,
+      marginBottom: 12
+    },
+    dropdownItem: {
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.muted
+    },
+    dropdownText: {
+      color: theme.textPrimary
+    },
+    dropdownChevron: {
+      color: theme.textSecondary,
+      fontSize: 12,
+      marginLeft: 8
+    },
+    customRow: {
+      padding: 10,
+      borderTopWidth: 1,
+      borderTopColor: theme.muted
+    },
+    customInput: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      padding: 10,
+      borderRadius: 6,
+      backgroundColor: theme.card,
+      color: theme.textPrimary,
+      marginBottom: 8
+    },
+    list: {
+      marginTop: 8
+    },
+    listRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 6
+    },
+    listItem: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      flex: 1
+    },
+    removeText: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginLeft: 12
+    },
+    multiline: {
+      minHeight: 100,
+      textAlignVertical: "top"
+    },
+    actions: {
+      marginTop: 16
+    },
+    actionButton: {
+      marginBottom: 8
+    }
+  });

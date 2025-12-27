@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, Button, StyleSheet, Alert } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -8,11 +8,15 @@ import { useWizard } from "../context/WizardContext";
 import { clampPercent, isRequiredTextValid } from "../utils/validation";
 import { createThoughtRecord } from "../storage/thoughtRecordsRepo";
 import { nowIso } from "../utils/date";
+import { useTheme } from "../context/ThemeProvider";
+import { ThemeTokens } from "../theme/theme";
 
 export const WizardStep7Screen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep7">
 > = ({ navigation }) => {
   const { draft, setDraft, persistDraft, clearDraft } = useWizard();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [beliefAfterValue, setBeliefAfterValue] = useState(
     draft.beliefAfterMainThought ?? 0
   );
@@ -74,6 +78,7 @@ export const WizardStep7Screen: React.FC<
         <View style={styles.actionButton}>
           <Button
             title="Back"
+            color={theme.accent}
             onPress={async () => {
               const nextDraft = {
                 ...draft,
@@ -86,45 +91,46 @@ export const WizardStep7Screen: React.FC<
           />
         </View>
         <View style={styles.actionButton}>
-          <Button title="Save" onPress={handleSave} />
+          <Button title="Save" onPress={handleSave} color={theme.accent} />
         </View>
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FAFAFA"
-  },
-  title: {
-    fontSize: 16,
-    marginBottom: 12,
-    color: "#4A4A4A"
-  },
-  helper: {
-    fontSize: 13,
-    color: "#6B6B6B",
-    marginBottom: 12,
-    lineHeight: 18
-  },
-  subTitle: {
-    fontSize: 14,
-    marginBottom: 8,
-    color: "#4A4A4A"
-  },
-  hint: {
-    fontSize: 12,
-    color: "#8A8A8A",
-    marginTop: -6,
-    marginBottom: 12
-  },
-  actions: {
-    marginTop: 12
-  },
-  actionButton: {
-    marginBottom: 8
-  }
-});
+const createStyles = (theme: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: theme.background
+    },
+    title: {
+      fontSize: 16,
+      marginBottom: 12,
+      color: theme.textPrimary
+    },
+    helper: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 12,
+      lineHeight: 18
+    },
+    subTitle: {
+      fontSize: 14,
+      marginBottom: 8,
+      color: theme.textPrimary
+    },
+    hint: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginTop: -6,
+      marginBottom: 12
+    },
+    actions: {
+      marginTop: 12
+    },
+    actionButton: {
+      marginBottom: 8
+    }
+  });

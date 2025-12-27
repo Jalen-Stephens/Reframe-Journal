@@ -1,10 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { initDb } from "./src/storage/db";
 import { WizardProvider } from "./src/context/WizardContext";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemeProvider, useTheme } from "./src/context/ThemeProvider";
+import { getNavigationTheme } from "./src/theme/theme";
+
+const AppRoot = () => {
+  const { theme, resolvedTheme } = useTheme();
+  const navigationTheme = useMemo(
+    () => getNavigationTheme(resolvedTheme, theme),
+    [resolvedTheme, theme]
+  );
+
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+};
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -34,11 +50,11 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <WizardProvider>
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
-      </WizardProvider>
+      <ThemeProvider>
+        <WizardProvider>
+          <AppRoot />
+        </WizardProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
