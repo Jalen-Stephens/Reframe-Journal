@@ -1,5 +1,15 @@
 import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
@@ -10,9 +20,21 @@ import { clampPercent } from "../utils/validation";
 import { generateId } from "../utils/uuid";
 
 const PROMPTS = [
-  { key: "evidence_for", label: "Evidence for the thought" },
-  { key: "evidence_against", label: "Evidence against the thought" },
-  { key: "balanced_view", label: "Balanced response" }
+  {
+    key: "evidence",
+    label: "What is the evidence that the thought is true? Not true?"
+  },
+  { key: "alternative", label: "Is there an alternative explanation?" },
+  {
+    key: "outcomes",
+    label:
+      "What's the worst that could happen? What's the best that could happen? What's the most realistic outcome?"
+  },
+  {
+    key: "friend_advice",
+    label:
+      "If a friend were in this situation and had this thought, what would I tell him/her?"
+  }
 ];
 
 export const WizardStep6Screen: React.FC<
@@ -73,52 +95,69 @@ export const WizardStep6Screen: React.FC<
     draft.adaptiveResponses.find((item) => item.promptKey === promptKey);
 
   return (
-    <View style={styles.container}>
-      <WizardProgress step={6} total={7} />
-      <Text style={styles.title}>Adaptive Response</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <WizardProgress step={5} total={6} />
+          <Text style={styles.title}>Adaptive Response</Text>
+          <Text style={styles.helper}>
+            Use questions below to respond to the automatic thoughts/s. How much
+            do you believe each response (0-100%)?
+          </Text>
 
-      {PROMPTS.map((prompt) => {
-        const response = getResponse(prompt.key);
-        return (
-          <View key={prompt.key} style={styles.promptBlock}>
-            <LabeledInput
-              label={prompt.label}
-              placeholder="Write a grounded response"
-              value={response?.responseText || ""}
-              onChangeText={(value) => updateResponse(prompt.key, value)}
-              multiline
-              style={styles.multiline}
-            />
-            <LabeledSlider
-              label="Belief in response (0-100)"
-              value={response?.beliefInResponse ?? 0}
-              onChange={(value) => updateBelief(prompt.key, value)}
-            />
+          {PROMPTS.map((prompt) => {
+            const response = getResponse(prompt.key);
+            return (
+              <View key={prompt.key} style={styles.promptBlock}>
+                <LabeledInput
+                  label={prompt.label}
+                  placeholder="Write a grounded response"
+                  value={response?.responseText || ""}
+                  onChangeText={(value) => updateResponse(prompt.key, value)}
+                  multiline
+                  style={styles.multiline}
+                  returnKeyType="done"
+                  blurOnSubmit
+                />
+                <LabeledSlider
+                  label="Belief in response (0-100)"
+                  value={response?.beliefInResponse ?? 0}
+                  onChange={(value) => updateBelief(prompt.key, value)}
+                />
+                <Text style={styles.hint}>0 = not at all, 100 = strongly</Text>
+              </View>
+            );
+          })}
+
+          <View style={styles.actions}>
+            <View style={styles.actionButton}>
+              <Button
+                title="Back"
+                onPress={async () => {
+                  await persistDraft();
+                  navigation.goBack();
+                }}
+              />
+            </View>
+            <View style={styles.actionButton}>
+              <Button
+                title="Next"
+                onPress={async () => {
+                  await persistDraft();
+                  navigation.navigate("WizardStep7");
+                }}
+              />
+            </View>
           </View>
-        );
-      })}
-
-      <View style={styles.actions}>
-        <View style={styles.actionButton}>
-          <Button
-            title="Back"
-            onPress={async () => {
-              await persistDraft();
-              navigation.goBack();
-            }}
-          />
-        </View>
-        <View style={styles.actionButton}>
-          <Button
-            title="Next"
-            onPress={async () => {
-              await persistDraft();
-              navigation.navigate("WizardStep7");
-            }}
-          />
-        </View>
-      </View>
-    </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -128,13 +167,28 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#FAFAFA"
   },
+  scrollContent: {
+    paddingBottom: 24
+  },
   title: {
     fontSize: 16,
     marginBottom: 12,
     color: "#4A4A4A"
   },
+  helper: {
+    fontSize: 13,
+    color: "#6B6B6B",
+    marginBottom: 12,
+    lineHeight: 18
+  },
   promptBlock: {
     marginBottom: 12
+  },
+  hint: {
+    fontSize: 12,
+    color: "#8A8A8A",
+    marginTop: -6,
+    marginBottom: 8
   },
   multiline: {
     minHeight: 90,

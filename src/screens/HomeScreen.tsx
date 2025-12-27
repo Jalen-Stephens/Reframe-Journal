@@ -29,6 +29,10 @@ export const HomeScreen: React.FC<
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Reframe Journal</Text>
+      <Text style={styles.helper}>
+        Capture situations, automatic thoughts, emotions, and outcomes in a
+        simple step-by-step flow.
+      </Text>
       <View style={styles.actions}>
         <Button
           title="New Thought Record"
@@ -77,6 +81,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     marginBottom: 12,
     color: "#2F2F2F"
+  },
+  helper: {
+    fontSize: 13,
+    color: "#6B6B6B",
+    marginBottom: 16,
+    lineHeight: 18
   },
   actions: {
     marginBottom: 16

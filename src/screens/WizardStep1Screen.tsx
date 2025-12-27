@@ -1,5 +1,15 @@
-import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  Pressable,
+  Modal,
+  Switch
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useWizard } from "../context/WizardContext";
@@ -9,42 +19,255 @@ export const WizardStep1Screen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep1">
 > = ({ navigation }) => {
   const { draft, persistDraft } = useWizard();
+  const [selectedDate, setSelectedDate] = useState(new Date(draft.createdAt));
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [useCurrent, setUseCurrent] = useState(true);
+
+  useEffect(() => {
+    setSelectedDate(new Date(draft.createdAt));
+  }, [draft.createdAt]);
+
+  useEffect(() => {
+    if (useCurrent) {
+      setSelectedDate(new Date());
+    }
+  }, [useCurrent]);
+
+  const handleDateChange = (event: unknown, date?: Date) => {
+    if (date) {
+      const next = new Date(selectedDate);
+      next.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+      setSelectedDate(next);
+    }
+    setShowDatePicker(false);
+  };
+
+  const handleTimeChange = (event: unknown, date?: Date) => {
+    if (date) {
+      const next = new Date(selectedDate);
+      next.setHours(date.getHours(), date.getMinutes(), 0, 0);
+      setSelectedDate(next);
+    }
+    setShowTimePicker(false);
+  };
+
+  const formattedDate = selectedDate.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+  const formattedTime = selectedDate.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit"
+  });
 
   return (
-    <View style={styles.container}>
-      <WizardProgress step={1} total={7} />
-      <Text style={styles.title}>Date & Time</Text>
-      <Text style={styles.value}>{draft.createdAt}</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <WizardProgress step={1} total={6} />
+        <Text style={styles.title}>Date & Time</Text>
+        <Text style={styles.subTitle}>
+          When you noticed your mood change. If unsure, leave it as now.
+        </Text>
 
-      <View style={styles.actions}>
-        <Button
-          title="Next"
+        <View style={styles.card}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Use current date & time</Text>
+            <Switch value={useCurrent} onValueChange={setUseCurrent} />
+          </View>
+
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              if (!useCurrent) {
+                setShowDatePicker(true);
+              }
+            }}
+          >
+            <View style={styles.iconBubble}>
+              <Text style={styles.iconText}>D</Text>
+            </View>
+            <View style={styles.rowText}>
+              <Text style={styles.rowLabel}>Date</Text>
+              <Text style={styles.rowValue}>{formattedDate}</Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              if (!useCurrent) {
+                setShowTimePicker(true);
+              }
+            }}
+          >
+            <View style={styles.iconBubble}>
+              <Text style={styles.iconText}>T</Text>
+            </View>
+            <View style={styles.rowText}>
+              <Text style={styles.rowLabel}>Time</Text>
+              <Text style={styles.rowValue}>{formattedTime}</Text>
+            </View>
+          </Pressable>
+        </View>
+
+        <Modal
+          visible={showDatePicker}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowDatePicker(false)}
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setShowDatePicker(false)}
+          >
+            <Pressable style={styles.modalSheet}>
+              <DateTimePicker
+                mode="date"
+                value={selectedDate}
+                onChange={handleDateChange}
+                display={Platform.OS === "ios" ? "inline" : "default"}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
+
+        <Modal
+          visible={showTimePicker}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowTimePicker(false)}
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setShowTimePicker(false)}
+          >
+            <Pressable style={styles.modalSheet}>
+              <DateTimePicker
+                mode="time"
+                value={selectedDate}
+                onChange={handleTimeChange}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
+      </View>
+
+      <View style={styles.bottomBar}>
+        <Pressable
+          style={styles.primaryButton}
           onPress={async () => {
-            await persistDraft();
+            await persistDraft({
+              ...draft,
+              createdAt: selectedDate.toISOString()
+            });
             navigation.navigate("WizardStep2");
           }}
-        />
+        >
+          <Text style={styles.primaryButtonText}>Next</Text>
+        </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#FAFAFA"
   },
+  content: {
+    flex: 1,
+    padding: 16
+  },
   title: {
-    fontSize: 18,
-    marginBottom: 12,
+    fontSize: 20,
+    marginBottom: 6,
     color: "#2F2F2F"
   },
-  value: {
-    fontSize: 14,
-    color: "#4A4A4A"
+  subTitle: {
+    fontSize: 13,
+    color: "#6B6B6B",
+    marginBottom: 16,
+    lineHeight: 18
   },
-  actions: {
-    marginTop: 24
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E3E3E3",
+    padding: 12
+  },
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EFEFEF"
+  },
+  toggleLabel: {
+    fontSize: 14,
+    color: "#2F2F2F"
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EFEFEF"
+  },
+  rowText: {
+    marginLeft: 12
+  },
+  rowLabel: {
+    fontSize: 12,
+    color: "#6B6B6B"
+  },
+  rowValue: {
+    fontSize: 16,
+    color: "#2F2F2F",
+    marginTop: 2
+  },
+  iconBubble: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#EAF1EA",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  iconText: {
+    fontSize: 12,
+    color: "#3A3A3A"
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    justifyContent: "flex-end"
+  },
+  modalSheet: {
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16
+  },
+  bottomBar: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E3E3E3",
+    backgroundColor: "#FAFAFA"
+  },
+  primaryButton: {
+    backgroundColor: "#2F2F2F",
+    borderRadius: 10,
+    alignItems: "center",
+    paddingVertical: 14
+  },
+  primaryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16
   }
 });

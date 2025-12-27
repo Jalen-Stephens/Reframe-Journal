@@ -6,7 +6,6 @@ import { WizardStep1Screen } from "../screens/WizardStep1Screen";
 import { WizardStep2Screen } from "../screens/WizardStep2Screen";
 import { WizardStep3Screen } from "../screens/WizardStep3Screen";
 import { WizardStep4Screen } from "../screens/WizardStep4Screen";
-import { WizardStep5Screen } from "../screens/WizardStep5Screen";
 import { WizardStep6Screen } from "../screens/WizardStep6Screen";
 import { WizardStep7Screen } from "../screens/WizardStep7Screen";
 
@@ -17,7 +16,6 @@ export type RootStackParamList = {
   WizardStep2: undefined;
   WizardStep3: undefined;
   WizardStep4: undefined;
-  WizardStep5: undefined;
   WizardStep6: undefined;
   WizardStep7: undefined;
 };
@@ -32,37 +30,32 @@ export const AppNavigator = () => {
       <Stack.Screen
         name="WizardStep1"
         component={WizardStep1Screen}
-        options={{ title: "Step 1" }}
+        options={{ title: "Date & Time" }}
       />
       <Stack.Screen
         name="WizardStep2"
         component={WizardStep2Screen}
-        options={{ title: "Step 2" }}
+        options={{ title: "Situation" }}
       />
       <Stack.Screen
         name="WizardStep3"
         component={WizardStep3Screen}
-        options={{ title: "Step 3" }}
+        options={{ title: "Automatic Thoughts" }}
       />
       <Stack.Screen
         name="WizardStep4"
         component={WizardStep4Screen}
-        options={{ title: "Step 4" }}
-      />
-      <Stack.Screen
-        name="WizardStep5"
-        component={WizardStep5Screen}
-        options={{ title: "Step 5" }}
+        options={{ title: "Emotion/s" }}
       />
       <Stack.Screen
         name="WizardStep6"
         component={WizardStep6Screen}
-        options={{ title: "Step 6" }}
+        options={{ title: "Adaptive Response" }}
       />
       <Stack.Screen
         name="WizardStep7"
         component={WizardStep7Screen}
-        options={{ title: "Step 7" }}
+        options={{ title: "Outcome" }}
       />
     </Stack.Navigator>
   );

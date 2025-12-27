@@ -46,14 +46,19 @@ export const WizardStep7Screen: React.FC<
 
   return (
     <View style={styles.container}>
-      <WizardProgress step={7} total={7} />
+      <WizardProgress step={6} total={6} />
       <Text style={styles.title}>Outcome</Text>
+      <Text style={styles.helper}>
+        How much do you now believe your ATs (0-100%)? What emotion/s do you now
+        feel? At what intensity?
+      </Text>
 
       <LabeledSlider
         label="Belief in main thought after (0-100)"
         value={beliefAfterValue}
         onChange={setBeliefAfterValue}
       />
+      <Text style={styles.hint}>0 = not at all, 100 = completely</Text>
 
       <Text style={styles.subTitle}>Re-rate emotions</Text>
       {draft.emotions.map((emotion) => (
@@ -99,10 +104,22 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#4A4A4A"
   },
+  helper: {
+    fontSize: 13,
+    color: "#6B6B6B",
+    marginBottom: 12,
+    lineHeight: 18
+  },
   subTitle: {
     fontSize: 14,
     marginBottom: 8,
     color: "#4A4A4A"
+  },
+  hint: {
+    fontSize: 12,
+    color: "#8A8A8A",
+    marginTop: -6,
+    marginBottom: 12
   },
   actions: {
     marginTop: 12

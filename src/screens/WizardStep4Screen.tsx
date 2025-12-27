@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { View, Text, Button, Pressable, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  Pressable,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
@@ -57,98 +68,116 @@ export const WizardStep4Screen: React.FC<
   };
 
   return (
-    <View style={styles.container}>
-      <WizardProgress step={4} total={7} />
-      <Text style={styles.label}>Emotion</Text>
-      <Pressable
-        style={styles.dropdownTrigger}
-        onPress={() => setShowDropdown((current) => !current)}
-      >
-        <Text style={styles.dropdownText}>
-          {emotionLabel || "Select an emotion"}
-        </Text>
-      </Pressable>
-      {showDropdown ? (
-        <View style={styles.dropdownList}>
-          {COMMON_EMOTIONS.map((emotion) => (
-            <Pressable
-              key={emotion}
-              style={styles.dropdownItem}
-              onPress={() => {
-                setEmotionLabel(emotion);
-                setShowDropdown(false);
-              }}
-            >
-              <Text style={styles.dropdownText}>{emotion}</Text>
-            </Pressable>
-          ))}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <WizardProgress step={4} total={6} />
+          <Text style={styles.helper}>
+            What emotion/s did you feel at the time? How intense was the emotion
+            (0-100%)?
+          </Text>
+          <Text style={styles.label}>Emotion</Text>
           <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setEmotionLabel("Custom");
-              setShowDropdown(false);
-            }}
+            style={styles.dropdownTrigger}
+            onPress={() => setShowDropdown((current) => !current)}
           >
-            <Text style={styles.dropdownText}>Custom...</Text>
-          </Pressable>
-        </View>
-      ) : null}
-      {emotionLabel === "Custom" ? (
-        <LabeledInput
-          label="Custom emotion"
-          placeholder="Describe your emotion"
-          value={customEmotion}
-          onChangeText={setCustomEmotion}
-        />
-      ) : null}
-      <LabeledSlider
-        label="Intensity (0-100)"
-        value={intensityValue}
-        onChange={setIntensityValue}
-      />
-      <Button title="Add emotion" onPress={addEmotion} />
-
-      <View style={styles.list}>
-        {draft.emotions.map((emotion) => (
-          <View key={emotion.id} style={styles.listRow}>
-            <Text style={styles.listItem}>
-              {emotion.label} ({emotion.intensityBefore}%)
+            <Text style={styles.dropdownText}>
+              {emotionLabel || "Select an emotion"}
             </Text>
-            <Pressable
-              onPress={() =>
-                setDraft((current) => ({
-                  ...current,
-                  emotions: current.emotions.filter((item) => item.id !== emotion.id)
-                }))
-              }
-            >
-              <Text style={styles.removeText}>Remove</Text>
-            </Pressable>
-          </View>
-        ))}
-      </View>
+            <Text style={styles.dropdownChevron}>{showDropdown ? "▲" : "▼"}</Text>
+          </Pressable>
+          {showDropdown ? (
+            <View style={styles.dropdownList}>
+              {COMMON_EMOTIONS.map((emotion) => (
+                <Pressable
+                  key={emotion}
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setEmotionLabel(emotion);
+                    setShowDropdown(false);
+                  }}
+                >
+                  <Text style={styles.dropdownText}>{emotion}</Text>
+                </Pressable>
+              ))}
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setEmotionLabel("Custom");
+                  setShowDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownText}>Custom...</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          {emotionLabel === "Custom" ? (
+            <LabeledInput
+              label="Custom emotion"
+              placeholder="Describe your emotion"
+              value={customEmotion}
+              onChangeText={setCustomEmotion}
+              returnKeyType="done"
+              blurOnSubmit
+            />
+          ) : null}
+          <LabeledSlider
+            label="Intensity (0-100)"
+            value={intensityValue}
+            onChange={setIntensityValue}
+          />
+          <Text style={styles.hint}>0 = not at all, 100 = most intense</Text>
+          <Button title="Add emotion" onPress={addEmotion} />
 
-      <View style={styles.actions}>
-        <View style={styles.actionButton}>
-          <Button
-            title="Back"
-            onPress={async () => {
-              await persistDraft();
-              navigation.goBack();
-            }}
-          />
-        </View>
-        <View style={styles.actionButton}>
-          <Button
-            title="Next"
-            onPress={async () => {
-              await persistDraft();
-              navigation.navigate("WizardStep5");
-            }}
-          />
-        </View>
-      </View>
-    </View>
+          <View style={styles.list}>
+            {draft.emotions.map((emotion) => (
+              <View key={emotion.id} style={styles.listRow}>
+                <Text style={styles.listItem}>
+                  {emotion.label} ({emotion.intensityBefore}%)
+                </Text>
+                <Pressable
+                  onPress={() =>
+                    setDraft((current) => ({
+                      ...current,
+                      emotions: current.emotions.filter((item) => item.id !== emotion.id)
+                    }))
+                  }
+                >
+                  <Text style={styles.removeText}>Remove</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.actions}>
+            <View style={styles.actionButton}>
+              <Button
+                title="Back"
+                onPress={async () => {
+                  await persistDraft();
+                  navigation.goBack();
+                }}
+              />
+            </View>
+            <View style={styles.actionButton}>
+              <Button
+                title="Next"
+                onPress={async () => {
+                  await persistDraft();
+                  navigation.navigate("WizardStep6");
+                }}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -158,10 +187,25 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#FAFAFA"
   },
+  scrollContent: {
+    paddingBottom: 24
+  },
+  helper: {
+    fontSize: 13,
+    color: "#6B6B6B",
+    marginBottom: 12,
+    lineHeight: 18
+  },
   label: {
     fontSize: 14,
     color: "#4A4A4A",
     marginBottom: 6
+  },
+  hint: {
+    fontSize: 12,
+    color: "#8A8A8A",
+    marginTop: -6,
+    marginBottom: 12
   },
   dropdownTrigger: {
     borderWidth: 1,
@@ -169,7 +213,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 6,
     backgroundColor: "#FFFFFF",
-    marginBottom: 12
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
   },
   dropdownList: {
     borderWidth: 1,
@@ -185,6 +232,11 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     color: "#2F2F2F"
+  },
+  dropdownChevron: {
+    color: "#8A8A8A",
+    fontSize: 12,
+    marginLeft: 8
   },
   list: {
     marginTop: 16
