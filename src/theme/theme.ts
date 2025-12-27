@@ -8,6 +8,7 @@ export type ThemeTokens = {
   card: string;
   textPrimary: string;
   textSecondary: string;
+  placeholder: string;
   border: string;
   muted: string;
   accent: string;
@@ -20,6 +21,7 @@ export const themes: Record<ResolvedTheme, ThemeTokens> = {
     card: "#FFFFFF",
     textPrimary: "#1F1F1F",
     textSecondary: "#5E5E5E",
+    placeholder: "#8A8A8A",
     border: "#E3E3E3",
     muted: "#EFEFEF",
     accent: "#2F2F2F",
@@ -30,6 +32,7 @@ export const themes: Record<ResolvedTheme, ThemeTokens> = {
     card: "#1A1A1A",
     textPrimary: "#F5F5F5",
     textSecondary: "#BDBDBD",
+    placeholder: "rgba(245,245,245,0.6)",
     border: "#2A2A2A",
     muted: "#2F2F2F",
     accent: "#4AC07A",
