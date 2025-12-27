@@ -14,7 +14,7 @@ export const LabeledInput: React.FC<
       <Text style={styles.label}>{label}</Text>
       <TextInput
         style={[styles.input, style]}
-        placeholderTextColor={placeholderTextColor ?? theme.textSecondary}
+        placeholderTextColor={placeholderTextColor ?? theme.placeholder}
         {...props}
       />
     </View>
