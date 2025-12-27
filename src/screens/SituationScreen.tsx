@@ -1,8 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
-  Button,
   Pressable,
   StyleSheet,
   TextInput,
@@ -12,6 +11,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { LabeledInput } from "../components/LabeledInput";
@@ -44,6 +44,27 @@ export const SituationScreen: React.FC<
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customSensation, setCustomSensation] = useState("");
+  const customInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    const subscription = Keyboard.addListener("keyboardDidShow", () => {
+      setShowDropdown(false);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!showCustomInput) {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      customInputRef.current?.focus();
+    }, 80);
+
+    return () => clearTimeout(timeout);
+  }, [showCustomInput]);
 
   const addSensation = (value: string) => {
     const trimmed = value.trim();
@@ -55,142 +76,136 @@ export const SituationScreen: React.FC<
     );
   };
 
+  const availableSensations = useMemo(
+    () => COMMON_SENSATIONS.filter((item) => !sensations.includes(item)),
+    [sensations]
+  );
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <WizardProgress step={2} total={6} />
-          <Text style={styles.helper}>
-            What led to the unpleasant emotion? What distressing physical sensations
-            did you have?
-          </Text>
-          <LabeledInput
-            label="Situation"
-            placeholder="What happened?"
-            multiline
-            value={situationText}
-            onChangeText={setSituationText}
-            style={styles.multiline}
-          />
-          <Text style={styles.label}>Physical sensations</Text>
-          <Pressable
-            style={styles.dropdownTrigger}
-            onPress={() => setShowDropdown((current) => !current)}
+      <View style={styles.content}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.dropdownText}>Select common sensations</Text>
-            <Text style={styles.dropdownChevron}>{showDropdown ? "▲" : "▼"}</Text>
-          </Pressable>
-          {showDropdown ? (
-            <View style={styles.dropdownList}>
-              {COMMON_SENSATIONS.map((sensation) => (
+            <WizardProgress step={2} total={6} />
+            <Text style={styles.helper}>
+              What led to the unpleasant emotion? What distressing physical sensations
+              did you have?
+            </Text>
+            <LabeledInput
+              label="Situation"
+              placeholder="What happened?"
+              multiline
+              value={situationText}
+              onChangeText={setSituationText}
+              returnKeyType="done"
+              blurOnSubmit
+              onSubmitEditing={() => {
+                Keyboard.dismiss();
+              }}
+              style={styles.multiline}
+            />
+            <Text style={styles.label}>Physical sensations</Text>
+            <Pressable
+              style={styles.dropdownTrigger}
+              onPress={() => {
+                Keyboard.dismiss();
+                setShowCustomInput(false);
+                setShowDropdown((current) => !current);
+              }}
+            >
+              <Text style={styles.dropdownText}>Select common sensations</Text>
+              <Text style={styles.dropdownChevron}>{showDropdown ? "▲" : "▼"}</Text>
+            </Pressable>
+            {showDropdown ? (
+              <View style={styles.dropdownList}>
+                {availableSensations.map((sensation) => (
+                  <Pressable
+                    key={sensation}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      addSensation(sensation);
+                      setShowDropdown(false);
+                      setShowCustomInput(false);
+                    }}
+                  >
+                    <Text style={styles.dropdownText}>{sensation}</Text>
+                  </Pressable>
+                ))}
                 <Pressable
-                  key={sensation}
                   style={styles.dropdownItem}
                   onPress={() => {
-                    addSensation(sensation);
                     setShowDropdown(false);
-                    setShowCustomInput(false);
+                    setShowCustomInput(true);
                   }}
                 >
-                  <Text style={styles.dropdownText}>{sensation}</Text>
+                  <Text style={styles.dropdownText}>Custom...</Text>
                 </Pressable>
-              ))}
-              <Pressable
-                style={styles.dropdownItem}
-                onPress={() => setShowCustomInput((current) => !current)}
-              >
-                <Text style={styles.dropdownText}>Custom...</Text>
-              </Pressable>
-              {showCustomInput ? (
-                <View style={styles.customRow}>
-                  <TextInput
-                    style={styles.customInput}
-                    placeholder="Type a sensation"
-                    value={customSensation}
-                    onChangeText={setCustomSensation}
-                    placeholderTextColor={theme.textSecondary}
-                    onSubmitEditing={() => {
-                      addSensation(customSensation);
-                      setCustomSensation("");
-                      setShowDropdown(false);
-                      setShowCustomInput(false);
-                    }}
-                    returnKeyType="done"
-                    blurOnSubmit
-                  />
-                  <Button
-                    title="Add"
-                    color={theme.accent}
-                    onPress={() => {
-                      addSensation(customSensation);
-                      setCustomSensation("");
-                      setShowDropdown(false);
-                      setShowCustomInput(false);
-                    }}
-                  />
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-          <View style={styles.list}>
-            {sensations.map((item) => (
-              <View key={item} style={styles.listRow}>
-                <Text style={styles.listItem}>{item}</Text>
+              </View>
+            ) : null}
+            {showCustomInput ? (
+              <View style={styles.customRow}>
+                <TextInput
+                  ref={customInputRef}
+                  style={styles.customInput}
+                  placeholder="Describe your sensation (e.g., pressure in throat)"
+                  value={customSensation}
+                  onChangeText={setCustomSensation}
+                  placeholderTextColor={theme.textSecondary}
+                  onSubmitEditing={() => {
+                    addSensation(customSensation);
+                    setCustomSensation("");
+                    setShowCustomInput(false);
+                    Keyboard.dismiss();
+                  }}
+                  returnKeyType="done"
+                  blurOnSubmit={false}
+                />
+              </View>
+            ) : null}
+            <View style={styles.chipGroup}>
+              {sensations.map((item) => (
                 <Pressable
+                  key={item}
+                  style={styles.chip}
+                  accessibilityRole="button"
                   onPress={() =>
                     setSensations((current) =>
                       current.filter((value) => value !== item)
                     )
                   }
                 >
-                  <Text style={styles.removeText}>Remove</Text>
+                  <Text style={styles.chipText}>{item}</Text>
+                  <Text style={styles.chipRemove}>✕</Text>
                 </Pressable>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </View>
 
-          <View style={styles.actions}>
-            <View style={styles.actionButton}>
-              <Button
-                title="Back"
-                color={theme.accent}
-                onPress={async () => {
-                  const nextDraft = {
-                    ...draft,
-                    situationText,
-                    sensations
-                  };
-                  setDraft(nextDraft);
-                  await persistDraft(nextDraft);
-                  navigation.goBack();
-                }}
-              />
-            </View>
-            <View style={styles.actionButton}>
-              <Button
-                title="Next"
-                color={theme.accent}
-                onPress={async () => {
-                  const nextDraft = {
-                    ...draft,
-                    situationText,
-                    sensations
-                  };
-                  setDraft(nextDraft);
-                  await persistDraft(nextDraft);
-                  navigation.navigate("WizardStep3");
-                }}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      </TouchableWithoutFeedback>
+      <SafeAreaView edges={["bottom"]} style={styles.bottomBar}>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={async () => {
+            const nextDraft = {
+              ...draft,
+              situationText,
+              sensations
+            };
+            setDraft(nextDraft);
+            await persistDraft(nextDraft);
+            navigation.navigate("WizardStep3");
+          }}
+        >
+          <Text style={styles.primaryButtonText}>Next</Text>
+        </Pressable>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 };
@@ -199,11 +214,14 @@ const createStyles = (theme: ThemeTokens) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: 16,
       backgroundColor: theme.background
     },
+    content: {
+      flex: 1,
+      padding: 16
+    },
     scrollContent: {
-      paddingBottom: 24
+      paddingBottom: 32
     },
     label: {
       fontSize: 14,
@@ -248,46 +266,61 @@ const createStyles = (theme: ThemeTokens) =>
       marginLeft: 8
     },
     customRow: {
-      padding: 10,
-      borderTopWidth: 1,
-      borderTopColor: theme.muted
+      marginBottom: 12
     },
     customInput: {
       borderWidth: 1,
       borderColor: theme.border,
       padding: 10,
-      borderRadius: 6,
+      borderRadius: 10,
       backgroundColor: theme.card,
       color: theme.textPrimary,
-      marginBottom: 8
+      fontSize: 14
     },
-    list: {
-      marginTop: 8
+    chipGroup: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      marginTop: 2
     },
-    listRow: {
+    chip: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: 6
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card,
+      marginRight: 8,
+      marginBottom: 8
     },
-    listItem: {
-      fontSize: 14,
-      color: theme.textSecondary,
-      flex: 1
+    chipText: {
+      fontSize: 13,
+      color: theme.textPrimary,
+      marginRight: 6
     },
-    removeText: {
+    chipRemove: {
       fontSize: 12,
-      color: theme.textSecondary,
-      marginLeft: 12
+      color: theme.textSecondary
     },
     multiline: {
       minHeight: 100,
       textAlignVertical: "top"
     },
-    actions: {
-      marginTop: 16
+    bottomBar: {
+      padding: 16,
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
+      backgroundColor: theme.background
     },
-    actionButton: {
-      marginBottom: 8
+    primaryButton: {
+      backgroundColor: theme.accent,
+      borderRadius: 10,
+      alignItems: "center",
+      paddingVertical: 14
+    },
+    primaryButtonText: {
+      color: theme.onAccent,
+      fontSize: 16
     }
   });
