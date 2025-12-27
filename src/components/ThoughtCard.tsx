@@ -6,6 +6,7 @@ import { ThemeTokens } from "../theme/theme";
 type ThoughtCardProps = {
   text: string;
   belief: number;
+  badgeLabel?: string;
   onEdit: () => void;
   onRemove: () => void;
 };
@@ -13,18 +14,22 @@ type ThoughtCardProps = {
 export const ThoughtCard: React.FC<ThoughtCardProps> = ({
   text,
   belief,
+  badgeLabel,
   onEdit,
   onRemove
 }) => {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const label = badgeLabel ?? "Belief";
 
   return (
     <View style={styles.card}>
       <Text style={styles.text}>{text}</Text>
       <View style={styles.row}>
         <View style={styles.pill}>
-          <Text style={styles.pillText}>Belief {belief}%</Text>
+          <Text style={styles.pillText}>
+            {label} {belief}%
+          </Text>
         </View>
         <View style={styles.actions}>
           <Pressable onPress={onEdit} hitSlop={8}>

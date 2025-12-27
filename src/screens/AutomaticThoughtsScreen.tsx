@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
+  Alert,
   Animated,
   StyleSheet,
   ScrollView,
@@ -39,7 +40,6 @@ export const AutomaticThoughtsScreen: React.FC<
   const [editId, setEditId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [editBelief, setEditBelief] = useState(50);
-  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [shouldScrollToEnd, setShouldScrollToEnd] = useState(false);
 
   const trimmedThought = thoughtText.trim();
@@ -122,17 +122,21 @@ export const AutomaticThoughtsScreen: React.FC<
     setEditBelief(50);
   };
 
-  const handleConfirmRemove = () => {
-    if (!confirmId) {
-      return;
-    }
-    setDraft((current) => ({
-      ...current,
-      automaticThoughts: current.automaticThoughts.filter(
-        (item) => item.id !== confirmId
-      )
-    }));
-    setConfirmId(null);
+  const handleRemoveThought = (id: string) => {
+    Alert.alert("Remove thought?", "This will delete it from your list.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: () =>
+          setDraft((current) => ({
+            ...current,
+            automaticThoughts: current.automaticThoughts.filter(
+              (item) => item.id !== id
+            )
+          }))
+      }
+    ]);
   };
 
   return (
@@ -198,7 +202,7 @@ export const AutomaticThoughtsScreen: React.FC<
                   text={thought.text}
                   belief={thought.beliefBefore}
                   onEdit={() => handleOpenEdit(thought.id)}
-                  onRemove={() => setConfirmId(thought.id)}
+                  onRemove={() => handleRemoveThought(thought.id)}
                 />
               ))}
             </View>
@@ -267,32 +271,6 @@ export const AutomaticThoughtsScreen: React.FC<
             </Pressable>
           </Modal>
 
-          <Modal
-            visible={confirmId !== null}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setConfirmId(null)}
-          >
-            <Pressable
-              style={styles.modalBackdropCenter}
-              onPress={() => setConfirmId(null)}
-            >
-              <Pressable style={styles.confirmCard} onPress={() => {}}>
-                <Text style={styles.modalTitle}>Remove thought?</Text>
-                <Text style={styles.confirmBody}>
-                  This will delete it from your list.
-                </Text>
-                <View style={styles.confirmActions}>
-                  <Pressable onPress={() => setConfirmId(null)} hitSlop={8}>
-                    <Text style={styles.modalCancel}>Cancel</Text>
-                  </Pressable>
-                  <Pressable onPress={handleConfirmRemove} hitSlop={8}>
-                    <Text style={styles.destructiveText}>Remove</Text>
-                  </Pressable>
-                </View>
-              </Pressable>
-            </Pressable>
-          </Modal>
         </View>
     </KeyboardAvoidingView>
   );
@@ -350,11 +328,6 @@ const createStyles = (theme: ThemeTokens) =>
       borderTopColor: theme.border,
       backgroundColor: theme.background
     },
-    modalBackdrop: {
-      flex: 1,
-      backgroundColor: "rgba(0,0,0,0.35)",
-      justifyContent: "flex-end"
-    },
     modalBackdropCenter: {
       flex: 1,
       backgroundColor: "rgba(0,0,0,0.35)",
@@ -365,12 +338,6 @@ const createStyles = (theme: ThemeTokens) =>
       backgroundColor: theme.card,
       padding: 16,
       borderRadius: 16
-    },
-    confirmCard: {
-      backgroundColor: theme.card,
-      padding: 16,
-      borderRadius: 14,
-      marginHorizontal: 24
     },
     modalTitle: {
       fontSize: 16,
@@ -389,20 +356,5 @@ const createStyles = (theme: ThemeTokens) =>
     modalSaveButton: {
       flex: 1,
       marginLeft: 12
-    },
-    confirmBody: {
-      fontSize: 13,
-      color: theme.textSecondary,
-      marginBottom: 16,
-      lineHeight: 18
-    },
-    confirmActions: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between"
-    },
-    destructiveText: {
-      fontSize: 14,
-      color: "#E24A4A"
     }
   });
