@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -14,11 +14,15 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useWizard } from "../context/WizardContext";
 import { WizardProgress } from "../components/WizardProgress";
+import { useTheme } from "../context/ThemeProvider";
+import { ThemeTokens } from "../theme/theme";
 
-export const WizardStep1Screen: React.FC<
+export const DateTimeScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep1">
 > = ({ navigation }) => {
   const { draft, persistDraft } = useWizard();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [selectedDate, setSelectedDate] = useState(new Date(draft.createdAt));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -173,101 +177,102 @@ export const WizardStep1Screen: React.FC<
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FAFAFA"
-  },
-  content: {
-    flex: 1,
-    padding: 16
-  },
-  title: {
-    fontSize: 20,
-    marginBottom: 6,
-    color: "#2F2F2F"
-  },
-  subTitle: {
-    fontSize: 13,
-    color: "#6B6B6B",
-    marginBottom: 16,
-    lineHeight: 18
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E3E3E3",
-    padding: 12
-  },
-  toggleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EFEFEF"
-  },
-  toggleLabel: {
-    fontSize: 14,
-    color: "#2F2F2F"
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EFEFEF"
-  },
-  rowText: {
-    marginLeft: 12
-  },
-  rowLabel: {
-    fontSize: 12,
-    color: "#6B6B6B"
-  },
-  rowValue: {
-    fontSize: 16,
-    color: "#2F2F2F",
-    marginTop: 2
-  },
-  iconBubble: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#EAF1EA",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  iconText: {
-    fontSize: 12,
-    color: "#3A3A3A"
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.25)",
-    justifyContent: "flex-end"
-  },
-  modalSheet: {
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16
-  },
-  bottomBar: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E3E3E3",
-    backgroundColor: "#FAFAFA"
-  },
-  primaryButton: {
-    backgroundColor: "#2F2F2F",
-    borderRadius: 10,
-    alignItems: "center",
-    paddingVertical: 14
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16
-  }
-});
+const createStyles = (theme: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background
+    },
+    content: {
+      flex: 1,
+      padding: 16
+    },
+    title: {
+      fontSize: 20,
+      marginBottom: 6,
+      color: theme.textPrimary
+    },
+    subTitle: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 16,
+      lineHeight: 18
+    },
+    card: {
+      backgroundColor: theme.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+      padding: 12
+    },
+    toggleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.muted
+    },
+    toggleLabel: {
+      fontSize: 14,
+      color: theme.textPrimary
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.muted
+    },
+    rowText: {
+      marginLeft: 12
+    },
+    rowLabel: {
+      fontSize: 12,
+      color: theme.textSecondary
+    },
+    rowValue: {
+      fontSize: 16,
+      color: theme.textPrimary,
+      marginTop: 2
+    },
+    iconBubble: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: theme.muted,
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    iconText: {
+      fontSize: 12,
+      color: theme.textSecondary
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.25)",
+      justifyContent: "flex-end"
+    },
+    modalSheet: {
+      backgroundColor: theme.card,
+      padding: 16,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16
+    },
+    bottomBar: {
+      padding: 16,
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
+      backgroundColor: theme.background
+    },
+    primaryButton: {
+      backgroundColor: theme.accent,
+      borderRadius: 10,
+      alignItems: "center",
+      paddingVertical: 14
+    },
+    primaryButtonText: {
+      color: theme.onAccent,
+      fontSize: 16
+    }
+  });

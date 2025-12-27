@@ -1,12 +1,16 @@
-import React from "react";
-import { Text, Pressable, StyleSheet, View } from "react-native";
+import React, { useMemo } from "react";
+import { Text, Pressable, StyleSheet } from "react-native";
 import { ThoughtRecord } from "../models/ThoughtRecord";
 import { formatDateShort } from "../utils/date";
+import { useTheme } from "../context/ThemeProvider";
+import { ThemeTokens } from "../theme/theme";
 
 export const EntryListItem: React.FC<{
   item: ThoughtRecord;
   onPress: () => void;
 }> = ({ item, onPress }) => {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const topEmotion = item.emotions[0]?.label || "";
   const beliefChange =
     item.automaticThoughts[0] && item.beliefAfterMainThought !== undefined
@@ -22,19 +26,20 @@ export const EntryListItem: React.FC<{
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EDEDED"
-  },
-  date: {
-    fontSize: 16,
-    color: "#2F2F2F"
-  },
-  meta: {
-    fontSize: 13,
-    color: "#6B6B6B",
-    marginTop: 4
-  }
-});
+const createStyles = (theme: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border
+    },
+    date: {
+      fontSize: 16,
+      color: theme.textPrimary
+    },
+    meta: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginTop: 4
+    }
+  });
