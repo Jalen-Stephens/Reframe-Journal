@@ -59,7 +59,7 @@ export const DateTimeScreen: React.FC<
   });
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         <WizardProgress step={1} total={6} />
         <Text style={styles.title}>Date & Time</Text>
@@ -197,7 +197,7 @@ export const DateTimeScreen: React.FC<
         )}
       </View>
 
-      <View style={styles.bottomBar}>
+      <SafeAreaView edges={["bottom"]} style={styles.bottomBar}>
         <Pressable
           style={styles.primaryButton}
           onPress={async () => {
@@ -210,8 +210,8 @@ export const DateTimeScreen: React.FC<
         >
           <Text style={styles.primaryButtonText}>Next</Text>
         </Pressable>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
@@ -226,14 +226,14 @@ const createStyles = (theme: ThemeTokens) =>
       padding: 16
     },
     title: {
-      fontSize: 20,
-      marginBottom: 6,
+      fontSize: 16,
+      marginBottom: 12,
       color: theme.textPrimary
     },
     subTitle: {
       fontSize: 13,
       color: theme.textSecondary,
-      marginBottom: 16,
+      marginBottom: 12,
       lineHeight: 18
     },
     card: {
@@ -241,13 +241,13 @@ const createStyles = (theme: ThemeTokens) =>
       borderRadius: 12,
       borderWidth: 1,
       borderColor: theme.border,
-      padding: 12
+      padding: 10
     },
     cardHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingBottom: 10
+      paddingBottom: 8
     },
     cardTitle: {
       fontSize: 13,
@@ -261,7 +261,7 @@ const createStyles = (theme: ThemeTokens) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingVertical: 14,
+      paddingVertical: 12,
       borderBottomWidth: 1,
       borderBottomColor: theme.muted
     },
