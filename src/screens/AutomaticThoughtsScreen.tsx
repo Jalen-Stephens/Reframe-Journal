@@ -1,15 +1,15 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
-  Alert,
   Animated,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  Pressable
+  Pressable,
+  Modal
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Slider from "@react-native-community/slider";
@@ -31,16 +31,31 @@ export const AutomaticThoughtsScreen: React.FC<
   const { draft, setDraft, persistDraft } = useWizard();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const scrollRef = useRef<ScrollView | null>(null);
   const [thoughtText, setThoughtText] = useState("");
   const [beliefValue, setBeliefValue] = useState(50);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const valueScale = useRef(new Animated.Value(1)).current;
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editBelief, setEditBelief] = useState(50);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [shouldScrollToEnd, setShouldScrollToEnd] = useState(false);
 
   const trimmedThought = thoughtText.trim();
-  const isEditing = editingId !== null;
   const canSubmit = trimmedThought.length > 0;
-  const canProceed =
-    draft.automaticThoughts.length > 0 && (!isEditing || canSubmit);
+  const canProceed = draft.automaticThoughts.length > 0;
+
+  useEffect(() => {
+    if (!shouldScrollToEnd) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+      setShouldScrollToEnd(false);
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [shouldScrollToEnd, draft.automaticThoughts.length]);
 
   const handleBeliefChange = (value: number) => {
     Keyboard.dismiss();
@@ -65,31 +80,59 @@ export const AutomaticThoughtsScreen: React.FC<
       return;
     }
     Keyboard.dismiss();
-    if (editingId) {
-      setDraft((current) => ({
-        ...current,
-        automaticThoughts: current.automaticThoughts.map((thought) =>
-          thought.id === editingId
-            ? {
-                ...thought,
-                text: trimmedThought,
-                beliefBefore: belief
-              }
-            : thought
-        )
-      }));
-    } else {
-      setDraft((current) => ({
-        ...current,
-        automaticThoughts: [
-          ...current.automaticThoughts,
-          { id: generateId(), text: trimmedThought, beliefBefore: belief }
-        ]
-      }));
-    }
+    setDraft((current) => ({
+      ...current,
+      automaticThoughts: [
+        ...current.automaticThoughts,
+        { id: generateId(), text: trimmedThought, beliefBefore: belief }
+      ]
+    }));
     setThoughtText("");
     setBeliefValue(50);
-    setEditingId(null);
+    setShouldScrollToEnd(true);
+  };
+
+  const handleOpenEdit = (id: string) => {
+    const thought = draft.automaticThoughts.find((item) => item.id === id);
+    if (!thought) {
+      return;
+    }
+    setEditId(id);
+    setEditText(thought.text);
+    setEditBelief(thought.beliefBefore);
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    const trimmed = editText.trim();
+    if (!editId || !trimmed) {
+      return;
+    }
+    setDraft((current) => ({
+      ...current,
+      automaticThoughts: current.automaticThoughts.map((thought) =>
+        thought.id === editId
+          ? { ...thought, text: trimmed, beliefBefore: clampPercent(editBelief) }
+          : thought
+      )
+    }));
+    setIsEditOpen(false);
+    setEditId(null);
+    setEditText("");
+    setEditBelief(50);
+  };
+
+  const handleConfirmRemove = () => {
+    if (!confirmId) {
+      return;
+    }
+    setDraft((current) => ({
+      ...current,
+      automaticThoughts: current.automaticThoughts.filter(
+        (item) => item.id !== confirmId
+      )
+    }));
+    setConfirmId(null);
   };
 
   return (
@@ -99,11 +142,12 @@ export const AutomaticThoughtsScreen: React.FC<
     >
       <View style={styles.container}>
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
         >
-            <WizardProgress step={3} total={6} />
+          <WizardProgress step={3} total={6} />
             <Text style={styles.helper}>
               What thought/s or image/s went through your mind? How much did you
               believe the thought at the time (0-100%)?
@@ -141,22 +185,10 @@ export const AutomaticThoughtsScreen: React.FC<
 
             <View style={styles.addSection}>
               <PrimaryButton
-                label={isEditing ? "Save changes" : "Add thought"}
+                label="Add thought"
                 onPress={handleSubmitThought}
                 disabled={!canSubmit}
               />
-              {isEditing ? (
-                <Pressable
-                  onPress={() => {
-                    setEditingId(null);
-                    setThoughtText("");
-                    setBeliefValue(50);
-                  }}
-                  hitSlop={8}
-                >
-                  <Text style={styles.cancelText}>Cancel</Text>
-                </Pressable>
-              ) : null}
             </View>
 
             <View style={styles.list}>
@@ -165,35 +197,12 @@ export const AutomaticThoughtsScreen: React.FC<
                   key={thought.id}
                   text={thought.text}
                   belief={thought.beliefBefore}
-                  onEdit={() => {
-                    setEditingId(thought.id);
-                    setThoughtText(thought.text);
-                    setBeliefValue(thought.beliefBefore);
-                  }}
-                  onRemove={() => {
-                    Alert.alert(
-                      "Remove thought?",
-                      "This will delete it from your list.",
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        {
-                          text: "Remove",
-                          style: "destructive",
-                          onPress: () =>
-                            setDraft((current) => ({
-                              ...current,
-                              automaticThoughts: current.automaticThoughts.filter(
-                                (item) => item.id !== thought.id
-                              )
-                            }))
-                        }
-                      ]
-                    );
-                  }}
+                  onEdit={() => handleOpenEdit(thought.id)}
+                  onRemove={() => setConfirmId(thought.id)}
                 />
               ))}
             </View>
-        </ScrollView>
+          </ScrollView>
 
         <SafeAreaView edges={["bottom"]} style={styles.bottomBar}>
           <PrimaryButton
@@ -204,8 +213,87 @@ export const AutomaticThoughtsScreen: React.FC<
             }}
             disabled={!canProceed}
           />
-        </SafeAreaView>
-      </View>
+          </SafeAreaView>
+
+          <Modal
+            visible={isEditOpen}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setIsEditOpen(false)}
+          >
+            <Pressable
+              style={styles.modalBackdropCenter}
+              onPress={() => setIsEditOpen(false)}
+            >
+              <Pressable style={styles.modalCard} onPress={() => {}}>
+                <Text style={styles.modalTitle}>Edit thought</Text>
+                <LabeledInput
+                  label="Automatic thought"
+                  placeholder={`e.g. "I'm going to mess this up"`}
+                  value={editText}
+                  onChangeText={setEditText}
+                  autoFocus
+                  returnKeyType="done"
+                  blurOnSubmit
+                />
+                <View style={styles.sliderSection}>
+                  <Text style={styles.sliderLabel}>
+                    How strongly did you believe this?
+                  </Text>
+                  <Slider
+                    minimumValue={0}
+                    maximumValue={100}
+                    step={1}
+                    value={editBelief}
+                    onValueChange={setEditBelief}
+                    minimumTrackTintColor={theme.accent}
+                    maximumTrackTintColor={theme.muted}
+                    thumbTintColor={theme.accent}
+                  />
+                  <Text style={styles.hint}>0 = not at all, 100 = completely</Text>
+                </View>
+                <View style={styles.modalActions}>
+                  <Pressable onPress={() => setIsEditOpen(false)} hitSlop={8}>
+                    <Text style={styles.modalCancel}>Cancel</Text>
+                  </Pressable>
+                  <PrimaryButton
+                    label="Save"
+                    onPress={handleSaveEdit}
+                    disabled={!editText.trim()}
+                    style={styles.modalSaveButton}
+                  />
+                </View>
+              </Pressable>
+            </Pressable>
+          </Modal>
+
+          <Modal
+            visible={confirmId !== null}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setConfirmId(null)}
+          >
+            <Pressable
+              style={styles.modalBackdropCenter}
+              onPress={() => setConfirmId(null)}
+            >
+              <Pressable style={styles.confirmCard} onPress={() => {}}>
+                <Text style={styles.modalTitle}>Remove thought?</Text>
+                <Text style={styles.confirmBody}>
+                  This will delete it from your list.
+                </Text>
+                <View style={styles.confirmActions}>
+                  <Pressable onPress={() => setConfirmId(null)} hitSlop={8}>
+                    <Text style={styles.modalCancel}>Cancel</Text>
+                  </Pressable>
+                  <Pressable onPress={handleConfirmRemove} hitSlop={8}>
+                    <Text style={styles.destructiveText}>Remove</Text>
+                  </Pressable>
+                </View>
+              </Pressable>
+            </Pressable>
+          </Modal>
+        </View>
     </KeyboardAvoidingView>
   );
 };
@@ -253,12 +341,6 @@ const createStyles = (theme: ThemeTokens) =>
     addSection: {
       marginTop: 8
     },
-    cancelText: {
-      textAlign: "center",
-      color: theme.textSecondary,
-      fontSize: 13,
-      marginTop: 10
-    },
     list: {
       marginTop: 20
     },
@@ -267,5 +349,60 @@ const createStyles = (theme: ThemeTokens) =>
       borderTopWidth: 1,
       borderTopColor: theme.border,
       backgroundColor: theme.background
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.35)",
+      justifyContent: "flex-end"
+    },
+    modalBackdropCenter: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.35)",
+      justifyContent: "center",
+      paddingHorizontal: 16
+    },
+    modalCard: {
+      backgroundColor: theme.card,
+      padding: 16,
+      borderRadius: 16
+    },
+    confirmCard: {
+      backgroundColor: theme.card,
+      padding: 16,
+      borderRadius: 14,
+      marginHorizontal: 24
+    },
+    modalTitle: {
+      fontSize: 16,
+      color: theme.textPrimary,
+      marginBottom: 12
+    },
+    modalActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between"
+    },
+    modalCancel: {
+      fontSize: 14,
+      color: theme.textSecondary
+    },
+    modalSaveButton: {
+      flex: 1,
+      marginLeft: 12
+    },
+    confirmBody: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 16,
+      lineHeight: 18
+    },
+    confirmActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between"
+    },
+    destructiveText: {
+      fontSize: 14,
+      color: "#E24A4A"
     }
   });

@@ -46,7 +46,8 @@ const createStyles = (theme: ThemeTokens) =>
       backgroundColor: theme.accent,
       borderRadius: 10,
       alignItems: "center",
-      paddingVertical: 14
+      paddingVertical: 14,
+      width: "100%"
     },
     buttonPressed: {
       opacity: 0.9
