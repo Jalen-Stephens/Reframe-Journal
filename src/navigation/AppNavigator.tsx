@@ -10,11 +10,13 @@ import { EmotionsScreen } from "../screens/EmotionsScreen";
 import { AdaptiveResponseScreen } from "../screens/AdaptiveResponseScreen";
 import { OutcomeScreen } from "../screens/OutcomeScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
+import { ThoughtResponseDetailScreen } from "../screens/ThoughtResponseDetailScreen";
 
 export type RootStackParamList = {
   Home: undefined;
   AllEntries: undefined;
   EntryDetail: { id: string };
+  ThoughtResponseDetail: { entryId: string; thoughtId: string };
   WizardStep1: undefined;
   WizardStep2: undefined;
   WizardStep3: undefined;
@@ -36,6 +38,10 @@ export const AppNavigator = () => {
         options={{ title: "All Entries" }}
       />
       <Stack.Screen name="EntryDetail" component={EntryDetailScreen} />
+      <Stack.Screen
+        name="ThoughtResponseDetail"
+        component={ThoughtResponseDetailScreen}
+      />
       <Stack.Screen
         name="WizardStep1"
         component={DateTimeScreen}
