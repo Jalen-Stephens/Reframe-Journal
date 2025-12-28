@@ -21,7 +21,10 @@ import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
 import { useWizard } from "../context/WizardContext";
 import { clampPercent, isRequiredTextValid } from "../utils/validation";
-import { createThoughtRecord } from "../storage/thoughtRecordsRepo";
+import {
+  createThoughtRecord,
+  updateThoughtRecord
+} from "../storage/thoughtRecordsRepo";
 import { nowIso } from "../utils/date";
 import { useTheme } from "../context/ThemeProvider";
 import { ThemeTokens } from "../theme/theme";
@@ -67,7 +70,7 @@ const mergeOutcome = (
 export const OutcomeScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "WizardStep7">
 > = ({ navigation }) => {
-  const { draft, setDraft, persistDraft, clearDraft } = useWizard();
+  const { draft, setDraft, persistDraft, clearDraft, isEditing } = useWizard();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [expandedThoughtId, setExpandedThoughtId] = useState<string | null>(
@@ -288,10 +291,18 @@ export const OutcomeScreen: React.FC<
       updatedAt: nowIso()
     };
 
-    await createThoughtRecord(record);
+    if (isEditing) {
+      await updateThoughtRecord(record);
+    } else {
+      await createThoughtRecord(record);
+    }
     await clearDraft();
-    navigation.popToTop();
-  }, [allComplete, clearDraft, draft, navigation]);
+    if (isEditing) {
+      navigation.navigate("EntryDetail", { id: record.id });
+    } else {
+      navigation.popToTop();
+    }
+  }, [allComplete, clearDraft, draft, isEditing, navigation]);
 
   const renderThoughtItem = useCallback(
     ({ item: thought }: { item: AutomaticThought }) => {

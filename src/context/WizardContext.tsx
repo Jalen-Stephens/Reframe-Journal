@@ -11,6 +11,8 @@ type WizardContextValue = {
   persistDraft: (nextDraft?: ThoughtRecord) => Promise<void>;
   loadDraft: () => Promise<void>;
   clearDraft: () => Promise<void>;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const WizardContext = createContext<WizardContextValue | undefined>(undefined);
@@ -27,6 +29,7 @@ export const WizardProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const [draft, setDraft] = useState<ThoughtRecord>(buildFreshDraft());
+  const [isEditing, setIsEditing] = useState(false);
 
   const loadDraft = async () => {
     const stored = await getDraft();
@@ -47,6 +50,7 @@ export const WizardProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const resetDraft = () => {
     setDraft(buildFreshDraft());
+    setIsEditing(false);
   };
 
   const clearDraft = async () => {
@@ -60,7 +64,16 @@ export const WizardProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <WizardContext.Provider
-      value={{ draft, setDraft, resetDraft, persistDraft, loadDraft, clearDraft }}
+      value={{
+        draft,
+        setDraft,
+        resetDraft,
+        persistDraft,
+        loadDraft,
+        clearDraft,
+        isEditing,
+        setIsEditing
+      }}
     >
       {children}
     </WizardContext.Provider>

@@ -3,6 +3,7 @@ import {
   FlatList,
   Platform,
   Pressable,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +16,7 @@ import { RootStackParamList } from "../navigation/AppNavigator";
 import { ThoughtRecord } from "../models/ThoughtRecord";
 import { getThoughtRecordById } from "../storage/thoughtRecordsRepo";
 import { useTheme } from "../context/ThemeProvider";
+import { useWizard } from "../context/WizardContext";
 import { ThemeTokens } from "../theme/theme";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { SectionCard } from "../components/SectionCard";
@@ -206,7 +208,9 @@ export const EntryDetailScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "EntryDetail">
 > = ({ route, navigation }) => {
   const [record, setRecord] = useState<ThoughtRecord | null>(null);
+  const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const { theme } = useTheme();
+  const { setDraft, persistDraft, setIsEditing } = useWizard();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
@@ -263,6 +267,15 @@ export const EntryDetailScreen: React.FC<
     emotionsBefore.length > 0 ? `Emotions noted: ${emotionsBefore.length}` : null
   ].filter((item): item is string => Boolean(item));
 
+  const editSections = [
+    { label: "Date & time", screen: "WizardStep1" as const },
+    { label: "Situation", screen: "WizardStep2" as const },
+    { label: "Automatic thoughts", screen: "WizardStep3" as const },
+    { label: "Emotions", screen: "WizardStep4" as const },
+    { label: "Adaptive responses", screen: "WizardStep6" as const },
+    { label: "Outcome", screen: "WizardStep7" as const }
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -285,7 +298,7 @@ export const EntryDetailScreen: React.FC<
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="More options"
-            onPress={() => {}}
+            onPress={() => setIsEditMenuOpen(true)}
             style={({ pressed }) => [
               styles.iconButton,
               pressed && styles.iconButtonPressed
@@ -455,6 +468,53 @@ export const EntryDetailScreen: React.FC<
             onPress={() => navigation.goBack()}
           />
         </View>
+        <Modal
+          visible={isEditMenuOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setIsEditMenuOpen(false)}
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setIsEditMenuOpen(false)}
+          >
+            <Pressable style={styles.modalCard} onPress={() => {}}>
+              <Text style={styles.modalTitle}>Edit entry</Text>
+              {editSections.map((item) => (
+                <Pressable
+                  key={item.screen}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit ${item.label}`}
+                  onPress={async () => {
+                    setDraft(record);
+                    setIsEditing(true);
+                    await persistDraft(record);
+                    setIsEditMenuOpen(false);
+                    navigation.navigate(item.screen);
+                  }}
+                  style={({ pressed }) => [
+                    styles.modalRow,
+                    pressed && styles.modalRowPressed
+                  ]}
+                >
+                  <Text style={styles.modalRowText}>{item.label}</Text>
+                  <Text style={styles.modalRowChevron}>{">"}</Text>
+                </Pressable>
+              ))}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+                onPress={() => setIsEditMenuOpen(false)}
+                style={({ pressed }) => [
+                  styles.modalCancel,
+                  pressed && styles.modalRowPressed
+                ]}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -621,5 +681,57 @@ const createStyles = (theme: ThemeTokens) =>
     },
     actionsSection: {
       marginTop: 8
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      padding: 16
+    },
+    modalCard: {
+      width: "100%",
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card,
+      padding: 16
+    },
+    modalTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: theme.textPrimary,
+      marginBottom: 12
+    },
+    modalRow: {
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between"
+    },
+    modalRowPressed: {
+      opacity: 0.85
+    },
+    modalRowText: {
+      fontSize: 14,
+      color: theme.textPrimary
+    },
+    modalRowChevron: {
+      fontSize: 16,
+      color: theme.textSecondary
+    },
+    modalCancel: {
+      marginTop: 12,
+      paddingVertical: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+      alignItems: "center"
+    },
+    modalCancelText: {
+      fontSize: 14,
+      color: theme.textSecondary
     }
   });
