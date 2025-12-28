@@ -10,6 +10,7 @@ type PrimaryButtonProps = {
   onDisabledPress?: () => void;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  accessibilityLabel?: string;
 };
 
 export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
@@ -18,7 +19,8 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   disabled,
   onDisabledPress,
   style,
-  textStyle
+  textStyle,
+  accessibilityLabel
 }) => {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -27,6 +29,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
       onPress={disabled ? onDisabledPress ?? onPress : onPress}
       disabled={isPressableDisabled}
       style={({ pressed }) => [
