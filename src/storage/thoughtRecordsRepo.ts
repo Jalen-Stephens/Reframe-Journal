@@ -1,10 +1,5 @@
 import { getDb } from "./db";
-import {
-  AdaptiveResponse,
-  AutomaticThought,
-  Emotion,
-  ThoughtRecord
-} from "../models/ThoughtRecord";
+import { AutomaticThought, Emotion, ThoughtRecord } from "../models/ThoughtRecord";
 
 const DRAFT_ID = "wizard_draft";
 
@@ -29,7 +24,7 @@ const serialize = (record: ThoughtRecord) => {
     automaticThoughts: JSON.stringify(record.automaticThoughts || []),
     emotions: JSON.stringify(record.emotions || []),
     thinkingStyles: JSON.stringify(record.thinkingStyles || []),
-    adaptiveResponses: JSON.stringify(record.adaptiveResponses || [])
+    adaptiveResponses: JSON.stringify(record.adaptiveResponses || {})
   };
 };
 
@@ -44,6 +39,21 @@ const parseJsonArray = <T>(value: string | null): T[] => {
   }
 };
 
+const parseJsonObject = <T>(value: string | null, fallback: T): T => {
+  if (!value) {
+    return fallback;
+  }
+  try {
+    const parsed = JSON.parse(value) as T;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 const deserialize = (row: ThoughtRecordRow): ThoughtRecord => {
   return {
     id: row.id,
@@ -54,7 +64,10 @@ const deserialize = (row: ThoughtRecordRow): ThoughtRecord => {
     automaticThoughts: parseJsonArray<AutomaticThought>(row.automaticThoughts),
     emotions: parseJsonArray<Emotion>(row.emotions),
     thinkingStyles: parseJsonArray<string>(row.thinkingStyles),
-    adaptiveResponses: parseJsonArray<AdaptiveResponse>(row.adaptiveResponses),
+    adaptiveResponses: parseJsonObject<ThoughtRecord["adaptiveResponses"]>(
+      row.adaptiveResponses,
+      {}
+    ),
     beliefAfterMainThought: row.beliefAfterMainThought ?? undefined,
     notes: row.notes ?? ""
   };

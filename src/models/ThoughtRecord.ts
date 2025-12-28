@@ -11,12 +11,21 @@ export type Emotion = {
   intensityAfter?: number;
 };
 
-export type AdaptiveResponse = {
-  id: string;
-  promptKey: string;
-  responseText: string;
-  beliefInResponse: number;
+export type AdaptiveResponsesForThought = {
+  evidenceText: string;
+  evidenceBelief: number;
+  alternativeText: string;
+  alternativeBelief: number;
+  outcomeText: string;
+  outcomeBelief: number;
+  friendText: string;
+  friendBelief: number;
 };
+
+export type AdaptiveResponsesByThought = Record<
+  string,
+  AdaptiveResponsesForThought
+>;
 
 export type ThoughtRecord = {
   id: string;
@@ -27,7 +36,7 @@ export type ThoughtRecord = {
   automaticThoughts: AutomaticThought[];
   emotions: Emotion[];
   thinkingStyles?: string[];
-  adaptiveResponses: AdaptiveResponse[];
+  adaptiveResponses: AdaptiveResponsesByThought;
   beliefAfterMainThought?: number;
   notes?: string;
 };
@@ -41,7 +50,7 @@ export const createEmptyThoughtRecord = (nowIso: string): ThoughtRecord => ({
   automaticThoughts: [],
   emotions: [],
   thinkingStyles: [],
-  adaptiveResponses: [],
+  adaptiveResponses: {},
   beliefAfterMainThought: undefined,
   notes: ""
 });
