@@ -17,7 +17,6 @@ import Slider from "@react-native-community/slider";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { WizardProgress } from "../components/WizardProgress";
-import { LabeledInput } from "../components/LabeledInput";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { Accordion } from "../components/Accordion";
 import { useWizard } from "../context/WizardContext";
@@ -117,6 +116,9 @@ export const AdaptiveResponseScreen: React.FC<
   const [expandedThoughtId, setExpandedThoughtId] = useState<string | null>(
     null
   );
+  const [promptIndexByThought, setPromptIndexByThought] = useState<
+    Record<string, number>
+  >({});
   const scrollRef = useRef<ScrollView | null>(null);
   const inputRefs = useRef<Record<string, TextInput | null>>({});
   const thoughtPositions = useRef<Record<string, number>>({});
@@ -160,6 +162,29 @@ export const AdaptiveResponseScreen: React.FC<
       return { ...current, adaptiveResponses: nextResponses };
     });
   }, [draft.automaticThoughts, setDraft]);
+
+  useEffect(() => {
+    setPromptIndexByThought((current) => {
+      if (draft.automaticThoughts.length === 0) {
+        return Object.keys(current).length > 0 ? {} : current;
+      }
+      const next = { ...current };
+      let changed = false;
+      draft.automaticThoughts.forEach((thought) => {
+        if (typeof next[thought.id] !== "number") {
+          next[thought.id] = 0;
+          changed = true;
+        }
+      });
+      Object.keys(next).forEach((id) => {
+        if (!draft.automaticThoughts.some((thought) => thought.id === id)) {
+          delete next[id];
+          changed = true;
+        }
+      });
+      return changed ? next : current;
+    });
+  }, [draft.automaticThoughts]);
 
   const updateResponse = useCallback(
     (thoughtId: string, promptKey: TextKey, text: string) => {
@@ -213,28 +238,28 @@ export const AdaptiveResponseScreen: React.FC<
     );
   }, []);
 
-  const focusNextPrompt = useCallback(
-    (thoughtId: string, promptId: string) => {
-      const promptIndex = PROMPTS.findIndex((prompt) => prompt.id === promptId);
-      if (promptIndex === -1) {
-        Keyboard.dismiss();
-        return;
-      }
-      const nextPrompt = PROMPTS[promptIndex + 1];
-      if (!nextPrompt) {
-        Keyboard.dismiss();
-        return;
-      }
-      const nextKey = `${thoughtId}:${nextPrompt.id}`;
-      const nextRef = inputRefs.current[nextKey];
-      if (nextRef) {
-        nextRef.focus();
-        scrollToInput(nextKey);
-      } else {
-        Keyboard.dismiss();
-      }
+  const advancePrompt = useCallback(
+    (thoughtId: string) => {
+      setPromptIndexByThought((current) => {
+        const next = { ...current };
+        const currentIndex = next[thoughtId] ?? 0;
+        next[thoughtId] = Math.min(currentIndex + 1, PROMPTS.length - 1);
+        return next;
+      });
     },
-    [scrollToInput]
+    [setPromptIndexByThought]
+  );
+
+  const retreatPrompt = useCallback(
+    (thoughtId: string) => {
+      setPromptIndexByThought((current) => {
+        const next = { ...current };
+        const currentIndex = next[thoughtId] ?? 0;
+        next[thoughtId] = Math.max(currentIndex - 1, 0);
+        return next;
+      });
+    },
+    [setPromptIndexByThought]
   );
 
   const completionByThought = useMemo(() => {
@@ -251,8 +276,8 @@ export const AdaptiveResponseScreen: React.FC<
     if (draft.automaticThoughts.length === 0) {
       return false;
     }
-    return draft.automaticThoughts.some(
-      (thought) => (completionByThought[thought.id] ?? 0) >= PROMPTS.length
+    return draft.automaticThoughts.every(
+      (thought) => (completionByThought[thought.id] ?? 0) >= 1
     );
   }, [draft.automaticThoughts, completionByThought]);
 
@@ -310,7 +335,7 @@ export const AdaptiveResponseScreen: React.FC<
             </Text>
             {showIncompleteHint ? (
               <Text style={styles.validationHint}>
-                Complete at least one thought before continuing.
+                Complete at least one response for each thought before continuing.
               </Text>
             ) : null}
 
@@ -318,7 +343,17 @@ export const AdaptiveResponseScreen: React.FC<
               const isExpanded = expandedThoughtId === thought.id;
               const responses = draft.adaptiveResponses[thought.id];
               const answeredCount = completionByThought[thought.id] ?? 0;
-              const isIncomplete = answeredCount < 1;
+              const isComplete = answeredCount === PROMPTS.length;
+              const currentPromptIndex = promptIndexByThought[thought.id] ?? 0;
+              const currentPrompt =
+                PROMPTS[currentPromptIndex] ?? PROMPTS[0];
+              const currentText =
+                responses?.[currentPrompt.textKey]?.trim() ?? "";
+              const currentBelief =
+                responses?.[currentPrompt.beliefKey] ?? 0;
+              const isLastPrompt =
+                currentPromptIndex === PROMPTS.length - 1;
+              const canAdvance = currentText.length > 0;
 
               return (
                 <View
@@ -332,12 +367,7 @@ export const AdaptiveResponseScreen: React.FC<
                     isExpanded={isExpanded}
                     onToggle={() => {
                       setExpandedThoughtId((current) => {
-                        const next =
-                          current === thought.id
-                            ? answeredCount === PROMPTS.length
-                              ? null
-                              : current
-                            : thought.id;
+                        const next = current === thought.id ? null : thought.id;
                         if (next) {
                           const y = thoughtPositions.current[next];
                           if (typeof y === "number") {
@@ -367,15 +397,20 @@ export const AdaptiveResponseScreen: React.FC<
                               </Text>
                             </View>
                             <Text style={styles.completionText}>
-                              {answeredCount}/{PROMPTS.length} answered
+                              {answeredCount} / {PROMPTS.length} answered
                             </Text>
-                            {isIncomplete ? (
-                              <View style={styles.incompleteBadge}>
-                                <Text style={styles.incompleteText}>
-                                  Incomplete
-                                </Text>
-                              </View>
-                            ) : null}
+                            <View
+                              style={[
+                                styles.statusPill,
+                                isComplete
+                                  ? styles.statusPillComplete
+                                  : styles.statusPillIncomplete
+                              ]}
+                            >
+                              <Text style={styles.statusPillText}>
+                                {isComplete ? "Complete" : "Incomplete"}
+                              </Text>
+                            </View>
                           </View>
                         </View>
                         <Text style={styles.chevron}>
@@ -384,94 +419,140 @@ export const AdaptiveResponseScreen: React.FC<
                       </View>
                     }
                   >
-                    {PROMPTS.map((prompt, index) => {
-                      const responseText = responses?.[prompt.textKey] ?? "";
-                      const responseBelief = responses?.[prompt.beliefKey] ?? 0;
-                      const isLastPrompt =
-                        PROMPTS[PROMPTS.length - 1]?.id === prompt.id;
-                      return (
-                        <View key={prompt.id} style={styles.promptSection}>
-                          <Text style={styles.promptTitle}>{prompt.label}</Text>
-                          <LabeledInput
-                            label="Response"
-                            placeholder="Write a grounded response"
-                            value={responseText}
-                            onChangeText={(value) =>
-                              updateResponse(thought.id, prompt.textKey, value)
-                            }
-                            multiline
-                            style={styles.multiline}
-                            returnKeyType={isLastPrompt ? "done" : "next"}
-                            blurOnSubmit
-                            ref={(ref) => {
-                              inputRefs.current[`${thought.id}:${prompt.id}`] =
-                                ref;
-                            }}
-                            onFocus={() =>
-                              scrollToInput(`${thought.id}:${prompt.id}`)
-                            }
-                            onSubmitEditing={() =>
-                              focusNextPrompt(thought.id, prompt.id)
-                            }
-                          />
-                          <View style={styles.sliderSection}>
-                            <Text style={styles.sliderValue}>
-                              {responseBelief}%
-                            </Text>
-                            <Text style={styles.sliderLabel}>
-                              How strongly do you believe this response?
-                            </Text>
-                            <Slider
-                              minimumValue={0}
-                              maximumValue={100}
-                              step={1}
-                              value={responseBelief}
-                              onValueChange={(value) =>
-                                updateBelief(thought.id, prompt.beliefKey, value)
+                    <View style={styles.expandedIntro}>
+                      <Text style={styles.respondingLabel}>
+                        Responding to: "{thought.text}"
+                      </Text>
+                      <Text style={styles.questionCount}>
+                        Question {currentPromptIndex + 1} of {PROMPTS.length}
+                      </Text>
+                    </View>
+
+                    <View style={styles.promptSection}>
+                      <Text style={styles.promptTitle}>
+                        {currentPrompt.label}
+                      </Text>
+                      <TextInput
+                        ref={(ref) => {
+                          inputRefs.current[
+                            `${thought.id}:${currentPrompt.id}`
+                          ] = ref;
+                        }}
+                        style={styles.multilineInput}
+                        placeholder="Write a grounded response"
+                        placeholderTextColor={theme.placeholder}
+                        value={currentText}
+                        onChangeText={(value) =>
+                          updateResponse(thought.id, currentPrompt.textKey, value)
+                        }
+                        multiline
+                        returnKeyType="done"
+                        blurOnSubmit
+                        onFocus={() =>
+                          scrollToInput(`${thought.id}:${currentPrompt.id}`)
+                        }
+                        onSubmitEditing={() => Keyboard.dismiss()}
+                      />
+                      <View style={styles.sliderSection}>
+                        <Text style={styles.sliderValue}>
+                          {currentBelief}%
+                        </Text>
+                        <Slider
+                          minimumValue={0}
+                          maximumValue={100}
+                          step={1}
+                          value={currentBelief}
+                          onValueChange={(value) =>
+                            updateBelief(
+                              thought.id,
+                              currentPrompt.beliefKey,
+                              value
+                            )
+                          }
+                          onSlidingStart={() => Keyboard.dismiss()}
+                          onTouchStart={() => Keyboard.dismiss()}
+                          minimumTrackTintColor={theme.accent}
+                          maximumTrackTintColor={theme.border}
+                          thumbTintColor={theme.accent}
+                        />
+                        <View style={styles.quickSetRow}>
+                          {QUICK_SET_VALUES.map((value) => (
+                            <Pressable
+                              key={`${currentPrompt.id}-${value}`}
+                              onPress={() =>
+                                updateBelief(
+                                  thought.id,
+                                  currentPrompt.beliefKey,
+                                  value
+                                )
                               }
-                              onSlidingStart={() => Keyboard.dismiss()}
-                              onTouchStart={() => Keyboard.dismiss()}
-                              minimumTrackTintColor={theme.accent}
-                              maximumTrackTintColor={theme.muted}
-                              thumbTintColor={theme.accent}
-                            />
-                            <View style={styles.quickSetRow}>
-                              {QUICK_SET_VALUES.map((value) => (
-                                <Pressable
-                                  key={`${prompt.id}-${value}`}
-                                  onPress={() =>
-                                    updateBelief(
-                                      thought.id,
-                                      prompt.beliefKey,
-                                      value
-                                    )
-                                  }
-                                  style={({ pressed }) => [
-                                    styles.quickSetPill,
-                                    value === responseBelief &&
-                                      styles.quickSetPillActive,
-                                    pressed && styles.quickSetPillPressed
-                                  ]}
-                                >
-                                  <Text
-                                    style={[
-                                      styles.quickSetText,
-                                      value === responseBelief &&
-                                        styles.quickSetTextActive
-                                    ]}
-                                  >
-                                    {value}
-                                  </Text>
-                                </Pressable>
-                              ))}
-                            </View>
-                          </View>
-                          {index < PROMPTS.length - 1 ? (
-                            <View style={styles.promptDivider} />
-                          ) : null}
+                              style={({ pressed }) => [
+                                styles.quickSetPill,
+                                value === currentBelief &&
+                                  styles.quickSetPillActive,
+                                pressed && styles.quickSetPillPressed
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.quickSetText,
+                                  value === currentBelief &&
+                                    styles.quickSetTextActive
+                                ]}
+                              >
+                                {value}
+                              </Text>
+                            </Pressable>
+                          ))}
                         </View>
-                      );
-                    })}
+                      </View>
+                    </View>
+
+                    <View style={styles.promptDivider} />
+
+                    <View style={styles.promptActions}>
+                      <Pressable
+                        onPress={() => retreatPrompt(thought.id)}
+                        disabled={currentPromptIndex === 0}
+                        style={({ pressed }) => [
+                          styles.backButton,
+                          currentPromptIndex === 0 && styles.backButtonDisabled,
+                          pressed && currentPromptIndex !== 0 && styles.backButtonPressed
+                        ]}
+                      >
+                        <Text style={styles.backButtonText}>Back</Text>
+                      </Pressable>
+                      <PrimaryButton
+                        label={isLastPrompt ? "Mark Thought Complete" : "Save & Continue"}
+                        onPress={() => {
+                          if (!canAdvance) {
+                            return;
+                          }
+                          if (isLastPrompt) {
+                            const currentIndex =
+                              draft.automaticThoughts.findIndex(
+                                (item) => item.id === thought.id
+                              );
+                            const nextThought =
+                              draft.automaticThoughts[currentIndex + 1];
+                            setExpandedThoughtId(nextThought?.id ?? null);
+                            if (nextThought?.id) {
+                              const y = thoughtPositions.current[nextThought.id];
+                              if (typeof y === "number") {
+                                scrollRef.current?.scrollTo({
+                                  y: Math.max(0, y - 16),
+                                  animated: true
+                                });
+                              }
+                            }
+                            return;
+                          }
+                          advancePrompt(thought.id);
+                        }}
+                        disabled={!canAdvance}
+                        style={styles.primaryAction}
+                      />
+                    </View>
                   </Accordion>
                 </View>
               );
@@ -553,14 +634,21 @@ const createStyles = (theme: ThemeTokens) =>
       color: theme.textSecondary,
       marginRight: 8
     },
-    incompleteBadge: {
+    statusPill: {
       borderWidth: 1,
-      borderColor: theme.border,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
       borderRadius: 999
     },
-    incompleteText: {
+    statusPillComplete: {
+      borderColor: theme.accent,
+      backgroundColor: theme.muted
+    },
+    statusPillIncomplete: {
+      borderColor: theme.border,
+      backgroundColor: theme.card
+    },
+    statusPillText: {
       fontSize: 10,
       color: theme.textSecondary
     },
@@ -569,33 +657,48 @@ const createStyles = (theme: ThemeTokens) =>
       color: theme.textSecondary,
       marginLeft: 4
     },
+    expandedIntro: {
+      paddingTop: 10,
+      paddingBottom: 6
+    },
+    respondingLabel: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      marginBottom: 6
+    },
+    questionCount: {
+      fontSize: 12,
+      color: theme.textPrimary,
+      marginBottom: 4
+    },
     promptSection: {
       paddingTop: 10
     },
     promptTitle: {
-      fontSize: 13,
+      fontSize: 14,
       color: theme.textPrimary,
-      marginBottom: 8
+      marginBottom: 8,
+      lineHeight: 18
     },
-    multiline: {
-      minHeight: 90,
-      textAlignVertical: "top"
+    multilineInput: {
+      minHeight: 100,
+      textAlignVertical: "top",
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      padding: 10,
+      backgroundColor: theme.card,
+      color: theme.textPrimary
     },
     sliderSection: {
-      marginTop: -2
+      marginTop: 8
     },
     sliderValue: {
-      fontSize: 20,
+      fontSize: 18,
       color: theme.textPrimary,
       fontWeight: "600",
       textAlign: "center",
-      marginBottom: 6
-    },
-    sliderLabel: {
-      fontSize: 13,
-      color: theme.textSecondary,
-      marginBottom: 6,
-      textAlign: "center"
+      marginBottom: 4
     },
     quickSetRow: {
       flexDirection: "row",
@@ -627,7 +730,33 @@ const createStyles = (theme: ThemeTokens) =>
     promptDivider: {
       height: 1,
       backgroundColor: theme.border,
-      marginTop: 10
+      marginTop: 12
+    },
+    promptActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 12
+    },
+    backButton: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 16
+    },
+    backButtonDisabled: {
+      opacity: 0.5
+    },
+    backButtonPressed: {
+      opacity: 0.85
+    },
+    backButtonText: {
+      fontSize: 14,
+      color: theme.textSecondary
+    },
+    primaryAction: {
+      flex: 1,
+      marginLeft: 12
     },
     bottomBar: {
       paddingHorizontal: 16,
