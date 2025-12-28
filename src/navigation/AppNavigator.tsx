@@ -1,6 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "../screens/HomeScreen";
+import { AllEntriesScreen } from "../screens/AllEntriesScreen";
 import { EntryDetailScreen } from "../screens/EntryDetailScreen";
 import { DateTimeScreen } from "../screens/DateTimeScreen";
 import { SituationScreen } from "../screens/SituationScreen";
@@ -12,6 +13,7 @@ import { SettingsScreen } from "../screens/SettingsScreen";
 
 export type RootStackParamList = {
   Home: undefined;
+  AllEntries: undefined;
   EntryDetail: { id: string };
   WizardStep1: undefined;
   WizardStep2: undefined;
@@ -28,6 +30,11 @@ export const AppNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen
+        name="AllEntries"
+        component={AllEntriesScreen}
+        options={{ title: "All Entries" }}
+      />
       <Stack.Screen name="EntryDetail" component={EntryDetailScreen} />
       <Stack.Screen
         name="WizardStep1"

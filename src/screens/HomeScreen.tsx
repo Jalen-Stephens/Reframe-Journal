@@ -100,6 +100,19 @@ export const HomeScreen: React.FC<
           />
         )}
         contentContainerStyle={styles.listContent}
+        ListFooterComponent={
+          <Pressable
+            onPress={() => navigation.navigate("AllEntries")}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.viewAllButton,
+              pressed && styles.viewAllButtonPressed
+            ]}
+          >
+            <Text style={styles.viewAllText}>View all entries</Text>
+            <Text style={styles.viewAllChevron}>{">"}</Text>
+          </Pressable>
+        }
         ListEmptyComponent={
           <Text style={styles.empty}>
             No entries yet. Start a new thought record above.
@@ -207,5 +220,28 @@ const createStyles = (theme: ThemeTokens) =>
     empty: {
       color: theme.textSecondary,
       marginTop: 12
+    },
+    viewAllButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card,
+      marginTop: 4
+    },
+    viewAllButtonPressed: {
+      opacity: 0.85
+    },
+    viewAllText: {
+      fontSize: 13,
+      color: theme.textSecondary
+    },
+    viewAllChevron: {
+      fontSize: 14,
+      color: theme.textSecondary
     }
   });

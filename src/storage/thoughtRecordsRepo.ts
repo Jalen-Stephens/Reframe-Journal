@@ -162,6 +162,14 @@ export const listThoughtRecords = async (limit = 20) => {
   return rows.map(deserialize);
 };
 
+export const listAllThoughtRecords = async () => {
+  const db = getDb();
+  const rows = await db.getAllAsync<ThoughtRecordRow>(
+    "SELECT * FROM thought_records ORDER BY createdAt DESC;"
+  );
+  return rows.map(deserialize);
+};
+
 export const deleteThoughtRecord = async (id: string) => {
   await runSql("DELETE FROM thought_records WHERE id = ?;", [id]);
 };
