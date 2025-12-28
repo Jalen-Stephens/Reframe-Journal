@@ -13,6 +13,7 @@ type ThoughtRecordRow = {
   emotions: string;
   thinkingStyles: string | null;
   adaptiveResponses: string;
+  outcomesByThought: string;
   beliefAfterMainThought: number | null;
   notes: string | null;
 };
@@ -24,7 +25,8 @@ const serialize = (record: ThoughtRecord) => {
     automaticThoughts: JSON.stringify(record.automaticThoughts || []),
     emotions: JSON.stringify(record.emotions || []),
     thinkingStyles: JSON.stringify(record.thinkingStyles || []),
-    adaptiveResponses: JSON.stringify(record.adaptiveResponses || {})
+    adaptiveResponses: JSON.stringify(record.adaptiveResponses || {}),
+    outcomesByThought: JSON.stringify(record.outcomesByThought || {})
   };
 };
 
@@ -68,6 +70,10 @@ const deserialize = (row: ThoughtRecordRow): ThoughtRecord => {
       row.adaptiveResponses,
       {}
     ),
+    outcomesByThought: parseJsonObject<ThoughtRecord["outcomesByThought"]>(
+      row.outcomesByThought,
+      {}
+    ),
     beliefAfterMainThought: row.beliefAfterMainThought ?? undefined,
     notes: row.notes ?? ""
   };
@@ -87,8 +93,9 @@ export const createThoughtRecord = async (record: ThoughtRecord) => {
     `INSERT INTO thought_records (
       id, createdAt, updatedAt, situationText, sensations,
       automaticThoughts, emotions, thinkingStyles, adaptiveResponses,
+      outcomesByThought,
       beliefAfterMainThought, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     [
       serialized.id,
       serialized.createdAt,
@@ -99,6 +106,7 @@ export const createThoughtRecord = async (record: ThoughtRecord) => {
       serialized.emotions,
       serialized.thinkingStyles,
       serialized.adaptiveResponses,
+      serialized.outcomesByThought,
       serialized.beliefAfterMainThought ?? null,
       serialized.notes ?? null
     ]
@@ -116,6 +124,7 @@ export const updateThoughtRecord = async (record: ThoughtRecord) => {
       emotions = ?,
       thinkingStyles = ?,
       adaptiveResponses = ?,
+      outcomesByThought = ?,
       beliefAfterMainThought = ?,
       notes = ?
     WHERE id = ?;`,
@@ -127,6 +136,7 @@ export const updateThoughtRecord = async (record: ThoughtRecord) => {
       serialized.emotions,
       serialized.thinkingStyles,
       serialized.adaptiveResponses,
+      serialized.outcomesByThought,
       serialized.beliefAfterMainThought ?? null,
       serialized.notes ?? null,
       serialized.id

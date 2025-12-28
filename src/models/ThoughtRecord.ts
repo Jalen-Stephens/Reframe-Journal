@@ -11,6 +11,15 @@ export type Emotion = {
   intensityAfter?: number;
 };
 
+export type ThoughtOutcome = {
+  beliefAfter: number;
+  emotionsAfter: Record<string, number>;
+  reflection?: string;
+  isComplete?: boolean;
+};
+
+export type OutcomeByThought = Record<string, ThoughtOutcome>;
+
 export type AdaptiveResponsesForThought = {
   evidenceText: string;
   evidenceBelief: number;
@@ -37,6 +46,7 @@ export type ThoughtRecord = {
   emotions: Emotion[];
   thinkingStyles?: string[];
   adaptiveResponses: AdaptiveResponsesByThought;
+  outcomesByThought: OutcomeByThought;
   beliefAfterMainThought?: number;
   notes?: string;
 };
@@ -51,6 +61,7 @@ export const createEmptyThoughtRecord = (nowIso: string): ThoughtRecord => ({
   emotions: [],
   thinkingStyles: [],
   adaptiveResponses: {},
+  outcomesByThought: {},
   beliefAfterMainThought: undefined,
   notes: ""
 });

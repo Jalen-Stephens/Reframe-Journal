@@ -24,10 +24,19 @@ export const initDb = async () => {
       emotions TEXT NOT NULL,
       thinkingStyles TEXT,
       adaptiveResponses TEXT NOT NULL,
+      outcomesByThought TEXT NOT NULL DEFAULT '{}',
       beliefAfterMainThought INTEGER,
       notes TEXT
     );`
   );
+
+  try {
+    await db.execAsync(
+      "ALTER TABLE thought_records ADD COLUMN outcomesByThought TEXT NOT NULL DEFAULT '{}';"
+    );
+  } catch {
+    // Column already exists in most cases; ignore migration errors.
+  }
 
   await db.execAsync(
     `CREATE TABLE IF NOT EXISTS wizard_draft (

@@ -453,11 +453,14 @@ export const AdaptiveResponseScreen: React.FC<
                         }
                         onSubmitEditing={() => Keyboard.dismiss()}
                       />
-                      <View style={styles.sliderSection}>
-                        <Text style={styles.sliderValue}>
-                          {currentBelief}%
-                        </Text>
-                        <Slider
+                    <View style={styles.sliderSection}>
+                      <Text style={styles.sliderLabel}>
+                        How much do you believe this response?
+                      </Text>
+                      <Text style={styles.sliderValue}>
+                        {currentBelief}%
+                      </Text>
+                      <Slider
                           minimumValue={0}
                           maximumValue={100}
                           step={1}
@@ -692,6 +695,12 @@ const createStyles = (theme: ThemeTokens) =>
     },
     sliderSection: {
       marginTop: 8
+    },
+    sliderLabel: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      textAlign: "center",
+      marginBottom: 4
     },
     sliderValue: {
       fontSize: 18,
