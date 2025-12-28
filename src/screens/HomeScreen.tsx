@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { View, Text, Button, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -9,6 +9,7 @@ import { getDraft, listThoughtRecords } from "../storage/thoughtRecordsRepo";
 import { useWizard } from "../context/WizardContext";
 import { useTheme } from "../context/ThemeProvider";
 import { ThemeTokens } from "../theme/theme";
+import { formatRelativeDate } from "../utils/date";
 
 export const HomeScreen: React.FC<
   NativeStackScreenProps<RootStackParamList, "Home">
@@ -18,6 +19,9 @@ export const HomeScreen: React.FC<
   const { clearDraft } = useWizard();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const latestEntry = entries[0];
+  const latestSituation =
+    latestEntry?.situationText?.trim() || "Untitled situation";
 
   const refresh = useCallback(() => {
     listThoughtRecords().then(setEntries);
@@ -43,30 +47,49 @@ export const HomeScreen: React.FC<
         </Pressable>
       </View>
       <Text style={styles.helper}>
-        Capture situations, automatic thoughts, emotions, and outcomes in a
-        simple step-by-step flow.
+        Ground yourself and gently work through a moment, step by step.
       </Text>
+      {latestEntry ? (
+        <Text style={styles.lastWorked}>
+          Last worked on: {latestSituation} ·{" "}
+          {formatRelativeDate(latestEntry.createdAt)}
+        </Text>
+      ) : null}
       <View style={styles.actions}>
-        <Button
-          title="New Thought Record"
-          color={theme.accent}
+        <Pressable
           onPress={async () => {
             await clearDraft();
             navigation.navigate("WizardStep1");
           }}
-        />
+          accessibilityRole="button"
+          style={({ pressed }) => [
+            styles.primaryCard,
+            pressed && styles.primaryCardPressed
+          ]}
+        >
+          <Text style={styles.primaryCardTitle}>New thought record</Text>
+          <Text style={styles.primaryCardCopy}>
+            Work through a difficult moment step by step.
+          </Text>
+        </Pressable>
         {hasDraft ? (
-          <View style={styles.draftButton}>
-            <Button
-              title="Continue Draft"
-              color={theme.accent}
-              onPress={() => navigation.navigate("WizardStep1")}
-            />
-          </View>
+          <Pressable
+            onPress={() => navigation.navigate("WizardStep1")}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.secondaryCard,
+              pressed && styles.secondaryCardPressed
+            ]}
+          >
+            <Text style={styles.secondaryCardTitle}>Continue draft</Text>
+            <Text style={styles.secondaryCardCopy}>
+              Pick up where you left off.
+            </Text>
+          </Pressable>
         ) : null}
       </View>
 
-      <Text style={styles.section}>Recent Entries</Text>
+      <Text style={styles.section}>Recent entries</Text>
       <FlatList
         data={entries}
         keyExtractor={(item) => item.id}
@@ -76,12 +99,26 @@ export const HomeScreen: React.FC<
             onPress={() => navigation.navigate("EntryDetail", { id: item.id })}
           />
         )}
-        ListEmptyComponent={<Text style={styles.empty}>No entries yet.</Text>}
+        contentContainerStyle={styles.listContent}
+        ListFooterComponent={
+          <Pressable
+            onPress={() => navigation.navigate("AllEntries")}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.viewAllButton,
+              pressed && styles.viewAllButtonPressed
+            ]}
+          >
+            <Text style={styles.viewAllText}>View all entries</Text>
+            <Text style={styles.viewAllChevron}>{">"}</Text>
+          </Pressable>
+        }
+        ListEmptyComponent={
+          <Text style={styles.empty}>
+            No entries yet. Start a new thought record above.
+          </Text>
+        }
       />
-
-      <Text style={styles.footerNote}>
-        Pattern dashboard and insights will live here in a future update.
-      </Text>
     </View>
   );
 };
@@ -121,11 +158,55 @@ const createStyles = (theme: ThemeTokens) =>
       lineHeight: 18,
       marginTop: 10
     },
-    actions: {
+    lastWorked: {
+      fontSize: 13,
+      color: theme.textSecondary,
       marginBottom: 16
     },
-    draftButton: {
-      marginTop: 8
+    actions: {
+      marginBottom: 20
+    },
+    primaryCard: {
+      backgroundColor: theme.accent,
+      borderRadius: 16,
+      paddingVertical: 16,
+      paddingHorizontal: 16
+    },
+    primaryCardPressed: {
+      opacity: 0.9
+    },
+    primaryCardTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: theme.onAccent
+    },
+    primaryCardCopy: {
+      marginTop: 6,
+      fontSize: 13,
+      color: theme.onAccent,
+      opacity: 0.9
+    },
+    secondaryCard: {
+      marginTop: 12,
+      borderRadius: 14,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card
+    },
+    secondaryCardPressed: {
+      opacity: 0.85
+    },
+    secondaryCardTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: theme.textPrimary
+    },
+    secondaryCardCopy: {
+      marginTop: 4,
+      fontSize: 12,
+      color: theme.textSecondary
     },
     section: {
       fontSize: 16,
@@ -133,13 +214,34 @@ const createStyles = (theme: ThemeTokens) =>
       marginBottom: 8,
       color: theme.textSecondary
     },
+    listContent: {
+      paddingBottom: 20
+    },
     empty: {
       color: theme.textSecondary,
       marginTop: 12
     },
-    footerNote: {
-      marginTop: 24,
-      fontSize: 12,
+    viewAllButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card,
+      marginTop: 4
+    },
+    viewAllButtonPressed: {
+      opacity: 0.85
+    },
+    viewAllText: {
+      fontSize: 13,
+      color: theme.textSecondary
+    },
+    viewAllChevron: {
+      fontSize: 14,
       color: theme.textSecondary
     }
   });

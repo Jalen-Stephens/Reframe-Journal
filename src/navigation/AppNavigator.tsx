@@ -1,6 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "../screens/HomeScreen";
+import { AllEntriesScreen } from "../screens/AllEntriesScreen";
 import { EntryDetailScreen } from "../screens/EntryDetailScreen";
 import { DateTimeScreen } from "../screens/DateTimeScreen";
 import { SituationScreen } from "../screens/SituationScreen";
@@ -9,10 +10,13 @@ import { EmotionsScreen } from "../screens/EmotionsScreen";
 import { AdaptiveResponseScreen } from "../screens/AdaptiveResponseScreen";
 import { OutcomeScreen } from "../screens/OutcomeScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
+import { ThoughtResponseDetailScreen } from "../screens/ThoughtResponseDetailScreen";
 
 export type RootStackParamList = {
   Home: undefined;
+  AllEntries: undefined;
   EntryDetail: { id: string };
+  ThoughtResponseDetail: { entryId: string; thoughtId: string };
   WizardStep1: undefined;
   WizardStep2: undefined;
   WizardStep3: undefined;
@@ -28,7 +32,16 @@ export const AppNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen
+        name="AllEntries"
+        component={AllEntriesScreen}
+        options={{ title: "All Entries" }}
+      />
       <Stack.Screen name="EntryDetail" component={EntryDetailScreen} />
+      <Stack.Screen
+        name="ThoughtResponseDetail"
+        component={ThoughtResponseDetailScreen}
+      />
       <Stack.Screen
         name="WizardStep1"
         component={DateTimeScreen}
