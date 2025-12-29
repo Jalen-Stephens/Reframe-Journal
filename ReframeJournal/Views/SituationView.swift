@@ -19,9 +19,9 @@ struct SituationView: View {
     ]
 
     @State private var situationText: String = ""
-    @State private var sensations: [String] = []
-    @State private var customSensation: String = ""
-    @State private var showCustomInput = false
+    // Keep selection in @State and render with LazyVGrid to avoid GeometryReader layout delays.
+    @State private var selectedSensations: [String] = []
+    @State private var isPickerPresented = false
 
     var body: some View {
         ScrollView {
@@ -37,16 +37,8 @@ struct SituationView: View {
                     .font(.system(size: 14))
                     .foregroundColor(themeManager.theme.textSecondary)
 
-                Menu {
-                    ForEach(availableSensations(), id: \.self) { sensation in
-                        Button(sensation) {
-                            addSensation(sensation)
-                            showCustomInput = false
-                        }
-                    }
-                    Button("Custom...") {
-                        showCustomInput = true
-                    }
+                Button {
+                    isPickerPresented = true
                 } label: {
                     HStack {
                         Text("Select common sensations")
@@ -64,39 +56,26 @@ struct SituationView: View {
                             .stroke(themeManager.theme.border, lineWidth: 1)
                     )
                 }
-
-                if showCustomInput {
-                    TextField("Describe your sensation (e.g., pressure in throat)", text: $customSensation)
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .padding(10)
-                        .background(themeManager.theme.card)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(themeManager.theme.border, lineWidth: 1)
-                        )
-                        .onSubmit {
-                            addSensation(customSensation)
-                            customSensation = ""
-                            showCustomInput = false
-                        }
+                .sheet(isPresented: $isPickerPresented) {
+                    SensationPickerSheetView(
+                        selectedSensations: $selectedSensations,
+                        isPresented: $isPickerPresented,
+                        commonSensations: commonSensations
+                    )
                 }
 
-                FlowLayout(items: sensations) { item in
-                    Button {
-                        sensations.removeAll { $0 == item }
-                    } label: {
-                        HStack(spacing: 6) {
-                            Text(item)
-                            Text("✕")
+                if selectedSensations.isEmpty {
+                    Text("No sensations selected.")
+                        .font(.system(size: 13))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                } else {
+                    LazyVGrid(columns: chipColumns, alignment: .leading, spacing: 8) {
+                        ForEach(displayedSensations, id: \.self) { item in
+                            SelectedChipView(label: item) {
+                                removeSensation(item)
+                            }
                         }
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(themeManager.theme.muted)
-                        .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(16)
@@ -113,7 +92,7 @@ struct SituationView: View {
                 Task {
                     var draft = appState.wizard.draft
                     draft.situationText = situationText
-                    draft.sensations = sensations
+                    draft.sensations = selectedSensations
                     appState.wizard.draft = draft
                     await appState.wizard.persistDraft(draft)
                     router.push(.wizardStep3)
@@ -124,85 +103,36 @@ struct SituationView: View {
         }
         .onAppear {
             situationText = appState.wizard.draft.situationText
-            sensations = appState.wizard.draft.sensations
+            selectedSensations = dedupedSensations(appState.wizard.draft.sensations)
         }
     }
 
-    private func addSensation(_ value: String) {
+    private var chipColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 120), spacing: 8, alignment: .leading)]
+    }
+
+    private var displayedSensations: [String] {
+        selectedSensations
+    }
+
+    private func dedupedSensations(_ values: [String]) -> [String] {
+        var seen: Set<String> = []
+        var result: [String] = []
+        for value in values {
+            let key = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !key.isEmpty, !seen.contains(key) else { continue }
+            seen.insert(key)
+            result.append(value)
+        }
+        return result
+    }
+
+    @MainActor
+    private func removeSensation(_ value: String) {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        if !sensations.contains(trimmed) {
-            sensations.append(trimmed)
-        }
-    }
-
-    private func availableSensations() -> [String] {
-        commonSensations.filter { !sensations.contains($0) }
-    }
-}
-
-struct FlowLayout<Item: Hashable, Content: View>: View {
-    let items: [Item]
-    let content: (Item) -> Content
-
-    init(items: [Item], @ViewBuilder content: @escaping (Item) -> Content) {
-        self.items = items
-        self.content = content
-    }
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            FlexibleView(data: items, spacing: 8, alignment: .leading, content: content)
-        }
-    }
-}
-
-struct FlexibleView<Data: Collection, Content: View>: View where Data.Element: Hashable {
-    let data: Data
-    let spacing: CGFloat
-    let alignment: HorizontalAlignment
-    let content: (Data.Element) -> Content
-
-    @State private var availableWidth: CGFloat = 0
-
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: Alignment(horizontal: alignment, vertical: .top)) {
-                contentBody
-            }
-            .onAppear {
-                availableWidth = geometry.size.width
-            }
-            .onChange(of: geometry.size.width) { newValue in
-                availableWidth = newValue
-            }
-        }
-        .frame(minHeight: 0)
-    }
-
-    private var contentBody: some View {
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-
-        return ZStack(alignment: Alignment(horizontal: alignment, vertical: .top)) {
-            ForEach(Array(data), id: \.self) { item in
-                content(item)
-                    .padding(.trailing, spacing)
-                    .padding(.bottom, spacing)
-                    .alignmentGuide(.leading) { dimension in
-                        if width + dimension.width > availableWidth {
-                            width = 0
-                            height -= dimension.height + spacing
-                        }
-                        let result = width
-                        width += dimension.width + spacing
-                        return result
-                    }
-                    .alignmentGuide(.top) { _ in
-                        let result = height
-                        return result
-                    }
-            }
+        if let index = selectedSensations.firstIndex(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+            selectedSensations.remove(at: index)
         }
     }
 }
