@@ -11,7 +11,8 @@ This repository now contains the native iOS SwiftUI implementation of Reframe Jo
 ## Project structure
 - `ReframeJournal/` - SwiftUI app source
 - `ReframeJournal.xcodeproj/` - Xcode project
-- `legacy-react-native/` - Deprecated React Native codebase (kept for reference)
+- `ReframeJournalTests/` - Unit tests
+- `project.yml` - XcodeGen project definition (if you use XcodeGen)
 
 ## Notes
 - The iOS app uses local JSON file storage for entries and draft persistence.
