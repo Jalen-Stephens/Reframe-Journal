@@ -21,7 +21,7 @@ struct HomeView: View {
                         .padding(.top, 8)
 
                     if let latest = viewModel.entries.first {
-                        Text("Last worked on: \(latest.situationText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Untitled situation" : latest.situationText) · \(DateUtils.formatRelativeDate(latest.createdAt))")
+                        Text("Last worked on: \(latestThoughtLabel(for: latest)) · \(DateUtils.formatRelativeDate(latest.createdAt))")
                             .font(.system(size: 13))
                             .foregroundColor(themeManager.theme.textSecondary)
                     }
@@ -141,5 +141,10 @@ struct HomeView: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
+    }
+
+    private func latestThoughtLabel(for record: ThoughtRecord) -> String {
+        let thought = record.automaticThoughts.first?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return thought.isEmpty ? "Untitled thought" : thought
     }
 }

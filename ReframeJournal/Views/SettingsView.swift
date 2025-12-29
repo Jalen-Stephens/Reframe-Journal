@@ -2,6 +2,14 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var themeManager: ThemeManager
+    @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
+
+    private var appAppearance: Binding<AppAppearance> {
+        Binding(
+            get: { AppAppearance(rawValue: appAppearanceRaw) ?? .system },
+            set: { appAppearanceRaw = $0.rawValue }
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -9,46 +17,14 @@ struct SettingsView: View {
                 .font(.system(size: 14))
                 .foregroundColor(themeManager.theme.textSecondary)
 
-            VStack(spacing: 0) {
-                ForEach(Array(ThemePreference.allCases.enumerated()), id: \.element) { index, option in
-                    Button {
-                        themeManager.themePreference = option
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(option.label)
-                                    .font(.system(size: 15))
-                                    .foregroundColor(themeManager.theme.textPrimary)
-                                if let helper = option.helper {
-                                    Text(helper)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(themeManager.theme.textSecondary)
-                                }
-                            }
-                            Spacer()
-                            ZStack {
-                                Circle()
-                                    .stroke(themeManager.theme.border, lineWidth: 2)
-                                    .frame(width: 22, height: 22)
-                                if themeManager.themePreference == option {
-                                    Circle()
-                                        .fill(themeManager.theme.accent)
-                                        .frame(width: 10, height: 10)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 14)
-                        .padding(.horizontal, 16)
-                        .background(themeManager.theme.card)
-                    }
-                    .buttonStyle(.plain)
-
-                    if index < ThemePreference.allCases.count - 1 {
-                        Divider()
-                            .background(themeManager.theme.muted)
-                    }
+            Picker("Appearance", selection: appAppearance) {
+                ForEach(AppAppearance.allCases) { option in
+                    Text(option.title)
+                        .tag(option)
                 }
             }
+            .pickerStyle(.segmented)
+            .padding(12)
             .background(themeManager.theme.card)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

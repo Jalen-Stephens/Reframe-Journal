@@ -5,45 +5,42 @@ struct AdaptiveResponseView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeManager: ThemeManager
 
-    @State private var expandedThoughtId: String? = nil
-    @State private var promptIndexByThought: [String: Int] = [:]
+    @FocusState private var focusedField: FocusField?
+    @State private var promptIndex: Int = 0
     @State private var showIncompleteHint = false
 
     private let quickSetValues: [Int] = [0, 25, 50, 75, 100]
+
+    private enum FocusField: Hashable {
+        case response(thoughtId: String, key: AdaptivePrompts.TextKey)
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 WizardProgressView(step: 5, total: 6)
-                Text("Respond to each automatic thought using the prompts below. Add at least one grounded response per thought.")
+                Text("Respond to the automatic thought using the prompts below. Add at least one grounded response.")
                     .font(.system(size: 13))
                     .foregroundColor(themeManager.theme.textSecondary)
                 if showIncompleteHint {
-                    Text("Complete at least one response for each thought before continuing.")
+                    Text("Complete at least one response before continuing.")
                         .font(.system(size: 12))
                         .foregroundColor(themeManager.theme.textSecondary)
                 }
 
-                ForEach(appState.wizard.draft.automaticThoughts) { thought in
-                    let isExpanded = expandedThoughtId == thought.id
+                if let thought = appState.wizard.draft.automaticThoughts.first {
                     let answeredCount = countAnsweredPrompts(for: thought.id)
                     let isComplete = answeredCount == AdaptivePrompts.all.count
-                    let currentIndex = promptIndexByThought[thought.id] ?? 0
-                    let prompt = AdaptivePrompts.all[currentIndex]
+                    let prompt = AdaptivePrompts.all[promptIndex]
                     let currentText = textValue(for: prompt.textKey, thoughtId: thought.id)
                     let currentBelief = beliefValue(for: prompt.beliefKey, thoughtId: thought.id)
-                    let isLastPrompt = currentIndex == AdaptivePrompts.all.count - 1
-                    let canAdvance = !currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
-                    AccordionView(isExpanded: Binding(
-                        get: { expandedThoughtId == thought.id },
-                        set: { expandedThoughtId = $0 ? thought.id : nil }
-                    )) {
+                    VStack(alignment: .leading, spacing: 12) {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(thought.text)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(themeManager.theme.textPrimary)
-                                .lineLimit(1)
+                                .lineLimit(2)
                             HStack {
                                 Text("Original \(thought.beliefBefore)%")
                                     .font(.system(size: 12))
@@ -60,89 +57,79 @@ struct AdaptiveResponseView: View {
                                     .clipShape(Capsule())
                             }
                         }
-                    } content: {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Responding to: \"\(thought.text)\"")
-                                .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
-                            Text("Question \(currentIndex + 1) of \(AdaptivePrompts.all.count)")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textSecondary)
 
-                            Text(prompt.label)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
-                            ZStack(alignment: .topLeading) {
-                                if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    Text("Write a grounded response")
-                                        .font(.system(size: 13))
-                                        .foregroundColor(themeManager.theme.placeholder)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 10)
-                                }
-                                TextEditor(text: bindingForText(prompt.textKey, thoughtId: thought.id))
-                                    .frame(minHeight: 90)
-                                    .padding(6)
-                                    .background(themeManager.theme.background)
-                                    .scrollContentBackground(.hidden)
+                        Text("Question \(promptIndex + 1) of \(AdaptivePrompts.all.count)")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(themeManager.theme.textSecondary)
+
+                        Text(prompt.label)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(themeManager.theme.textPrimary)
+                        ZStack(alignment: .topLeading) {
+                            if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text("Write a grounded response")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(themeManager.theme.placeholder)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 10)
                             }
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(themeManager.theme.border, lineWidth: 1)
-                            )
+                            TextEditor(text: bindingForText(prompt.textKey, thoughtId: thought.id))
+                                .frame(minHeight: 90)
+                                .padding(6)
+                                .background(themeManager.theme.background)
+                                .scrollContentBackground(.hidden)
+                                .focused($focusedField, equals: .response(thoughtId: thought.id, key: prompt.textKey))
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(themeManager.theme.border, lineWidth: 1)
+                        )
 
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Text("How much do you believe this response?")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(themeManager.theme.textSecondary)
-                                    Spacer()
-                                    Text("\(currentBelief)%")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundColor(themeManager.theme.textSecondary)
-                                }
-                                Slider(value: bindingForBelief(prompt.beliefKey, thoughtId: thought.id), in: 0...100, step: 1)
-                                    .accentColor(themeManager.theme.accent)
-                                HStack(spacing: 8) {
-                                    ForEach(quickSetValues, id: \.self) { value in
-                                        Button("\(value)") {
-                                            updateBelief(thoughtId: thought.id, key: prompt.beliefKey, value: value)
-                                        }
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(value == currentBelief ? themeManager.theme.accent : themeManager.theme.muted)
-                                        .foregroundColor(value == currentBelief ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
-                                        .clipShape(Capsule())
-                                    }
-                                }
-                            }
-
+                        VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Button("Back") {
-                                    retreatPrompt(thoughtId: thought.id)
-                                }
-                                .disabled(currentIndex == 0)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(currentIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
-
+                                Text("How much do you believe this response?")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(themeManager.theme.textSecondary)
                                 Spacer()
-                                PrimaryButton(
-                                    label: isLastPrompt ? "Mark Thought Complete" : "Save & Continue",
-                                    onPress: {
-                                        guard canAdvance else { return }
-                                        if isLastPrompt {
-                                            moveToNextThought(after: thought.id)
-                                        } else {
-                                            advancePrompt(thoughtId: thought.id)
-                                        }
-                                    },
-                                    disabled: !canAdvance
-                                )
-                                .frame(maxWidth: 220)
+                                Text("\(currentBelief)%")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(themeManager.theme.textSecondary)
+                            }
+                            Slider(value: bindingForBelief(prompt.beliefKey, thoughtId: thought.id), in: 0...100, step: 1)
+                                .accentColor(themeManager.theme.accent)
+                            HStack(spacing: 8) {
+                                ForEach(quickSetValues, id: \.self) { value in
+                                    Button("\(value)") {
+                                        updateBelief(thoughtId: thought.id, key: prompt.beliefKey, value: value)
+                                    }
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(value == currentBelief ? themeManager.theme.accent : themeManager.theme.muted)
+                                    .foregroundColor(value == currentBelief ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
+                                    .clipShape(Capsule())
+                                }
                             }
                         }
+
+                        Button("Back") {
+                            retreatPrompt()
+                        }
+                        .disabled(promptIndex == 0)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(promptIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
                     }
+                    .padding(12)
+                    .background(themeManager.theme.card)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(themeManager.theme.border, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else {
+                    Text("Add an automatic thought before writing adaptive responses.")
+                        .font(.system(size: 13))
+                        .foregroundColor(themeManager.theme.textSecondary)
                 }
             }
             .padding(16)
@@ -155,28 +142,22 @@ struct AdaptiveResponseView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            PrimaryButton(label: "Next", onPress: nextStep, disabled: !canProceed())
+            footerButton()
                 .padding(16)
                 .background(themeManager.theme.background)
         }
         .onAppear {
             ensureResponses()
-            if expandedThoughtId == nil {
-                expandedThoughtId = appState.wizard.draft.automaticThoughts.first?.id
-            }
         }
     }
 
     private func ensureResponses() {
         var draft = appState.wizard.draft
         var changed = false
-        for thought in draft.automaticThoughts {
+        if let thought = draft.automaticThoughts.first {
             if draft.adaptiveResponses[thought.id] == nil {
                 draft.adaptiveResponses[thought.id] = emptyResponses()
                 changed = true
-            }
-            if promptIndexByThought[thought.id] == nil {
-                promptIndexByThought[thought.id] = 0
             }
         }
         if changed {
@@ -206,9 +187,8 @@ struct AdaptiveResponseView: View {
     }
 
     private func canProceed() -> Bool {
-        let thoughts = appState.wizard.draft.automaticThoughts
-        guard !thoughts.isEmpty else { return false }
-        return thoughts.allSatisfy { countAnsweredPrompts(for: $0.id) >= 1 }
+        guard let thought = appState.wizard.draft.automaticThoughts.first else { return false }
+        return countAnsweredPrompts(for: thought.id) >= 1
     }
 
     private func nextStep() {
@@ -219,27 +199,15 @@ struct AdaptiveResponseView: View {
             }
             return
         }
-        if let firstIncomplete = appState.wizard.draft.automaticThoughts.first(where: { countAnsweredPrompts(for: $0.id) < 1 }) {
-            expandedThoughtId = firstIncomplete.id
-        }
         showIncompleteHint = true
     }
 
-    private func moveToNextThought(after thoughtId: String) {
-        if let index = appState.wizard.draft.automaticThoughts.firstIndex(where: { $0.id == thoughtId }) {
-            let next = appState.wizard.draft.automaticThoughts.dropFirst(index + 1).first
-            expandedThoughtId = next?.id
-        }
+    private func advancePrompt() {
+        promptIndex = min(promptIndex + 1, AdaptivePrompts.all.count - 1)
     }
 
-    private func advancePrompt(thoughtId: String) {
-        let current = promptIndexByThought[thoughtId] ?? 0
-        promptIndexByThought[thoughtId] = min(current + 1, AdaptivePrompts.all.count - 1)
-    }
-
-    private func retreatPrompt(thoughtId: String) {
-        let current = promptIndexByThought[thoughtId] ?? 0
-        promptIndexByThought[thoughtId] = max(current - 1, 0)
+    private func retreatPrompt() {
+        promptIndex = max(promptIndex - 1, 0)
     }
 
     private func bindingForText(_ key: AdaptivePrompts.TextKey, thoughtId: String) -> Binding<String> {
@@ -324,5 +292,51 @@ struct AdaptiveResponseView: View {
         }
         draft.adaptiveResponses[thoughtId] = responses
         appState.wizard.draft = draft
+    }
+
+    private func footerButton() -> some View {
+        guard let activeThoughtId = activeThoughtId,
+              let activePrompt = activePrompt(),
+              focusedField != nil else {
+            return PrimaryButton(label: "Next", onPress: nextStep, disabled: !canProceed())
+        }
+
+        let isLastPrompt = isLastPrompt()
+        if isLastPrompt {
+            return PrimaryButton(label: "Next", onPress: nextStep, disabled: !canProceed())
+        }
+
+        let canAdvance = canAdvancePrompt(thoughtId: activeThoughtId, prompt: activePrompt)
+        return PrimaryButton(
+            label: "Save & Continue",
+            onPress: {
+                guard canAdvance else { return }
+                advancePrompt()
+            },
+            disabled: !canAdvance
+        )
+    }
+
+    private var activeThoughtId: String? {
+        switch focusedField {
+        case .response(let thoughtId, _):
+            return thoughtId
+        case .none:
+            return appState.wizard.draft.automaticThoughts.first?.id
+        }
+    }
+
+    private func activePrompt() -> AdaptivePrompts.Prompt? {
+        guard AdaptivePrompts.all.indices.contains(promptIndex) else { return nil }
+        return AdaptivePrompts.all[promptIndex]
+    }
+
+    private func isLastPrompt() -> Bool {
+        promptIndex == AdaptivePrompts.all.count - 1
+    }
+
+    private func canAdvancePrompt(thoughtId: String, prompt: AdaptivePrompts.Prompt) -> Bool {
+        let currentText = textValue(for: prompt.textKey, thoughtId: thoughtId)
+        return !currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

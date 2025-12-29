@@ -9,9 +9,7 @@ struct EntryListItemView: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(entry.situationText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                     ? "Untitled situation"
-                     : entry.situationText)
+                Text(thoughtLabel(for: entry))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(themeManager.theme.textPrimary)
                     .lineLimit(2)
@@ -29,5 +27,10 @@ struct EntryListItemView: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
+    }
+
+    private func thoughtLabel(for record: ThoughtRecord) -> String {
+        let thought = record.automaticThoughts.first?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return thought.isEmpty ? "Untitled thought" : thought
     }
 }
