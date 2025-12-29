@@ -27,6 +27,7 @@
 		6D7FF0544F37811F03C58FEA /* Identifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B81E049560BD2F69940170 /* Identifiers.swift */; };
 		6EDB00E0B89BF6536EE3AA43 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F8017F762C89F4D0CF0CB64 /* ThemeManager.swift */; };
 		6FFB15E22C2CEC0BC540A95D /* AccordionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF93899497F29B20C03F371 /* AccordionView.swift */; };
+		7F6C7F8C3F1D4C80A2F5B2B1 /* StepHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6C7F8B3F1D4C80A2F5B2B0 /* StepHeaderView.swift */; };
 		73FDB8B9EA5037DFE8C69B30 /* ReframeJournalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46312FE3978E03DDBCCC38F /* ReframeJournalApp.swift */; };
 		773AA7F64660375B01D22426 /* EntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E52E5CE02DB158DCFF76DE /* EntryDetailView.swift */; };
 		7D27181DC4115CA7CAC8C1F7 /* DateTimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401D9356FD1A40FB06F9E405 /* DateTimeView.swift */; };
@@ -81,6 +82,7 @@
 		628440F7D93AA4374667AC4F /* ThoughtResponseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtResponseDetailView.swift; sourceTree = "<group>"; };
 		661A270E0AB73EFA2FE2EB80 /* AllEntriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesView.swift; sourceTree = "<group>"; };
 		6A29FDF5CD76A8F7218286ED /* SlimMeterRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimMeterRowView.swift; sourceTree = "<group>"; };
+		7F6C7F8B3F1D4C80A2F5B2B0 /* StepHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepHeaderView.swift; sourceTree = "<group>"; };
 		7593019C057F861DCFFECBA6 /* ThoughtCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtCardView.swift; sourceTree = "<group>"; };
 		7685FB9A44932CF9C0F3349F /* WizardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WizardViewModel.swift; sourceTree = "<group>"; };
 		7C62B1CD9FFA6C801F6C6117 /* ReframeJournal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReframeJournal.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -150,6 +152,7 @@
 				46308216C66CE393053779B5 /* SettingsView.swift */,
 				9F1DFD7F7F52522DE5279C2B /* SituationView.swift */,
 				6A29FDF5CD76A8F7218286ED /* SlimMeterRowView.swift */,
+				7F6C7F8B3F1D4C80A2F5B2B0 /* StepHeaderView.swift */,
 				7593019C057F861DCFFECBA6 /* ThoughtCardView.swift */,
 				628440F7D93AA4374667AC4F /* ThoughtResponseDetailView.swift */,
 				10AFCB6B783A2B675B407889 /* WizardProgressView.swift */,
@@ -374,6 +377,7 @@
 				5E2E5DF1AAB3DF819A9863B3 /* SettingsView.swift in Sources */,
 				2F739D9ACA296BC3BFC3273D /* SituationView.swift in Sources */,
 				AF8538F8AD4BE3A44AE431A5 /* SlimMeterRowView.swift in Sources */,
+				7F6C7F8C3F1D4C80A2F5B2B1 /* StepHeaderView.swift in Sources */,
 				6EDB00E0B89BF6536EE3AA43 /* ThemeManager.swift in Sources */,
 				B2E1196C821235FFC2297082 /* ThoughtCardView.swift in Sources */,
 				E3A1C31C54E4F3315848A261 /* ThoughtRecord.swift in Sources */,

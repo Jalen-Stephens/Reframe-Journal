@@ -102,6 +102,12 @@ struct SituationView: View {
             .padding(16)
         }
         .background(themeManager.theme.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .top) {
+            StepHeaderView(title: "Situation") {
+                router.pop()
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             PrimaryButton(label: "Next") {
                 Task {

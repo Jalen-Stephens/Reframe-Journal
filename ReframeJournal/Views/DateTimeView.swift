@@ -13,9 +13,6 @@ struct DateTimeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 WizardProgressView(step: 1, total: 6)
-                Text("Date & Time")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
                 Text("When you noticed your mood change. If unsure, leave it as now.")
                     .font(.system(size: 13))
                     .foregroundColor(themeManager.theme.textSecondary)
@@ -92,14 +89,18 @@ struct DateTimeView: View {
                         .stroke(themeManager.theme.border, lineWidth: 1)
                 )
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
+            .padding(16)
             .padding(.bottom, 24)
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(themeManager.theme.background.ignoresSafeArea())
-        .ignoresSafeArea(.container, edges: .vertical)
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .top) {
+            StepHeaderView(title: "Date & Time") {
+                router.pop()
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             PrimaryButton(label: "Next") {
                 Task {

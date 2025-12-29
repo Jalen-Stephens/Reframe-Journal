@@ -15,9 +15,6 @@ struct AdaptiveResponseView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 WizardProgressView(step: 5, total: 6)
-                Text("Adaptive Response")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
                 Text("Respond to each automatic thought using the prompts below. Add at least one grounded response per thought.")
                     .font(.system(size: 13))
                     .foregroundColor(themeManager.theme.textSecondary)
@@ -151,6 +148,12 @@ struct AdaptiveResponseView: View {
             .padding(16)
         }
         .background(themeManager.theme.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .top) {
+            StepHeaderView(title: "Adaptive Response") {
+                router.pop()
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             PrimaryButton(label: "Next", onPress: nextStep, disabled: !canProceed())
                 .padding(16)

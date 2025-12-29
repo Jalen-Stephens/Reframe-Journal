@@ -14,9 +14,6 @@ struct OutcomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 WizardProgressView(step: 6, total: 6)
-                Text("Outcome")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
                 Text("Notice how your belief and emotions shift after working through each thought.")
                     .font(.system(size: 13))
                     .foregroundColor(themeManager.theme.textSecondary)
@@ -154,12 +151,18 @@ struct OutcomeView: View {
             .padding(16)
         }
         .background(themeManager.theme.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .top) {
+            StepHeaderView(title: "Outcome") {
+                router.pop()
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: 12) {
                 Button("Back") {
                     Task {
                         await appState.wizard.persistDraft()
-                        router.path.removeLast()
+                        router.pop()
                     }
                 }
                 .font(.system(size: 13, weight: .semibold))
