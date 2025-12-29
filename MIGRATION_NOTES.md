@@ -1,7 +1,7 @@
 # Migration Notes
 
 ## What changed
-- Replaced the React Native app with a native SwiftUI iOS app in `ios-native/`.
+- Replaced the React Native app with a native SwiftUI iOS app in the repo root.
 - Implemented MVVM with ObservableObject view models and a local persistence layer.
 - Recreated the full screen flow (home, entries, wizard, settings) using SwiftUI navigation.
 - Moved the React Native codebase to `legacy-react-native/` and marked it deprecated.
