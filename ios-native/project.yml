@@ -1,0 +1,51 @@
+name: ReframeJournal
+options:
+  bundleIdPrefix: com.yourname
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    INFOPLIST_KEY_CFBundleDisplayName: "Reframe Journal"
+    INFOPLIST_KEY_UILaunchStoryboardName: "Launch Screen"
+    INFOPLIST_KEY_UIRequiresFullScreen: YES
+    TARGETED_DEVICE_FAMILY: "1"
+    INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+
+targets:
+  ReframeJournal:
+    type: application
+    platform: iOS
+    sources:
+      - path: ReframeJournal
+    info:
+      path: ReframeJournal/Resources/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.ReframeJournal
+        INFOPLIST_KEY_CFBundleName: ReframeJournal
+        TARGETED_DEVICE_FAMILY: "1"
+    scheme:
+      testTargets:
+        - ReframeJournalTests
+
+  ReframeJournalTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ReframeJournalTests
+    info:
+      path: ReframeJournalTests/Info.plist
+    dependencies:
+      - target: ReframeJournal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.ReframeJournalTests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ReframeJournal.app/ReframeJournal"
+        BUNDLE_LOADER: "$(TEST_HOST)"
