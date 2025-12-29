@@ -1,32 +1,19 @@
-# Reframe Journal
+# Reframe Journal (iOS Native)
 
-A minimal, offline-first React Native (Expo) skeleton for a CBT thought record journal. It includes a 7-step wizard flow, local SQLite persistence, and placeholder screens for future features.
+This repository now contains the native iOS SwiftUI implementation of Reframe Journal.
 
-## What’s included
-- Expo + React Native + TypeScript
-- Stack navigation: Home, Wizard steps 1–7, Entry Detail
-- SQLite storage with migrations and CRUD
-- In-memory wizard draft with autosave to SQLite
-- Basic validation for required fields and 0–100 sliders
-- Calm, minimal UI scaffolding
+## How to build and run in Xcode
+1. Open `ReframeJournal.xcodeproj` in Xcode.
+2. Select the `ReframeJournal` scheme.
+3. Choose an iOS 16+ simulator or a connected device.
+4. Build and run (Cmd+R).
 
-## Privacy
-All data stays on your device. No accounts, no analytics, no cloud sync.
+## Project structure
+- `ReframeJournal/` - SwiftUI app source
+- `ReframeJournal.xcodeproj/` - Xcode project
+- `ReframeJournalTests/` - Unit tests
+- `project.yml` - XcodeGen project definition (if you use XcodeGen)
 
-## Run locally
-1) Install dependencies:
-
-```bash
-npm install
-```
-
-2) Start Expo:
-
-```bash
-npm run start
-```
-
-## Future hooks (not implemented)
-- AI assist in wizard steps
-- Pattern dashboard on Home
-- Biometric lock on Entry Detail
+## Notes
+- The iOS app uses local JSON file storage for entries and draft persistence.
+- Theme preference (system/light/dark) is stored using AppStorage.
