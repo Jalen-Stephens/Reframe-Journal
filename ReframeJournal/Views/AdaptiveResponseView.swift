@@ -118,12 +118,7 @@ struct AdaptiveResponseView: View {
                     .foregroundColor(promptIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
                 }
                 .padding(12)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .cardSurface(cornerRadius: 12, shadow: false)
             } else {
                 Text("Add an automatic thought before writing adaptive responses.")
                     .font(.system(size: 13))

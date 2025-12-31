@@ -85,11 +85,7 @@ struct EntryDetailView: View {
                     }
                 }
                 .padding(16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 16)
 
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
@@ -118,11 +114,7 @@ struct EntryDetailView: View {
                     }
                 }
                 .padding(16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 16)
 
                 ChangeSummaryCardView(
                     title: changeItems.isEmpty ? "What changed" : "You made progress",
@@ -147,11 +139,7 @@ struct EntryDetailView: View {
                     }
                 }
                 .padding(16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 16)
 
                 SectionCardView(title: "Automatic thought at the time", subtitle: "How true this felt in the moment", collapsible: true) {
                     if thoughts.isEmpty {
@@ -215,11 +203,7 @@ struct EntryDetailView: View {
                                             .foregroundColor(themeManager.theme.textSecondary)
                                     }
                                     .padding(12)
-                                    .background(themeManager.theme.background)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(themeManager.theme.border, lineWidth: 1)
-                                    )
+                                    .pillSurface(cornerRadius: 12)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -249,12 +233,9 @@ struct EntryDetailView: View {
             .font(.system(size: 13, weight: .semibold))
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
+            .pillSurface(cornerRadius: 10)
             .foregroundColor(themeManager.theme.textPrimary)
+            .buttonStyle(.plain)
 
             Spacer()
 
@@ -270,12 +251,9 @@ struct EntryDetailView: View {
             .font(.system(size: 13, weight: .semibold))
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
+            .pillSurface(cornerRadius: 10)
             .foregroundColor(themeManager.theme.textPrimary)
+            .buttonStyle(.plain)
         }
     }
 
@@ -458,11 +436,7 @@ private struct EditEntrySheet: View {
                             .foregroundColor(themeManager.theme.textSecondary)
                     }
                     .padding(12)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .pillSurface(cornerRadius: 10)
                 }
                 .buttonStyle(.plain)
             }

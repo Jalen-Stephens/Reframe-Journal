@@ -46,11 +46,7 @@ struct DateTimeView: View {
                             .foregroundColor(themeManager.theme.textSecondary)
                     }
                     .padding(12)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .pillSurface(cornerRadius: 12)
                 }
                 .buttonStyle(.plain)
 
@@ -72,20 +68,12 @@ struct DateTimeView: View {
                             .foregroundColor(themeManager.theme.textSecondary)
                     }
                     .padding(12)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .pillSurface(cornerRadius: 12)
                 }
                 .buttonStyle(.plain)
             }
             .padding(12)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
+            .cardSurface(cornerRadius: 14)
         }
         .background(themeManager.theme.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)

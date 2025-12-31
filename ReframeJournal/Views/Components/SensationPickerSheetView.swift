@@ -68,11 +68,7 @@ struct SensationPickerSheetView: View {
                 .submitLabel(.search)
         }
         .padding(10)
-        .background(themeManager.theme.card)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(themeManager.theme.border, lineWidth: 1)
-        )
+        .cardSurface(cornerRadius: 8, shadow: false)
     }
 
     private func selectionRow(for sensation: String) -> some View {
@@ -91,11 +87,7 @@ struct SensationPickerSheetView: View {
                 }
             }
             .padding(12)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
+            .pillSurface(cornerRadius: 10)
         }
         .buttonStyle(.plain)
     }
@@ -118,11 +110,7 @@ struct SensationPickerSheetView: View {
                         .foregroundColor(themeManager.theme.textSecondary)
                 }
                 .padding(12)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .pillSurface(cornerRadius: 10)
             }
             .buttonStyle(.plain)
         }
@@ -149,11 +137,7 @@ struct SensationPickerSheetView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .padding(10)
-        .background(themeManager.theme.card)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(themeManager.theme.border, lineWidth: 1)
-        )
+        .cardSurface(cornerRadius: 10, shadow: false)
     }
 
     private var doneButton: some View {

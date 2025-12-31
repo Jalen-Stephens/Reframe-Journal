@@ -48,11 +48,7 @@ struct EmotionsView: View {
                         .foregroundColor(themeManager.theme.textSecondary)
                 }
                 .padding(10)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .pillSurface(cornerRadius: 6)
             }
             .buttonStyle(.plain)
 

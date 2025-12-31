@@ -19,12 +19,7 @@ struct EntryListItemView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .cardSurface(cornerRadius: 12, shadow: false)
         }
         .buttonStyle(.plain)
     }

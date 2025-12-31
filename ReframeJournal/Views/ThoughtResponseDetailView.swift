@@ -42,12 +42,9 @@ struct ThoughtResponseDetailView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .padding(.vertical, 6)
                     .padding(.horizontal, 10)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .pillSurface(cornerRadius: 10)
                     .foregroundColor(themeManager.theme.textPrimary)
+                    .buttonStyle(.plain)
 
                     Spacer()
 
@@ -69,11 +66,7 @@ struct ThoughtResponseDetailView: View {
                         .foregroundColor(themeManager.theme.textSecondary)
                 }
                 .padding(16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 16, shadow: false)
 
                 ForEach(Array(AdaptivePrompts.all.enumerated()), id: \.element.id) { index, prompt in
                     let responseText = textValue(for: prompt.textKey, responses: responses)
@@ -120,11 +113,7 @@ struct ThoughtResponseDetailView: View {
                         }
                     }
                     .padding(14)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .cardSurface(cornerRadius: 16, shadow: false)
                 }
             }
             .padding(16)

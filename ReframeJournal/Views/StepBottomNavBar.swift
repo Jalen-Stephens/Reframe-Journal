@@ -45,6 +45,6 @@ struct StepBottomNavBar: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
+        .background(themeManager.theme.background)
     }
 }

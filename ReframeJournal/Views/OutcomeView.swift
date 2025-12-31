@@ -138,12 +138,7 @@ struct OutcomeView: View {
                     )
                 }
                 .padding(12)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .cardSurface(cornerRadius: 12, shadow: false)
             } else {
                 Text("Add an automatic thought before finishing the outcome.")
                     .font(.system(size: 13))

@@ -59,16 +59,12 @@ struct HomeView: View {
                                     Text("Pick up where you left off.")
                                         .font(.system(size: 13))
                                         .foregroundColor(themeManager.theme.textSecondary)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(14)
-                                .background(themeManager.theme.card)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(themeManager.theme.border, lineWidth: 1)
-                                )
                             }
-                            .buttonStyle(.plain)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(14)
+                            .cardSurface(cornerRadius: 14, shadow: false)
+                        }
+                        .buttonStyle(.plain)
                         }
                     }
 
@@ -101,11 +97,7 @@ struct HomeView: View {
                                         .foregroundColor(themeManager.theme.textSecondary)
                                 }
                                 .padding(12)
-                                .background(themeManager.theme.card)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(themeManager.theme.border, lineWidth: 1)
-                                )
+                                .pillSurface(cornerRadius: 12)
                             }
                             .buttonStyle(.plain)
                         }
@@ -132,12 +124,9 @@ struct HomeView: View {
             .font(.system(size: 12))
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
+            .pillSurface(cornerRadius: 16)
             .foregroundColor(themeManager.theme.textSecondary)
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
