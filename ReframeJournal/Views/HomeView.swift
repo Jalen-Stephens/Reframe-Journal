@@ -134,6 +134,15 @@ struct HomeView: View {
                             EntryListItemView(entry: entry) {
                                 router.push(.entryDetail(id: entry.id))
                             }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    Task {
+                                        await viewModel.deleteEntry(id: entry.id)
+                                    }
+                                } label: {
+                                    Text("Delete")
+                                }
+                            }
                         }
                     }
                 }
@@ -147,6 +156,15 @@ struct HomeView: View {
                         ForEach(Array(sections.past.prefix(2))) { entry in
                             EntryListItemView(entry: entry) {
                                 router.push(.entryDetail(id: entry.id))
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    Task {
+                                        await viewModel.deleteEntry(id: entry.id)
+                                    }
+                                } label: {
+                                    Text("Delete")
+                                }
                             }
                         }
                     }
