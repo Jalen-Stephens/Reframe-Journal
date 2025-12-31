@@ -3,10 +3,16 @@ import SwiftUI
 struct ThoughtResponseDetailView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var themeManager: ThemeManager
-    @StateObject private var viewModel = ThoughtResponseDetailViewModel(repository: ThoughtRecordRepository())
+    @StateObject private var viewModel: ThoughtResponseDetailViewModel
 
     let entryId: String
     let thoughtId: String
+
+    init(entryId: String, thoughtId: String, repository: ThoughtRecordRepository) {
+        self.entryId = entryId
+        self.thoughtId = thoughtId
+        _viewModel = StateObject(wrappedValue: ThoughtResponseDetailViewModel(repository: repository))
+    }
 
     var body: some View {
         Group {
@@ -25,7 +31,7 @@ struct ThoughtResponseDetailView: View {
         .background(themeManager.theme.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
-            await viewModel.load(entryId: entryId)
+            await viewModel.loadIfNeeded(entryId: entryId)
         }
     }
 

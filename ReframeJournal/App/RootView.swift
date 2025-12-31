@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var router: AppRouter
+    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeManager: ThemeManager
     @Environment(\.colorScheme) private var colorScheme
 
@@ -9,15 +10,15 @@ struct RootView: View {
         ZStack {
             themeManager.theme.background.ignoresSafeArea()
             NavigationStack(path: $router.path) {
-                HomeView()
+                HomeView(repository: appState.repository)
                     .navigationDestination(for: Route.self) { route in
                         switch route {
                         case .allEntries:
-                            AllEntriesView()
+                            AllEntriesView(repository: appState.repository)
                         case let .entryDetail(id):
-                            EntryDetailView(entryId: id)
+                            EntryDetailView(entryId: id, repository: appState.repository)
                         case let .thoughtResponseDetail(entryId, thoughtId):
-                            ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId)
+                            ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId, repository: appState.repository)
                         case .wizardStep1:
                             DateTimeView()
                         case .wizardStep2:

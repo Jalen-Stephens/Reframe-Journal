@@ -2,10 +2,18 @@ import SwiftUI
 
 @main
 struct ReframeJournalApp: App {
-    @StateObject private var appState = AppState()
+    @StateObject private var thoughtStore: ThoughtRecordStore
+    @StateObject private var appState: AppState
     @StateObject private var router = AppRouter()
     @StateObject private var themeManager = ThemeManager()
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
+    @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        let store = ThoughtRecordStore()
+        _thoughtStore = StateObject(wrappedValue: store)
+        _appState = StateObject(wrappedValue: AppState(repository: ThoughtRecordRepository(store: store)))
+    }
 
     private var appAppearance: AppAppearance {
         get { AppAppearance(rawValue: appAppearanceRaw) ?? .system }
@@ -18,7 +26,13 @@ struct ReframeJournalApp: App {
                 .environmentObject(appState)
                 .environmentObject(router)
                 .environmentObject(themeManager)
+                .environmentObject(thoughtStore)
                 .preferredColorScheme(overrideScheme)
+                .onChange(of: scenePhase) { phase in
+                    if phase == .inactive || phase == .background {
+                        Task { await thoughtStore.flushPendingWrites() }
+                    }
+                }
         }
     }
 

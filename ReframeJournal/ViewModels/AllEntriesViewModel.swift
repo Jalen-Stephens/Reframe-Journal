@@ -10,14 +10,33 @@ struct EntrySection: Identifiable, Hashable {
 final class AllEntriesViewModel: ObservableObject {
     @Published var entries: [ThoughtRecord] = []
     @Published var isLoading: Bool = false
+    @Published var hasLoaded: Bool = false
 
     private let repository: ThoughtRecordRepository
 
     init(repository: ThoughtRecordRepository) {
         self.repository = repository
+#if DEBUG
+        print("INIT AllEntriesViewModel \(ObjectIdentifier(self))")
+#endif
+    }
+
+    deinit {
+#if DEBUG
+        print("DEINIT AllEntriesViewModel \(ObjectIdentifier(self))")
+#endif
+    }
+
+    func loadIfNeeded() async {
+        guard !hasLoaded else { return }
+        await refresh()
     }
 
     func refresh() async {
+        hasLoaded = true
+#if DEBUG
+        print("LOAD AllEntriesViewModel.refresh called")
+#endif
         isLoading = true
         defer { isLoading = false }
         do {

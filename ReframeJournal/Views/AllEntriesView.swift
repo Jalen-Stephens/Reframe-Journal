@@ -3,7 +3,11 @@ import SwiftUI
 struct AllEntriesView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var themeManager: ThemeManager
-    @StateObject private var viewModel = AllEntriesViewModel(repository: ThoughtRecordRepository())
+    @StateObject private var viewModel: AllEntriesViewModel
+
+    init(repository: ThoughtRecordRepository) {
+        _viewModel = StateObject(wrappedValue: AllEntriesViewModel(repository: repository))
+    }
 
     var body: some View {
         ScrollView {
@@ -29,13 +33,13 @@ struct AllEntriesView: View {
                 .padding(.top, 48)
                 .padding(.horizontal, 24)
             } else {
-                VStack(alignment: .leading, spacing: 16) {
+                LazyVStack(alignment: .leading, spacing: 16) {
                     ForEach(viewModel.sections()) { section in
                         VStack(alignment: .leading, spacing: 12) {
                             Text(section.title)
                                 .font(.system(size: 14))
                                 .foregroundColor(themeManager.theme.textSecondary)
-                            VStack(spacing: 12) {
+                            LazyVStack(spacing: 12) {
                                 ForEach(section.entries) { entry in
                                     EntryListItemView(entry: entry) {
                                         router.push(.entryDetail(id: entry.id))
@@ -51,7 +55,7 @@ struct AllEntriesView: View {
         .background(themeManager.theme.background.ignoresSafeArea())
         .navigationTitle("All Entries")
         .task {
-            await viewModel.refresh()
+            await viewModel.loadIfNeeded()
         }
     }
 }

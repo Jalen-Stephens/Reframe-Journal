@@ -5,14 +5,33 @@ final class HomeViewModel: ObservableObject {
     @Published var entries: [ThoughtRecord] = []
     @Published var hasDraft: Bool = false
     @Published var isLoading: Bool = false
+    @Published var hasLoaded: Bool = false
 
     private let repository: ThoughtRecordRepository
 
     init(repository: ThoughtRecordRepository) {
         self.repository = repository
+#if DEBUG
+        print("INIT HomeViewModel \(ObjectIdentifier(self))")
+#endif
+    }
+
+    deinit {
+#if DEBUG
+        print("DEINIT HomeViewModel \(ObjectIdentifier(self))")
+#endif
+    }
+
+    func loadIfNeeded() async {
+        guard !hasLoaded else { return }
+        await refresh()
     }
 
     func refresh() async {
+        hasLoaded = true
+#if DEBUG
+        print("LOAD HomeViewModel.refresh called")
+#endif
         isLoading = true
         defer { isLoading = false }
         do {

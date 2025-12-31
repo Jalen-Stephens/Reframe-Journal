@@ -3,7 +3,7 @@ import Foundation
 final class ThoughtRecordRepository {
     private let store: ThoughtRecordStore
 
-    init(store: ThoughtRecordStore = ThoughtRecordStore()) {
+    init(store: ThoughtRecordStore) {
         self.store = store
     }
 
@@ -37,5 +37,9 @@ final class ThoughtRecordRepository {
 
     func deleteDraft() async throws {
         try await store.deleteDraft()
+    }
+
+    func flushPendingWrites() async {
+        await store.flushPendingWrites()
     }
 }

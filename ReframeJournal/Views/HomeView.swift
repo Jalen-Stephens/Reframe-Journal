@@ -7,8 +7,8 @@ struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
     @State private var showDailyLimitAlert = false
 
-    init() {
-        _viewModel = StateObject(wrappedValue: HomeViewModel(repository: ThoughtRecordRepository()))
+    init(repository: ThoughtRecordRepository) {
+        _viewModel = StateObject(wrappedValue: HomeViewModel(repository: repository))
     }
 
     var body: some View {
@@ -184,7 +184,7 @@ struct HomeView: View {
         }
         .background(themeManager.theme.background.ignoresSafeArea())
         .task {
-            await viewModel.refresh()
+            await viewModel.loadIfNeeded()
         }
         .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
             Button("OK", role: .cancel) {}
