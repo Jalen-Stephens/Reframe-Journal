@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var themeManager: ThemeManager
     @StateObject private var viewModel: HomeViewModel
+    @State private var showDailyLimitAlert = false
 
     init() {
         _viewModel = StateObject(wrappedValue: HomeViewModel(repository: ThoughtRecordRepository()))
@@ -28,9 +29,13 @@ struct HomeView: View {
 
                     VStack(spacing: 12) {
                         Button {
-                            Task {
-                                await appState.wizard.clearDraft()
-                                router.push(.wizardStep1)
+                            if appState.thoughtUsage.canCreateThought() {
+                                Task {
+                                    await appState.wizard.clearDraft()
+                                    router.push(.wizardStep1)
+                                }
+                            } else {
+                                showDailyLimitAlert = true
                             }
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
@@ -109,6 +114,14 @@ struct HomeView: View {
         .background(themeManager.theme.background.ignoresSafeArea())
         .task {
             await viewModel.refresh()
+        }
+        .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
+            Button("OK", role: .cancel) {}
+            Button("Upgrade") {
+                // TODO: Wire up subscription flow when StoreKit integration is ready.
+            }
+        } message: {
+            Text("You've used your 3 free thoughts for today.\nCome back tomorrow, or upgrade for unlimited thoughts.")
         }
     }
 

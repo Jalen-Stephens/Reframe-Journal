@@ -309,6 +309,9 @@ struct OutcomeView: View {
             record.updatedAt = DateUtils.nowIso()
             do {
                 try await appState.repository.upsert(record)
+                if !wasEditing {
+                    await appState.thoughtUsage.incrementTodayCount()
+                }
                 await appState.wizard.clearDraft()
                 if wasEditing {
                     router.path = [.entryDetail(id: record.id)]
