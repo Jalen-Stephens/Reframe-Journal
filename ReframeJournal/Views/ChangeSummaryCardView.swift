@@ -25,11 +25,6 @@ struct ChangeSummaryCardView: View {
             }
         }
         .padding(14)
-        .background(themeManager.theme.card)
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(themeManager.theme.border, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .cardSurface(cornerRadius: 14)
     }
 }

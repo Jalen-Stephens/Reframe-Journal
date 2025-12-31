@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
@@ -35,6 +36,12 @@ struct RootView: View {
                     }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .onAppear {
+            themeManager.resolvedScheme = colorScheme
+        }
+        .onChange(of: colorScheme) { newValue in
+            themeManager.resolvedScheme = newValue
         }
     }
 }

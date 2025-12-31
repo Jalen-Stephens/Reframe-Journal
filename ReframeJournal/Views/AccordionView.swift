@@ -21,11 +21,6 @@ struct AccordionView<Header: View, Content: View>: View {
             header
         }
         .padding(12)
-        .background(themeManager.theme.card)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(themeManager.theme.border, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface(cornerRadius: 12, shadow: false)
     }
 }

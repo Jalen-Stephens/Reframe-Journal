@@ -62,7 +62,7 @@ struct EntryDetailView: View {
                 items.append("Main thought before: \(Metrics.clampPercent(mainThought.belief))%")
             }
             if !thoughts.isEmpty {
-                items.append("Thoughts recorded: \(thoughts.count)")
+                items.append("Thought recorded")
             }
             if !emotionsBefore.isEmpty {
                 items.append("Emotions noted: \(emotionsBefore.count)")
@@ -85,11 +85,7 @@ struct EntryDetailView: View {
                     }
                 }
                 .padding(16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 16)
 
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
@@ -118,11 +114,7 @@ struct EntryDetailView: View {
                     }
                 }
                 .padding(16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 16)
 
                 ChangeSummaryCardView(
                     title: changeItems.isEmpty ? "What changed" : "You made progress",
@@ -147,15 +139,11 @@ struct EntryDetailView: View {
                     }
                 }
                 .padding(16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 16)
 
-                SectionCardView(title: "Automatic thoughts at the time", subtitle: "How true these felt in the moment", collapsible: true) {
+                SectionCardView(title: "Automatic thought at the time", subtitle: "How true this felt in the moment", collapsible: true) {
                     if thoughts.isEmpty {
-                        Text("No automatic thoughts saved.")
+                        Text("No automatic thought saved.")
                             .font(.system(size: 12))
                             .foregroundColor(themeManager.theme.textSecondary)
                     } else {
@@ -215,11 +203,7 @@ struct EntryDetailView: View {
                                             .foregroundColor(themeManager.theme.textSecondary)
                                     }
                                     .padding(12)
-                                    .background(themeManager.theme.background)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(themeManager.theme.border, lineWidth: 1)
-                                    )
+                                    .pillSurface(cornerRadius: 12)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -249,12 +233,9 @@ struct EntryDetailView: View {
             .font(.system(size: 13, weight: .semibold))
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
+            .pillSurface(cornerRadius: 10)
             .foregroundColor(themeManager.theme.textPrimary)
+            .buttonStyle(.plain)
 
             Spacer()
 
@@ -270,28 +251,22 @@ struct EntryDetailView: View {
             .font(.system(size: 13, weight: .semibold))
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .background(themeManager.theme.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(themeManager.theme.border, lineWidth: 1)
-            )
+            .pillSurface(cornerRadius: 10)
             .foregroundColor(themeManager.theme.textPrimary)
+            .buttonStyle(.plain)
         }
     }
 
     private func statusFor(_ record: ThoughtRecord) -> ProgressStatus {
-        let hasThoughts = !record.automaticThoughts.isEmpty
-        if !hasThoughts {
+        guard let thought = record.automaticThoughts.first else {
             return .inProgress
         }
-        let isComplete = record.automaticThoughts.allSatisfy { thought in
-            record.outcomesByThought[thought.id]?.isComplete == true
-        }
+        let isComplete = record.outcomesByThought[thought.id]?.isComplete == true
         return isComplete ? .complete : .inProgress
     }
 
     private func normalizeThoughts(_ record: ThoughtRecord) -> [NormalizedThought] {
-        record.automaticThoughts.map {
+        record.automaticThoughts.prefix(1).map {
             NormalizedThought(
                 id: $0.id,
                 text: $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Untitled thought" : $0.text,
@@ -322,7 +297,7 @@ struct EntryDetailView: View {
     }
 
     private func normalizeAdaptiveSummaries(_ record: ThoughtRecord) -> [AdaptiveSummary] {
-        record.automaticThoughts.map { thought in
+        record.automaticThoughts.prefix(1).map { thought in
             let responses = record.adaptiveResponses[thought.id]
             let completedCount = AdaptivePrompts.all.reduce(0) { count, prompt in
                 let text = valueForTextKey(prompt.textKey, in: responses)
@@ -433,7 +408,7 @@ private struct EditEntrySheet: View {
     private let sections: [(String, Route)] = [
         ("Date & time", .wizardStep1),
         ("Situation", .wizardStep2),
-        ("Automatic thoughts", .wizardStep3),
+        ("Automatic thought", .wizardStep3),
         ("Emotions", .wizardStep4),
         ("Adaptive responses", .wizardStep5),
         ("Outcome", .wizardStep6)
@@ -461,11 +436,7 @@ private struct EditEntrySheet: View {
                             .foregroundColor(themeManager.theme.textSecondary)
                     }
                     .padding(12)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .pillSurface(cornerRadius: 10)
                 }
                 .buttonStyle(.plain)
             }

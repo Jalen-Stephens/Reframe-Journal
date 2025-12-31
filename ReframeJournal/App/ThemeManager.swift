@@ -1,33 +1,5 @@
 import SwiftUI
 
-enum ThemePreference: String, CaseIterable, Identifiable {
-    case system
-    case light
-    case dark
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .system:
-            return "System (Default)"
-        case .light:
-            return "Light"
-        case .dark:
-            return "Dark"
-        }
-    }
-
-    var helper: String? {
-        switch self {
-        case .system:
-            return "Matches your device setting"
-        default:
-            return nil
-        }
-    }
-}
-
 struct ThemeTokens {
     let background: Color
     let card: Color
@@ -41,19 +13,10 @@ struct ThemeTokens {
 }
 
 final class ThemeManager: ObservableObject {
-    @AppStorage("themePreference") private var storedPreference: String = ThemePreference.system.rawValue
-
+    // MARK: - State
     @Published var resolvedScheme: ColorScheme = .light
-    @Published var themePreference: ThemePreference = .system {
-        didSet {
-            storedPreference = themePreference.rawValue
-        }
-    }
 
-    init() {
-        themePreference = ThemePreference(rawValue: storedPreference) ?? .system
-    }
-
+    // MARK: - Theme Tokens
     var theme: ThemeTokens {
         switch resolvedScheme {
         case .dark:
@@ -80,17 +43,6 @@ final class ThemeManager: ObservableObject {
                 accent: Color(hex: "#2F2F2F"),
                 onAccent: Color(hex: "#FFFFFF")
             )
-        }
-    }
-
-    func preferredColorScheme() -> ColorScheme? {
-        switch themePreference {
-        case .system:
-            return nil
-        case .light:
-            return .light
-        case .dark:
-            return .dark
         }
     }
 }

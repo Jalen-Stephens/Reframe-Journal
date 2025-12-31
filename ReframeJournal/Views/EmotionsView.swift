@@ -26,102 +26,97 @@ struct EmotionsView: View {
     @State private var pendingDeleteId: String? = nil
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                WizardProgressView(step: 4, total: 6)
-                Text("What emotion/s did you feel at the time? How intense was the emotion (0-100%)?")
-                    .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textSecondary)
+        StepContentContainer(title: "Emotions", step: 4, total: 6) {
+            Text("What emotion/s did you feel at the time? How intense was the emotion (0-100%)?")
+                .font(.system(size: 13))
+                .foregroundColor(themeManager.theme.textSecondary)
 
-                Text("Emotion")
-                    .font(.system(size: 14))
-                    .foregroundColor(themeManager.theme.textSecondary)
+            Text("Emotion")
+                .font(.system(size: 14))
+                .foregroundColor(themeManager.theme.textSecondary)
 
-                Button {
-                    showPicker = true
-                } label: {
-                    HStack {
-                        Text(displayLabel())
-                            .font(.system(size: 15))
-                            .foregroundColor(emotionLabel.isEmpty ? themeManager.theme.placeholder : themeManager.theme.textPrimary)
-                        Spacer()
-                        Text("▼")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-                    .padding(10)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-
-                if isCustomSelected() {
-                    LabeledInput(label: "Custom emotion", placeholder: "Describe your emotion", text: $customEmotion)
-                }
-
-                if editId != nil {
-                    HStack {
-                        Text("Editing emotion")
-                            .font(.system(size: 13))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                        Spacer()
-                        Button("Cancel edit") {
-                            resetInputs()
-                        }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(themeManager.theme.accent)
-                    }
-                }
-
-                VStack(spacing: 10) {
-                    Text("\(Metrics.clampPercent(intensityValue))%")
-                        .font(.system(size: 32, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
-                    Text("How intense was this emotion?")
-                        .font(.system(size: 14))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                    Slider(value: $intensityValue, in: 0...100, step: 1)
-                        .accentColor(themeManager.theme.accent)
-                    Text("0 = not at all, 100 = most intense")
-                        .font(.system(size: 12))
+            Button {
+                showPicker = true
+            } label: {
+                HStack {
+                    Text(displayLabel())
+                        .font(.system(size: 15))
+                        .foregroundColor(emotionLabel.isEmpty ? themeManager.theme.placeholder : themeManager.theme.textPrimary)
+                    Spacer()
+                    Text("▼")
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(themeManager.theme.textSecondary)
                 }
+                .padding(10)
+                .pillSurface(cornerRadius: 6)
+            }
+            .buttonStyle(.plain)
 
-                PrimaryButton(
-                    label: editId != nil ? "Save changes" : "Add emotion",
-                    onPress: submitEmotion,
-                    disabled: resolvedLabel().isEmpty
-                )
+            if isCustomSelected() {
+                LabeledInput(label: "Custom emotion", placeholder: "Describe your emotion", text: $customEmotion)
+            }
 
-                if appState.wizard.draft.emotions.isEmpty {
-                    Text("Add at least one emotion to continue.")
-                        .font(.system(size: 12))
+            if editId != nil {
+                HStack {
+                    Text("Editing emotion")
+                        .font(.system(size: 13))
                         .foregroundColor(themeManager.theme.textSecondary)
-                        .padding(.top, 4)
-                }
-
-                VStack(spacing: 12) {
-                    ForEach(appState.wizard.draft.emotions) { emotion in
-                        ThoughtCardView(
-                            text: emotion.label,
-                            belief: emotion.intensityBefore,
-                            badgeLabel: "Intensity",
-                            onEdit: { startEdit(emotion) },
-                            onRemove: { pendingDeleteId = emotion.id }
-                        )
+                    Spacer()
+                    Button("Cancel edit") {
+                        resetInputs()
                     }
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(themeManager.theme.accent)
                 }
             }
-            .padding(16)
+
+            VStack(spacing: 10) {
+                Text("\(Metrics.clampPercent(intensityValue))%")
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundColor(themeManager.theme.textPrimary)
+                Text("How intense was this emotion?")
+                    .font(.system(size: 14))
+                    .foregroundColor(themeManager.theme.textSecondary)
+                Slider(value: $intensityValue, in: 0...100, step: 1)
+                    .accentColor(themeManager.theme.accent)
+                Text("0 = not at all, 100 = most intense")
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+            }
+
+            PrimaryButton(
+                label: editId != nil ? "Save changes" : "Add emotion",
+                onPress: submitEmotion,
+                disabled: resolvedLabel().isEmpty
+            )
+
+            if appState.wizard.draft.emotions.isEmpty {
+                Text("Add at least one emotion to continue.")
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+                    .padding(.top, 4)
+            }
+
+            VStack(spacing: 12) {
+                ForEach(appState.wizard.draft.emotions) { emotion in
+                    ThoughtCardView(
+                        text: emotion.label,
+                        belief: emotion.intensityBefore,
+                        badgeLabel: "Intensity",
+                        onEdit: { startEdit(emotion) },
+                        onRemove: { pendingDeleteId = emotion.id }
+                    )
+                }
+            }
         }
         .background(themeManager.theme.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
-            PrimaryButton(label: "Next", onPress: nextStep, disabled: appState.wizard.draft.emotions.isEmpty)
-                .padding(16)
-                .background(themeManager.theme.background)
+            StepBottomNavBar(
+                onBack: { router.pop() },
+                onNext: nextStep,
+                isNextDisabled: appState.wizard.draft.emotions.isEmpty
+            )
         }
         .sheet(isPresented: $showPicker) {
             emotionPicker

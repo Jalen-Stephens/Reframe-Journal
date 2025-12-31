@@ -22,12 +22,9 @@ struct AllEntriesView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 999)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .pillSurface(cornerRadius: 999)
                     .foregroundColor(themeManager.theme.textSecondary)
+                    .buttonStyle(.plain)
                 }
                 .padding(.top, 48)
                 .padding(.horizontal, 24)
