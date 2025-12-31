@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B4A3B2C1D0E9F8A7B6C5D4E3 /* ThoughtUsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2E3D4C5B6A79808192A3B4 /* ThoughtUsageService.swift */; };
 		0597D0C2BD5F3460115A2047 /* EmotionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D55C61CF6964611F106D910 /* EmotionsView.swift */; };
 		0BE5C113B242E7C02660892E /* AdaptivePrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF68E4F81363C2FB72B0B64 /* AdaptivePrompts.swift */; };
 		12274A4E040B47078CCD7560 /* SectionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546FB4220CEEF24D6A5B1D14 /* SectionCardView.swift */; };
@@ -70,6 +71,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1F2E3D4C5B6A79808192A3B4 /* ThoughtUsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtUsageService.swift; sourceTree = "<group>"; };
 		082A0A7C10E54A7FE76D86D9 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		087306FB4D31EF378A1C1F1A /* Metrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metrics.swift; sourceTree = "<group>"; };
 		2E4975A525AB4A82A134F502 /* AppAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAppearance.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 		6B38B88DEA0CFACCC1336217 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				1F2E3D4C5B6A79808192A3B4 /* ThoughtUsageService.swift */,
 				7E30587AECC6EFE96513A19B /* ThoughtRecordRepository.swift */,
 			);
 			path = Services;
@@ -375,6 +378,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4A3B2C1D0E9F8A7B6C5D4E3 /* ThoughtUsageService.swift in Sources */,
 				6FFB15E22C2CEC0BC540A95D /* AccordionView.swift in Sources */,
 				0BE5C113B242E7C02660892E /* AdaptivePrompts.swift in Sources */,
 				51DD3E0559533372EA2AC62D /* AdaptiveResponseView.swift in Sources */,
