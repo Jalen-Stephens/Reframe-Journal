@@ -25,6 +25,7 @@
 		51DD3E0559533372EA2AC62D /* AdaptiveResponseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44EEF31DBEB81E519A8571E /* AdaptiveResponseView.swift */; };
 		5BDBB32002A3D826F8D30994 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425AF360D9A05BA0D2EC6FB7 /* PrimaryButton.swift */; };
 		5E2E5DF1AAB3DF819A9863B3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46308216C66CE393053779B5 /* SettingsView.swift */; };
+		F0A1B2C3D4E5061728394A5B /* SurfaceStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A1B2C3D4E5061728394A5C /* SurfaceStyles.swift */; };
 		60DADC936ABD5241717A0DF9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED787A3A0146DF8813BE657E /* RootView.swift */; };
 		671B038C45A51530D33714B7 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F60033E301CE97D6A6B26C9 /* Color+Hex.swift */; };
 		6D7FF0544F37811F03C58FEA /* Identifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B81E049560BD2F69940170 /* Identifiers.swift */; };
@@ -120,6 +121,7 @@
 		E46312FE3978E03DDBCCC38F /* ReframeJournalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReframeJournalApp.swift; sourceTree = "<group>"; };
 		E52D7165210280A0F072C95E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		ED787A3A0146DF8813BE657E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F0A1B2C3D4E5061728394A5C /* SurfaceStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfaceStyles.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -178,6 +180,7 @@
 			children = (
 				F1B2C3D4E5F60718293A4B5C /* SensationPickerSheetView.swift */,
 				E1A2B3C4D5E6F708192A3B4C /* SelectedChipView.swift */,
+				F0A1B2C3D4E5061728394A5C /* SurfaceStyles.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -396,6 +399,7 @@
 				5BDBB32002A3D826F8D30994 /* PrimaryButton.swift in Sources */,
 				B0C1D2E3F4A5061728394A5B /* SensationPickerSheetView.swift in Sources */,
 				A0B1C2D3E4F5061728394A5B /* SelectedChipView.swift in Sources */,
+				F0A1B2C3D4E5061728394A5B /* SurfaceStyles.swift in Sources */,
 				D19A160F676C45F32A76799D /* ProgressPillView.swift in Sources */,
 				73FDB8B9EA5037DFE8C69B30 /* ReframeJournalApp.swift in Sources */,
 				60DADC936ABD5241717A0DF9 /* RootView.swift in Sources */,
