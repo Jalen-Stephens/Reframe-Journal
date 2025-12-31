@@ -144,7 +144,7 @@ struct HomeView: View {
                         .foregroundColor(themeManager.theme.textPrimary)
                         .padding(.top, sections.today.isEmpty ? 0 : 8)
                     VStack(spacing: 12) {
-                        ForEach(sections.past) { entry in
+                        ForEach(Array(sections.past.prefix(2))) { entry in
                             EntryListItemView(entry: entry) {
                                 router.push(.entryDetail(id: entry.id))
                             }
