@@ -12,71 +12,175 @@ struct HomeView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let sections = splitEntriesByToday(viewModel.entries)
+        return VStack(alignment: .leading, spacing: 0) {
             header
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Ground yourself and gently work through a moment, step by step.")
+            List {
+                Text("Ground yourself and gently work through a moment, step by step.")
+                    .font(.system(size: 13))
+                    .foregroundColor(themeManager.theme.textSecondary)
+                    .padding(.top, 8)
+                    .listRowInsets(rowInsets)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(themeManager.theme.background)
+
+                if let latest = viewModel.entries.first {
+                    Text("Last worked on: \(latestThoughtLabel(for: latest)) · \(DateUtils.formatRelativeDate(latest.createdAt))")
                         .font(.system(size: 13))
                         .foregroundColor(themeManager.theme.textSecondary)
-                        .padding(.top, 8)
+                        .listRowInsets(rowInsets)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(themeManager.theme.background)
+                }
 
-                    if let latest = viewModel.entries.first {
-                        Text("Last worked on: \(latestThoughtLabel(for: latest)) · \(DateUtils.formatRelativeDate(latest.createdAt))")
-                            .font(.system(size: 13))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-
-                    VStack(spacing: 12) {
-                        Button {
-                            if appState.thoughtUsage.canCreateThought() {
-                                Task {
-                                    await appState.wizard.clearDraft()
-                                    router.push(.wizardStep1)
-                                }
-                            } else {
-                                showDailyLimitAlert = true
+                VStack(spacing: 12) {
+                    Button {
+                        if appState.thoughtUsage.canCreateThought() {
+                            Task {
+                                await appState.wizard.clearDraft()
+                                router.push(.wizardStep1)
                             }
+                        } else {
+                            showDailyLimitAlert = true
+                        }
+                    } label: {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("New thought record")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(themeManager.theme.onAccent)
+                            Text("Work through a difficult moment step by step.")
+                                .font(.system(size: 13))
+                                .foregroundColor(themeManager.theme.onAccent.opacity(0.9))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(16)
+                        .background(themeManager.theme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    .buttonStyle(.plain)
+
+                    if viewModel.hasDraft {
+                        Button {
+                            router.push(.wizardStep1)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("New thought record")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.onAccent)
-                                Text("Work through a difficult moment step by step.")
+                                Text("Continue draft")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundColor(themeManager.theme.textPrimary)
+                                Text("Pick up where you left off.")
                                     .font(.system(size: 13))
-                                    .foregroundColor(themeManager.theme.onAccent.opacity(0.9))
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(16)
-                            .background(themeManager.theme.accent)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                        }
-                        .buttonStyle(.plain)
-
-                        if viewModel.hasDraft {
-                            Button {
-                                router.push(.wizardStep1)
-                            } label: {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Continue draft")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundColor(themeManager.theme.textPrimary)
-                                    Text("Pick up where you left off.")
-                                        .font(.system(size: 13))
-                                        .foregroundColor(themeManager.theme.textSecondary)
+                                    .foregroundColor(themeManager.theme.textSecondary)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(14)
                             .cardSurface(cornerRadius: 14, shadow: false)
                         }
                         .buttonStyle(.plain)
+                    }
+                }
+                .listRowInsets(rowInsets)
+                .listRowSeparator(.hidden)
+                .listRowBackground(themeManager.theme.background)
+
+                if sections.today.isEmpty && sections.past.isEmpty {
+                    Text("No entries yet. Start a new thought record above.")
+                        .font(.system(size: 13))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                        .listRowInsets(rowInsets)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(themeManager.theme.background)
+                } else {
+                    if !sections.today.isEmpty {
+                        Section {
+                            ForEach(sections.today) { entry in
+                                EntryListItemView(entry: entry) {
+                                    router.push(.entryDetail(id: entry.id))
+                                }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button {
+                                        editEntry(entry)
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(themeManager.theme.accent)
+
+                                    Button(role: .destructive) {
+                                        Task {
+                                            await viewModel.deleteEntry(id: entry.id)
+                                        }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .listRowInsets(rowInsets)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(themeManager.theme.background)
+                            }
+                        } header: {
+                            Text("Recent entries")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(themeManager.theme.textPrimary)
+                                .textCase(nil)
                         }
                     }
 
-                    entriesSection
+                    if !sections.past.isEmpty {
+                        Section {
+                            ForEach(Array(sections.past.prefix(2))) { entry in
+                                EntryListItemView(entry: entry) {
+                                    router.push(.entryDetail(id: entry.id))
+                                }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button {
+                                        editEntry(entry)
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(themeManager.theme.accent)
+
+                                    Button(role: .destructive) {
+                                        Task {
+                                            await viewModel.deleteEntry(id: entry.id)
+                                        }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .listRowInsets(rowInsets)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(themeManager.theme.background)
+                            }
+                        } header: {
+                            Text("Past entries")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(themeManager.theme.textPrimary)
+                                .textCase(nil)
+                        }
+                    }
+
+                    Button {
+                        router.push(.allEntries)
+                    } label: {
+                        HStack {
+                            Text("View all entries")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                            Spacer()
+                            Text(">")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                        }
+                        .padding(12)
+                        .pillSurface(cornerRadius: 12)
+                    }
+                    .buttonStyle(.plain)
+                    .listRowInsets(rowInsets)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(themeManager.theme.background)
                 }
-                .padding(16)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
         .background(themeManager.theme.background.ignoresSafeArea())
         .task {
@@ -117,79 +221,6 @@ struct HomeView: View {
         return thought.isEmpty ? "Untitled thought" : thought
     }
 
-    private var entriesSection: some View {
-        let sections = splitEntriesByToday(viewModel.entries)
-        return VStack(alignment: .leading, spacing: 12) {
-            if sections.today.isEmpty && sections.past.isEmpty {
-                Text("No entries yet. Start a new thought record above.")
-                    .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textSecondary)
-            } else {
-                if !sections.today.isEmpty {
-                    Text("Recent entries")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
-                    VStack(spacing: 12) {
-                        ForEach(sections.today) { entry in
-                            EntryListItemView(entry: entry) {
-                                router.push(.entryDetail(id: entry.id))
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    Task {
-                                        await viewModel.deleteEntry(id: entry.id)
-                                    }
-                                } label: {
-                                    Text("Delete")
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if !sections.past.isEmpty {
-                    Text("Past entries")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
-                        .padding(.top, sections.today.isEmpty ? 0 : 8)
-                    VStack(spacing: 12) {
-                        ForEach(Array(sections.past.prefix(2))) { entry in
-                            EntryListItemView(entry: entry) {
-                                router.push(.entryDetail(id: entry.id))
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    Task {
-                                        await viewModel.deleteEntry(id: entry.id)
-                                    }
-                                } label: {
-                                    Text("Delete")
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Button {
-                    router.push(.allEntries)
-                } label: {
-                    HStack {
-                        Text("View all entries")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                        Spacer()
-                        Text(">")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-                    .padding(12)
-                    .pillSurface(cornerRadius: 12)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
-
     private func splitEntriesByToday(_ entries: [ThoughtRecord]) -> (today: [ThoughtRecord], past: [ThoughtRecord]) {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: Date())
@@ -207,5 +238,15 @@ struct HomeView: View {
             }
         }
         return (today, past)
+    }
+
+    private var rowInsets: EdgeInsets {
+        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+    }
+
+    private func editEntry(_ entry: ThoughtRecord) {
+        appState.wizard.setDraft(entry, isEditing: true)
+        Task { await appState.wizard.persistDraft(entry) }
+        router.push(.wizardStep1)
     }
 }
