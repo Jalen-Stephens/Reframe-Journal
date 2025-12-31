@@ -5,7 +5,6 @@ struct ReframeJournalApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var router = AppRouter()
     @StateObject private var themeManager = ThemeManager()
-    @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
 
     private var appAppearance: AppAppearance {
@@ -19,27 +18,7 @@ struct ReframeJournalApp: App {
                 .environmentObject(appState)
                 .environmentObject(router)
                 .environmentObject(themeManager)
-                .onAppear {
-                    themeManager.resolvedScheme = resolveScheme()
-                }
-                .onChange(of: colorScheme) { _ in
-                    themeManager.resolvedScheme = resolveScheme()
-                }
-                .onChange(of: appAppearanceRaw) { _ in
-                    themeManager.resolvedScheme = resolveScheme()
-                }
                 .preferredColorScheme(overrideScheme)
-        }
-    }
-
-    private func resolveScheme() -> ColorScheme {
-        switch appAppearance {
-        case .system:
-            return colorScheme
-        case .light:
-            return .light
-        case .dark:
-            return .dark
         }
     }
 
