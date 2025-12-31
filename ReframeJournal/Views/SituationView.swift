@@ -29,7 +29,12 @@ struct SituationView: View {
                 .font(.system(size: 13))
                 .foregroundColor(themeManager.theme.textSecondary)
 
-            LabeledInput(label: "Situation", placeholder: "What happened?", text: $situationText, isMultiline: true)
+            LabeledInput(
+                label: "Situation",
+                placeholder: "e.g., I got a critical email from my manager.",
+                text: $situationText,
+                isMultiline: false
+            )
 
             Text("Physical sensations")
                 .font(.system(size: 14))

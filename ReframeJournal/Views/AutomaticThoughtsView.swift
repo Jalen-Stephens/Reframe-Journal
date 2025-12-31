@@ -31,11 +31,6 @@ struct AutomaticThoughtsView: View {
                     .foregroundColor(themeManager.theme.textSecondary)
             }
 
-            PrimaryButton(
-                label: "Save & Continue",
-                onPress: saveThought,
-                disabled: thoughtText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            )
         }
         .background(themeManager.theme.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
@@ -43,7 +38,7 @@ struct AutomaticThoughtsView: View {
             StepBottomNavBar(
                 onBack: { router.pop() },
                 onNext: nextStep,
-                isNextDisabled: appState.wizard.draft.automaticThoughts.isEmpty
+                isNextDisabled: thoughtText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             )
         }
         .onAppear {
@@ -63,6 +58,7 @@ struct AutomaticThoughtsView: View {
     private func saveThought() {
         let trimmed = thoughtText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        dismissKeyboard()
         let belief = Metrics.clampPercent(beliefValue)
         let id = thoughtId ?? Identifiers.generateId()
         appState.wizard.draft.automaticThoughts = [
@@ -73,6 +69,7 @@ struct AutomaticThoughtsView: View {
 
     private func nextStep() {
         Task {
+            saveThought()
             await appState.wizard.persistDraft()
             router.push(.wizardStep4)
         }

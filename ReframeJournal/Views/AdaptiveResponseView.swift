@@ -63,25 +63,19 @@ struct AdaptiveResponseView: View {
                     Text(prompt.label)
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(themeManager.theme.textPrimary)
-                    ZStack(alignment: .topLeading) {
-                        if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Text("Write a grounded response")
-                                .font(.system(size: 13))
-                                .foregroundColor(themeManager.theme.placeholder)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 10)
-                        }
-                        TextEditor(text: bindingForText(prompt.textKey, thoughtId: thought.id))
-                            .frame(minHeight: 90)
-                            .padding(6)
-                            .background(themeManager.theme.background)
-                            .scrollContentBackground(.hidden)
-                            .focused($focusedField, equals: .response(thoughtId: thought.id, key: prompt.textKey))
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
+                    TextField(
+                        "Write a grounded response",
+                        text: bindingForText(prompt.textKey, thoughtId: thought.id)
                     )
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .submitLabel(.done)
+                    .onSubmit {
+                        dismissKeyboard()
+                    }
+                    .padding(10)
+                    .foregroundColor(themeManager.theme.textPrimary)
+                    .cardSurface(cornerRadius: 10, shadow: false)
+                    .focused($focusedField, equals: .response(thoughtId: thought.id, key: prompt.textKey))
 
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {

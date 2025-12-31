@@ -1,7 +1,11 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct StepBottomNavBar: View {
     @EnvironmentObject private var themeManager: ThemeManager
+    @State private var isKeyboardVisible = false
 
     let onBack: () -> Void
     let onNext: () -> Void
@@ -24,27 +28,37 @@ struct StepBottomNavBar: View {
     }
 
     var body: some View {
-        VStack(spacing: 10) {
-            Button(action: onNext) {
-                Text(nextLabel)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(themeManager.theme.accent)
-            .disabled(isNextDisabled)
+        Group {
+            if !isKeyboardVisible {
+                VStack(spacing: 10) {
+                    Button(action: onNext) {
+                        Text(nextLabel)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(themeManager.theme.accent)
+                    .disabled(isNextDisabled)
 
-            Button(action: onBack) {
-                Text("Back")
-                    .frame(maxWidth: .infinity)
+                    Button(action: onBack) {
+                        Text("Back")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .tint(themeManager.theme.textSecondary)
+                    .disabled(isBackDisabled)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(themeManager.theme.background)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .tint(themeManager.theme.textSecondary)
-            .disabled(isBackDisabled)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .background(themeManager.theme.background)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            isKeyboardVisible = false
+        }
     }
 }

@@ -7,6 +7,7 @@ struct LabeledInput: View {
     let placeholder: String
     @Binding var text: String
     var isMultiline: Bool = false
+    var multilineMinHeight: CGFloat = 90
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -22,26 +23,24 @@ struct LabeledInput: View {
                             .padding(.vertical, 10)
                     }
                     TextEditor(text: $text)
-                        .frame(minHeight: 90)
+                        .frame(minHeight: multilineMinHeight)
                         .padding(4)
-                        .background(themeManager.theme.card)
+                        .background(Color.clear)
                         .scrollContentBackground(.hidden)
                         .foregroundColor(themeManager.theme.textPrimary)
+                        .keyboardDismissToolbar()
                 }
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
+                .cardSurface(cornerRadius: 8, shadow: false)
             } else {
                 TextField(placeholder, text: $text)
                     .textFieldStyle(PlainTextFieldStyle())
+                    .submitLabel(.done)
+                    .onSubmit {
+                        dismissKeyboard()
+                    }
                     .padding(10)
-                    .background(themeManager.theme.card)
                     .foregroundColor(themeManager.theme.textPrimary)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                    .cardSurface(cornerRadius: 8, shadow: false)
             }
         }
     }

@@ -64,6 +64,9 @@ struct SensationPickerSheetView: View {
                 .foregroundColor(themeManager.theme.textSecondary)
             TextField("Search sensations", text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
+                .onSubmit {
+                    dismissKeyboard()
+                }
                 .foregroundColor(themeManager.theme.textPrimary)
                 .submitLabel(.search)
         }
@@ -125,6 +128,7 @@ struct SensationPickerSheetView: View {
                 .focused($isCustomFocused)
                 .onSubmit {
                     addCustomSensation()
+                    dismissKeyboard()
                 }
             Button("Add") {
                 addCustomSensation()

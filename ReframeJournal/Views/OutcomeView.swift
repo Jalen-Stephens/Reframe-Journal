@@ -112,24 +112,15 @@ struct OutcomeView: View {
                     Text("Anything you want to note after this thought?")
                         .font(.system(size: 12))
                         .foregroundColor(themeManager.theme.textSecondary)
-                    ZStack(alignment: .topLeading) {
-                        if (appState.wizard.draft.outcomesByThought[thought.id]?.reflection ?? "").isEmpty {
-                            Text("Optional reflection")
-                                .font(.system(size: 13))
-                                .foregroundColor(themeManager.theme.placeholder)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 10)
+                    TextField("Optional reflection", text: bindingForReflection(thoughtId: thought.id))
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .submitLabel(.done)
+                        .onSubmit {
+                            dismissKeyboard()
                         }
-                        TextEditor(text: bindingForReflection(thoughtId: thought.id))
-                            .frame(minHeight: 80)
-                            .padding(6)
-                            .background(themeManager.theme.background)
-                            .scrollContentBackground(.hidden)
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
+                        .padding(10)
+                        .foregroundColor(themeManager.theme.textPrimary)
+                        .cardSurface(cornerRadius: 10, shadow: false)
 
                     PrimaryButton(
                         label: isComplete ? "Thought Complete" : "Mark Thought Complete",
