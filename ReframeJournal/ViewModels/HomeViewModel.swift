@@ -30,4 +30,13 @@ final class HomeViewModel: ObservableObject {
             hasDraft = false
         }
     }
+
+    func deleteEntry(id: String) async {
+        do {
+            try await repository.delete(id: id)
+            entries.removeAll { $0.id == id }
+        } catch {
+            print("Delete entry failed", error)
+        }
+    }
 }
