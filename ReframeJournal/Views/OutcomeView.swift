@@ -309,6 +309,7 @@ struct OutcomeView: View {
             record.updatedAt = DateUtils.nowIso()
             do {
                 try await appState.repository.upsert(record)
+                await appState.repository.flushPendingWrites()
                 if !wasEditing {
                     await appState.thoughtUsage.incrementTodayCount()
                 }

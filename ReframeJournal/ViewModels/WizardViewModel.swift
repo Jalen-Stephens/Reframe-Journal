@@ -4,6 +4,7 @@ import Foundation
 final class WizardViewModel: ObservableObject {
     @Published var draft: ThoughtRecord
     @Published var isEditing: Bool = false
+    @Published var hasLoadedDraft: Bool = false
 
     private let repository: ThoughtRecordRepository
 
@@ -11,7 +12,16 @@ final class WizardViewModel: ObservableObject {
         self.repository = repository
         let now = DateUtils.nowIso()
         self.draft = ThoughtRecord.empty(nowIso: now, id: Identifiers.generateId())
+#if DEBUG
+        print("INIT WizardViewModel \(ObjectIdentifier(self))")
+#endif
         Task { await loadDraft() }
+    }
+
+    deinit {
+#if DEBUG
+        print("DEINIT WizardViewModel \(ObjectIdentifier(self))")
+#endif
     }
 
     func resetDraft() {
@@ -50,6 +60,11 @@ final class WizardViewModel: ObservableObject {
     }
 
     func loadDraft() async {
+#if DEBUG
+        print("LOAD WizardViewModel.loadDraft called")
+#endif
+        guard !hasLoadedDraft else { return }
+        hasLoadedDraft = true
         do {
             if let stored = try await repository.fetchDraft() {
                 draft = stored

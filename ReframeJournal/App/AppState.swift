@@ -8,7 +8,7 @@ final class AppState: ObservableObject {
     let thoughtUsage: ThoughtUsageService
     private var cancellables: Set<AnyCancellable> = []
 
-    init(repository: ThoughtRecordRepository = ThoughtRecordRepository()) {
+    init(repository: ThoughtRecordRepository) {
         self.repository = repository
         self.wizard = WizardViewModel(repository: repository)
         self.thoughtUsage = ThoughtUsageService()

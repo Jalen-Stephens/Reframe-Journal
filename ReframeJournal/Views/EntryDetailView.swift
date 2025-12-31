@@ -4,11 +4,16 @@ struct EntryDetailView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeManager: ThemeManager
-    @StateObject private var viewModel = EntryDetailViewModel(repository: ThoughtRecordRepository())
+    @StateObject private var viewModel: EntryDetailViewModel
 
     let entryId: String
 
     @State private var isEditMenuOpen = false
+
+    init(entryId: String, repository: ThoughtRecordRepository) {
+        self.entryId = entryId
+        _viewModel = StateObject(wrappedValue: EntryDetailViewModel(repository: repository))
+    }
 
     var body: some View {
         Group {
@@ -27,7 +32,7 @@ struct EntryDetailView: View {
         .background(themeManager.theme.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
-            await viewModel.load(id: entryId)
+            await viewModel.loadIfNeeded(id: entryId)
         }
     }
 
