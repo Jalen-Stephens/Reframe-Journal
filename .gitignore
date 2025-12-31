@@ -148,4 +148,3 @@ build/
 *.xccheckout
 .swiftpm/
 .build/
-ReframeJournal.xcodeproj/xcshareddata/xcschemes/*.xcscheme
