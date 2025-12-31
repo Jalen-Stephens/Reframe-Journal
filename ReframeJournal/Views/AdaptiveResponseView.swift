@@ -104,12 +104,22 @@ struct AdaptiveResponseView: View {
                         }
                     }
 
-                    Button("Back") {
-                        retreatPrompt()
+                    HStack {
+                        Button("Back") {
+                            retreatPrompt()
+                        }
+                        .disabled(promptIndex == 0)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(promptIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
+
+                        Spacer()
+
+                        Button(isLastPrompt() ? "Save & finish" : "Save & continue") {
+                            handleInlineContinue()
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(themeManager.theme.accent)
                     }
-                    .disabled(promptIndex == 0)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(promptIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
                 }
                 .padding(12)
                 .cardSurface(cornerRadius: 12, shadow: false)
@@ -324,5 +334,22 @@ struct AdaptiveResponseView: View {
         }
 
         nextStep()
+    }
+
+    private func handleInlineContinue() {
+        guard let thought = appState.wizard.draft.automaticThoughts.first else { return }
+        let prompt = AdaptivePrompts.all[promptIndex]
+        guard canAdvancePrompt(thoughtId: thought.id, prompt: prompt) else {
+            showIncompleteHint = true
+            return
+        }
+        Task {
+            await appState.wizard.persistDraft()
+            if isLastPrompt() {
+                nextStep()
+            } else {
+                advancePrompt()
+            }
+        }
     }
 }
