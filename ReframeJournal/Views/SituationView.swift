@@ -24,82 +24,74 @@ struct SituationView: View {
     @State private var isPickerPresented = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                WizardProgressView(step: 2, total: 6)
-                Text("What led to the unpleasant emotion? What distressing physical sensations did you have?")
+        StepContentContainer(title: "Situation", step: 2, total: 6) {
+            Text("What led to the unpleasant emotion? What distressing physical sensations did you have?")
+                .font(.system(size: 13))
+                .foregroundColor(themeManager.theme.textSecondary)
+
+            LabeledInput(label: "Situation", placeholder: "What happened?", text: $situationText, isMultiline: true)
+
+            Text("Physical sensations")
+                .font(.system(size: 14))
+                .foregroundColor(themeManager.theme.textSecondary)
+
+            Button {
+                isPickerPresented = true
+            } label: {
+                HStack {
+                    Text("Select common sensations")
+                        .font(.system(size: 14))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    Spacer()
+                    Text("▼")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                }
+                .padding(10)
+                .background(themeManager.theme.card)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(themeManager.theme.border, lineWidth: 1)
+                )
+            }
+            .sheet(isPresented: $isPickerPresented) {
+                SensationPickerSheetView(
+                    selectedSensations: $selectedSensations,
+                    isPresented: $isPickerPresented,
+                    commonSensations: commonSensations
+                )
+            }
+
+            if selectedSensations.isEmpty {
+                Text("No sensations selected.")
                     .font(.system(size: 13))
                     .foregroundColor(themeManager.theme.textSecondary)
-
-                LabeledInput(label: "Situation", placeholder: "What happened?", text: $situationText, isMultiline: true)
-
-                Text("Physical sensations")
-                    .font(.system(size: 14))
-                    .foregroundColor(themeManager.theme.textSecondary)
-
-                Button {
-                    isPickerPresented = true
-                } label: {
-                    HStack {
-                        Text("Select common sensations")
-                            .font(.system(size: 14))
-                            .foregroundColor(themeManager.theme.textPrimary)
-                        Spacer()
-                        Text("▼")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-                    .padding(10)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
-                }
-                .sheet(isPresented: $isPickerPresented) {
-                    SensationPickerSheetView(
-                        selectedSensations: $selectedSensations,
-                        isPresented: $isPickerPresented,
-                        commonSensations: commonSensations
-                    )
-                }
-
-                if selectedSensations.isEmpty {
-                    Text("No sensations selected.")
-                        .font(.system(size: 13))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                } else {
-                    LazyVGrid(columns: chipColumns, alignment: .leading, spacing: 8) {
-                        ForEach(displayedSensations, id: \.self) { item in
-                            SelectedChipView(label: item) {
-                                removeSensation(item)
-                            }
+            } else {
+                LazyVGrid(columns: chipColumns, alignment: .leading, spacing: 8) {
+                    ForEach(displayedSensations, id: \.self) { item in
+                        SelectedChipView(label: item) {
+                            removeSensation(item)
                         }
                     }
                 }
             }
-            .padding(16)
         }
         .background(themeManager.theme.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .top) {
-            StepHeaderView(title: "Situation") {
-                router.pop()
-            }
-        }
         .safeAreaInset(edge: .bottom) {
-            PrimaryButton(label: "Next") {
-                Task {
-                    var draft = appState.wizard.draft
-                    draft.situationText = situationText
-                    draft.sensations = selectedSensations
-                    appState.wizard.draft = draft
-                    await appState.wizard.persistDraft(draft)
-                    router.push(.wizardStep3)
+            StepBottomNavBar(
+                onBack: { router.pop() },
+                onNext: {
+                    Task {
+                        var draft = appState.wizard.draft
+                        draft.situationText = situationText
+                        draft.sensations = selectedSensations
+                        appState.wizard.draft = draft
+                        await appState.wizard.persistDraft(draft)
+                        router.push(.wizardStep3)
+                    }
                 }
-            }
-            .padding(16)
-            .background(themeManager.theme.background)
+            )
         }
         .onAppear {
             situationText = appState.wizard.draft.situationText

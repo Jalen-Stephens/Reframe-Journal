@@ -16,135 +16,128 @@ struct AdaptiveResponseView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                WizardProgressView(step: 5, total: 6)
-                Text("Respond to the automatic thought using the prompts below. Add at least one grounded response.")
-                    .font(.system(size: 13))
+        StepContentContainer(title: "Adaptive Response", step: 5, total: 6) {
+            Text("Respond to the automatic thought using the prompts below. Add at least one grounded response.")
+                .font(.system(size: 13))
+                .foregroundColor(themeManager.theme.textSecondary)
+            if showIncompleteHint {
+                Text("Complete at least one response before continuing.")
+                    .font(.system(size: 12))
                     .foregroundColor(themeManager.theme.textSecondary)
-                if showIncompleteHint {
-                    Text("Complete at least one response before continuing.")
-                        .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                }
+            }
 
-                if let thought = appState.wizard.draft.automaticThoughts.first {
-                    let answeredCount = countAnsweredPrompts(for: thought.id)
-                    let isComplete = answeredCount == AdaptivePrompts.all.count
-                    let prompt = AdaptivePrompts.all[promptIndex]
-                    let currentText = textValue(for: prompt.textKey, thoughtId: thought.id)
-                    let currentBelief = beliefValue(for: prompt.beliefKey, thoughtId: thought.id)
+            if let thought = appState.wizard.draft.automaticThoughts.first {
+                let answeredCount = countAnsweredPrompts(for: thought.id)
+                let isComplete = answeredCount == AdaptivePrompts.all.count
+                let prompt = AdaptivePrompts.all[promptIndex]
+                let currentText = textValue(for: prompt.textKey, thoughtId: thought.id)
+                let currentBelief = beliefValue(for: prompt.beliefKey, thoughtId: thought.id)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(thought.text)
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
-                                .lineLimit(2)
-                            HStack {
-                                Text("Original \(thought.beliefBefore)%")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
-                                Text("\(answeredCount) / \(AdaptivePrompts.all.count) answered")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
-                                Text(isComplete ? "Complete" : "Incomplete")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(isComplete ? themeManager.theme.accent : themeManager.theme.muted)
-                                    .foregroundColor(isComplete ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
-                                    .clipShape(Capsule())
-                            }
-                        }
-
-                        Text("Question \(promptIndex + 1) of \(AdaptivePrompts.all.count)")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
-
-                        Text(prompt.label)
-                            .font(.system(size: 13, weight: .semibold))
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(thought.text)
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(themeManager.theme.textPrimary)
-                        ZStack(alignment: .topLeading) {
-                            if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text("Write a grounded response")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(themeManager.theme.placeholder)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 10)
-                            }
-                            TextEditor(text: bindingForText(prompt.textKey, thoughtId: thought.id))
-                                .frame(minHeight: 90)
-                                .padding(6)
-                                .background(themeManager.theme.background)
-                                .scrollContentBackground(.hidden)
-                                .focused($focusedField, equals: .response(thoughtId: thought.id, key: prompt.textKey))
+                            .lineLimit(2)
+                        HStack {
+                            Text("Original \(thought.beliefBefore)%")
+                                .font(.system(size: 12))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                            Text("\(answeredCount) / \(AdaptivePrompts.all.count) answered")
+                                .font(.system(size: 12))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                            Text(isComplete ? "Complete" : "Incomplete")
+                                .font(.system(size: 11, weight: .semibold))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(isComplete ? themeManager.theme.accent : themeManager.theme.muted)
+                                .foregroundColor(isComplete ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
+                                .clipShape(Capsule())
                         }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(themeManager.theme.border, lineWidth: 1)
-                        )
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("How much do you believe this response?")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
-                                Spacer()
-                                Text("\(currentBelief)%")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.textSecondary)
-                            }
-                            Slider(value: bindingForBelief(prompt.beliefKey, thoughtId: thought.id), in: 0...100, step: 1)
-                                .accentColor(themeManager.theme.accent)
-                            HStack(spacing: 8) {
-                                ForEach(quickSetValues, id: \.self) { value in
-                                    Button("\(value)") {
-                                        updateBelief(thoughtId: thought.id, key: prompt.beliefKey, value: value)
-                                    }
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(value == currentBelief ? themeManager.theme.accent : themeManager.theme.muted)
-                                    .foregroundColor(value == currentBelief ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
-                                    .clipShape(Capsule())
-                                }
-                            }
-                        }
-
-                        Button("Back") {
-                            retreatPrompt()
-                        }
-                        .disabled(promptIndex == 0)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(promptIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
                     }
-                    .padding(12)
-                    .background(themeManager.theme.card)
+
+                    Text("Question \(promptIndex + 1) of \(AdaptivePrompts.all.count)")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textSecondary)
+
+                    Text(prompt.label)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    ZStack(alignment: .topLeading) {
+                        if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Text("Write a grounded response")
+                                .font(.system(size: 13))
+                                .foregroundColor(themeManager.theme.placeholder)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
+                        }
+                        TextEditor(text: bindingForText(prompt.textKey, thoughtId: thought.id))
+                            .frame(minHeight: 90)
+                            .padding(6)
+                            .background(themeManager.theme.background)
+                            .scrollContentBackground(.hidden)
+                            .focused($focusedField, equals: .response(thoughtId: thought.id, key: prompt.textKey))
+                    }
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: 10)
                             .stroke(themeManager.theme.border, lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                } else {
-                    Text("Add an automatic thought before writing adaptive responses.")
-                        .font(.system(size: 13))
-                        .foregroundColor(themeManager.theme.textSecondary)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("How much do you believe this response?")
+                                .font(.system(size: 12))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                            Spacer()
+                            Text("\(currentBelief)%")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                        }
+                        Slider(value: bindingForBelief(prompt.beliefKey, thoughtId: thought.id), in: 0...100, step: 1)
+                            .accentColor(themeManager.theme.accent)
+                        HStack(spacing: 8) {
+                            ForEach(quickSetValues, id: \.self) { value in
+                                Button("\(value)") {
+                                    updateBelief(thoughtId: thought.id, key: prompt.beliefKey, value: value)
+                                }
+                                .font(.system(size: 12, weight: .semibold))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(value == currentBelief ? themeManager.theme.accent : themeManager.theme.muted)
+                                .foregroundColor(value == currentBelief ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
+                                .clipShape(Capsule())
+                            }
+                        }
+                    }
+
+                    Button("Back") {
+                        retreatPrompt()
+                    }
+                    .disabled(promptIndex == 0)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(promptIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
                 }
+                .padding(12)
+                .background(themeManager.theme.card)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(themeManager.theme.border, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                Text("Add an automatic thought before writing adaptive responses.")
+                    .font(.system(size: 13))
+                    .foregroundColor(themeManager.theme.textSecondary)
             }
-            .padding(16)
         }
         .background(themeManager.theme.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .top) {
-            StepHeaderView(title: "Adaptive Response") {
-                router.pop()
-            }
-        }
         .safeAreaInset(edge: .bottom) {
-            footerButton()
-                .padding(16)
-                .background(themeManager.theme.background)
+            StepBottomNavBar(
+                onBack: { router.pop() },
+                onNext: handleNext,
+                isNextDisabled: isNextDisabled
+            )
         }
         .onAppear {
             ensureResponses()
@@ -294,29 +287,6 @@ struct AdaptiveResponseView: View {
         appState.wizard.draft = draft
     }
 
-    private func footerButton() -> some View {
-        guard let activeThoughtId = activeThoughtId,
-              let activePrompt = activePrompt(),
-              focusedField != nil else {
-            return PrimaryButton(label: "Next", onPress: nextStep, disabled: !canProceed())
-        }
-
-        let isLastPrompt = isLastPrompt()
-        if isLastPrompt {
-            return PrimaryButton(label: "Next", onPress: nextStep, disabled: !canProceed())
-        }
-
-        let canAdvance = canAdvancePrompt(thoughtId: activeThoughtId, prompt: activePrompt)
-        return PrimaryButton(
-            label: "Save & Continue",
-            onPress: {
-                guard canAdvance else { return }
-                advancePrompt()
-            },
-            disabled: !canAdvance
-        )
-    }
-
     private var activeThoughtId: String? {
         switch focusedField {
         case .response(let thoughtId, _):
@@ -338,5 +308,32 @@ struct AdaptiveResponseView: View {
     private func canAdvancePrompt(thoughtId: String, prompt: AdaptivePrompts.Prompt) -> Bool {
         let currentText = textValue(for: prompt.textKey, thoughtId: thoughtId)
         return !currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var isNextDisabled: Bool {
+        guard let activeThoughtId, let activePrompt = activePrompt() else {
+            return !canProceed()
+        }
+
+        if focusedField == nil || isLastPrompt() {
+            return !canProceed()
+        }
+
+        return !canAdvancePrompt(thoughtId: activeThoughtId, prompt: activePrompt)
+    }
+
+    private func handleNext() {
+        guard let activeThoughtId, let activePrompt = activePrompt() else {
+            nextStep()
+            return
+        }
+
+        if focusedField != nil && !isLastPrompt() {
+            guard canAdvancePrompt(thoughtId: activeThoughtId, prompt: activePrompt) else { return }
+            advancePrompt()
+            return
+        }
+
+        nextStep()
     }
 }

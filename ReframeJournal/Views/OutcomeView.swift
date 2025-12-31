@@ -10,184 +10,160 @@ struct OutcomeView: View {
     @State private var alertMessage = ""
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                WizardProgressView(step: 6, total: 6)
-                Text("Notice how your belief and emotions shift after working through the thought.")
-                    .font(.system(size: 13))
+        StepContentContainer(title: "Review", step: 6, total: 6) {
+            Text("Notice how your belief and emotions shift after working through the thought.")
+                .font(.system(size: 13))
+                .foregroundColor(themeManager.theme.textSecondary)
+
+            HStack {
+                Text(completionLabel)
+                    .font(.system(size: 12))
                     .foregroundColor(themeManager.theme.textSecondary)
-
-                HStack {
-                    Text(completionLabel)
+                if showIncompleteHint {
+                    Text("Complete the thought to finish.")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                    if showIncompleteHint {
-                        Text("Complete the thought to finish.")
-                            .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-                }
-
-                if let thought = appState.wizard.draft.automaticThoughts.first {
-                    let outcome = mergeOutcome(for: thought)
-                    let isComplete = outcome.isComplete
-                    let beliefDelta = outcome.beliefAfter - thought.beliefBefore
-                    let deltaLabel: String = {
-                        if beliefDelta == 0 {
-                            return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% 0%"
-                        }
-                        if beliefDelta < 0 {
-                            return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↓ \(abs(beliefDelta))%"
-                        }
-                        return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↑ \(beliefDelta)%"
-                    }()
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(thought.text)
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
-                                .lineLimit(2)
-                            HStack {
-                                Text("Original \(thought.beliefBefore)%")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
-                                Text(deltaLabel)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
-                                if isComplete {
-                                    Text("Complete")
-                                        .font(.system(size: 11, weight: .semibold))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(themeManager.theme.accent)
-                                        .foregroundColor(themeManager.theme.onAccent)
-                                        .clipShape(Capsule())
-                                }
-                            }
-                        }
-
-                        Text("How much do you believe this thought now?")
-                            .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                        Text("\(outcome.beliefAfter)%")
-                            .font(.system(size: 22, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textPrimary)
-                        Slider(value: bindingForBelief(thoughtId: thought.id), in: 0...100, step: 1)
-                            .accentColor(themeManager.theme.accent)
-                        Text("Original belief: \(thought.beliefBefore)%")
-                            .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
-
-                        Divider()
-
-                        Text("Re-rate emotions")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textPrimary)
-                        if appState.wizard.draft.emotions.isEmpty {
-                            Text("No emotions were selected earlier.")
-                                .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
-                        }
-                        ForEach(appState.wizard.draft.emotions) { emotion in
-                            let currentIntensity = outcome.emotionsAfter[emotion.id] ?? emotion.intensityBefore
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack {
-                                    Text(emotion.label)
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(themeManager.theme.textPrimary)
-                                    Spacer()
-                                    Text("Before: \(emotion.intensityBefore)")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(themeManager.theme.textSecondary)
-                                }
-                                Text("\(currentIntensity)")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.textPrimary)
-                                Slider(value: bindingForEmotion(thoughtId: thought.id, emotionId: emotion.id), in: 0...100, step: 1)
-                                    .accentColor(themeManager.theme.accent)
-                            }
-                        }
-
-                        Divider()
-
-                        Text("Anything you want to note after this thought?")
-                            .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                        ZStack(alignment: .topLeading) {
-                            if (appState.wizard.draft.outcomesByThought[thought.id]?.reflection ?? "").isEmpty {
-                                Text("Optional reflection")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(themeManager.theme.placeholder)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 10)
-                            }
-                            TextEditor(text: bindingForReflection(thoughtId: thought.id))
-                                .frame(minHeight: 80)
-                                .padding(6)
-                                .background(themeManager.theme.background)
-                                .scrollContentBackground(.hidden)
-                        }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(themeManager.theme.border, lineWidth: 1)
-                        )
-
-                        PrimaryButton(
-                            label: isComplete ? "Thought Complete" : "Mark Thought Complete",
-                            onPress: { markComplete(thoughtId: thought.id) },
-                            disabled: isComplete
-                        )
-                    }
-                    .padding(12)
-                    .background(themeManager.theme.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(themeManager.theme.border, lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                } else {
-                    Text("Add an automatic thought before finishing the outcome.")
-                        .font(.system(size: 13))
                         .foregroundColor(themeManager.theme.textSecondary)
                 }
             }
-            .padding(16)
+
+            if let thought = appState.wizard.draft.automaticThoughts.first {
+                let outcome = mergeOutcome(for: thought)
+                let isComplete = outcome.isComplete
+                let beliefDelta = outcome.beliefAfter - thought.beliefBefore
+                let deltaLabel: String = {
+                    if beliefDelta == 0 {
+                        return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% 0%"
+                    }
+                    if beliefDelta < 0 {
+                        return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↓ \(abs(beliefDelta))%"
+                    }
+                    return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↑ \(beliefDelta)%"
+                }()
+
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(thought.text)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(themeManager.theme.textPrimary)
+                            .lineLimit(2)
+                        HStack {
+                            Text("Original \(thought.beliefBefore)%")
+                                .font(.system(size: 12))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                            Text(deltaLabel)
+                                .font(.system(size: 12))
+                                .foregroundColor(themeManager.theme.textSecondary)
+                            if isComplete {
+                                Text("Complete")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(themeManager.theme.accent)
+                                    .foregroundColor(themeManager.theme.onAccent)
+                                    .clipShape(Capsule())
+                            }
+                        }
+                    }
+
+                    Text("How much do you believe this thought now?")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                    Text("\(outcome.beliefAfter)%")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    Slider(value: bindingForBelief(thoughtId: thought.id), in: 0...100, step: 1)
+                        .accentColor(themeManager.theme.accent)
+                    Text("Original belief: \(thought.beliefBefore)%")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+
+                    Divider()
+
+                    Text("Re-rate emotions")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    if appState.wizard.draft.emotions.isEmpty {
+                        Text("No emotions were selected earlier.")
+                            .font(.system(size: 12))
+                            .foregroundColor(themeManager.theme.textSecondary)
+                    }
+                    ForEach(appState.wizard.draft.emotions) { emotion in
+                        let currentIntensity = outcome.emotionsAfter[emotion.id] ?? emotion.intensityBefore
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text(emotion.label)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(themeManager.theme.textPrimary)
+                                Spacer()
+                                Text("Before: \(emotion.intensityBefore)")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(themeManager.theme.textSecondary)
+                            }
+                            Text("\(currentIntensity)")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(themeManager.theme.textPrimary)
+                            Slider(value: bindingForEmotion(thoughtId: thought.id, emotionId: emotion.id), in: 0...100, step: 1)
+                                .accentColor(themeManager.theme.accent)
+                        }
+                    }
+
+                    Divider()
+
+                    Text("Anything you want to note after this thought?")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                    ZStack(alignment: .topLeading) {
+                        if (appState.wizard.draft.outcomesByThought[thought.id]?.reflection ?? "").isEmpty {
+                            Text("Optional reflection")
+                                .font(.system(size: 13))
+                                .foregroundColor(themeManager.theme.placeholder)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
+                        }
+                        TextEditor(text: bindingForReflection(thoughtId: thought.id))
+                            .frame(minHeight: 80)
+                            .padding(6)
+                            .background(themeManager.theme.background)
+                            .scrollContentBackground(.hidden)
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(themeManager.theme.border, lineWidth: 1)
+                    )
+
+                    PrimaryButton(
+                        label: isComplete ? "Thought Complete" : "Mark Thought Complete",
+                        onPress: { markComplete(thoughtId: thought.id) },
+                        disabled: isComplete
+                    )
+                }
+                .padding(12)
+                .background(themeManager.theme.card)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(themeManager.theme.border, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                Text("Add an automatic thought before finishing the outcome.")
+                    .font(.system(size: 13))
+                    .foregroundColor(themeManager.theme.textSecondary)
+            }
         }
         .background(themeManager.theme.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .top) {
-            StepHeaderView(title: "Outcome") {
-                router.pop()
-            }
-        }
         .safeAreaInset(edge: .bottom) {
-            HStack(spacing: 12) {
-                Button("Back") {
+            StepBottomNavBar(
+                onBack: {
                     Task {
                         await appState.wizard.persistDraft()
                         router.pop()
                     }
-                }
-                .font(.system(size: 13, weight: .semibold))
-                .padding(.vertical, 10)
-                .padding(.horizontal, 16)
-                .background(themeManager.theme.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 999)
-                        .stroke(themeManager.theme.border, lineWidth: 1)
-                )
-                .foregroundColor(themeManager.theme.textSecondary)
-
-                PrimaryButton(
-                    label: "Save & Finish",
-                    onPress: handleFinish,
-                    disabled: !allComplete(),
-                    onDisabledPress: handleFinish
-                )
-            }
-            .padding(16)
-            .background(themeManager.theme.background)
+                },
+                onNext: handleFinish,
+                nextLabel: "Save & Finish",
+                isNextDisabled: !allComplete()
+            )
         }
         .alert("", isPresented: $showAlert) {
             Button("OK", role: .cancel) {}

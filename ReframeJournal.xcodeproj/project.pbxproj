@@ -30,6 +30,8 @@
 		6D7FF0544F37811F03C58FEA /* Identifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B81E049560BD2F69940170 /* Identifiers.swift */; };
 		6EDB00E0B89BF6536EE3AA43 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F8017F762C89F4D0CF0CB64 /* ThemeManager.swift */; };
 		6FFB15E22C2CEC0BC540A95D /* AccordionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF93899497F29B20C03F371 /* AccordionView.swift */; };
+		7C1A2B3C4D5E6F708192A3B4 /* StepBottomNavBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1A2B3C4D5E6F708192A3B5 /* StepBottomNavBar.swift */; };
+		8D2E3F405162738495A6B7C8 /* StepContentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2E3F405162738495A6B7C9 /* StepContentContainer.swift */; };
 		7F6C7F8C3F1D4C80A2F5B2B1 /* StepHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6C7F8B3F1D4C80A2F5B2B0 /* StepHeaderView.swift */; };
 		73FDB8B9EA5037DFE8C69B30 /* ReframeJournalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46312FE3978E03DDBCCC38F /* ReframeJournalApp.swift */; };
 		773AA7F64660375B01D22426 /* EntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E52E5CE02DB158DCFF76DE /* EntryDetailView.swift */; };
@@ -93,9 +95,11 @@
 		7CBBAF3FFE33047CA5DEA1DF /* ThoughtRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordTests.swift; sourceTree = "<group>"; };
 		7D55C61CF6964611F106D910 /* EmotionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmotionsView.swift; sourceTree = "<group>"; };
 		7E30587AECC6EFE96513A19B /* ThoughtRecordRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordRepository.swift; sourceTree = "<group>"; };
+		7C1A2B3C4D5E6F708192A3B5 /* StepBottomNavBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepBottomNavBar.swift; sourceTree = "<group>"; };
 		8941B34419C243A8D3CA80D5 /* ThoughtRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordStore.swift; sourceTree = "<group>"; };
 		8BA6D8D4085F2AEE3AA99A0B /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		8F60033E301CE97D6A6B26C9 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		8D2E3F405162738495A6B7C9 /* StepContentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepContentContainer.swift; sourceTree = "<group>"; };
 		9F1DFD7F7F52522DE5279C2B /* SituationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SituationView.swift; sourceTree = "<group>"; };
 		9F8017F762C89F4D0CF0CB64 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		E1A2B3C4D5E6F708192A3B4C /* SelectedChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedChipView.swift; sourceTree = "<group>"; };
@@ -159,6 +163,8 @@
 				46308216C66CE393053779B5 /* SettingsView.swift */,
 				9F1DFD7F7F52522DE5279C2B /* SituationView.swift */,
 				6A29FDF5CD76A8F7218286ED /* SlimMeterRowView.swift */,
+				7C1A2B3C4D5E6F708192A3B5 /* StepBottomNavBar.swift */,
+				8D2E3F405162738495A6B7C9 /* StepContentContainer.swift */,
 				7F6C7F8B3F1D4C80A2F5B2B0 /* StepHeaderView.swift */,
 				7593019C057F861DCFFECBA6 /* ThoughtCardView.swift */,
 				628440F7D93AA4374667AC4F /* ThoughtResponseDetailView.swift */,
@@ -397,6 +403,8 @@
 				5E2E5DF1AAB3DF819A9863B3 /* SettingsView.swift in Sources */,
 				2F739D9ACA296BC3BFC3273D /* SituationView.swift in Sources */,
 				AF8538F8AD4BE3A44AE431A5 /* SlimMeterRowView.swift in Sources */,
+				7C1A2B3C4D5E6F708192A3B4 /* StepBottomNavBar.swift in Sources */,
+				8D2E3F405162738495A6B7C8 /* StepContentContainer.swift in Sources */,
 				7F6C7F8C3F1D4C80A2F5B2B1 /* StepHeaderView.swift in Sources */,
 				6EDB00E0B89BF6536EE3AA43 /* ThemeManager.swift in Sources */,
 				B2E1196C821235FFC2297082 /* ThoughtCardView.swift in Sources */,
