@@ -73,40 +73,7 @@ struct HomeView: View {
                         }
                     }
 
-                    Text("Recent entries")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
-                        .padding(.top, 8)
-
-                    if viewModel.entries.isEmpty {
-                        Text("No entries yet. Start a new thought record above.")
-                            .font(.system(size: 13))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    } else {
-                        VStack(spacing: 12) {
-                            ForEach(viewModel.entries) { entry in
-                                EntryListItemView(entry: entry) {
-                                    router.push(.entryDetail(id: entry.id))
-                                }
-                            }
-                            Button {
-                                router.push(.allEntries)
-                            } label: {
-                                HStack {
-                                    Text("View all entries")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(themeManager.theme.textSecondary)
-                                    Spacer()
-                                    Text(">")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(themeManager.theme.textSecondary)
-                                }
-                                .padding(12)
-                                .pillSurface(cornerRadius: 12)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
+                    entriesSection
                 }
                 .padding(16)
             }
@@ -148,5 +115,79 @@ struct HomeView: View {
     private func latestThoughtLabel(for record: ThoughtRecord) -> String {
         let thought = record.automaticThoughts.first?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return thought.isEmpty ? "Untitled thought" : thought
+    }
+
+    private var entriesSection: some View {
+        let sections = splitEntriesByToday(viewModel.entries)
+        return VStack(alignment: .leading, spacing: 12) {
+            if sections.today.isEmpty && sections.past.isEmpty {
+                Text("No entries yet. Start a new thought record above.")
+                    .font(.system(size: 13))
+                    .foregroundColor(themeManager.theme.textSecondary)
+            } else {
+                if !sections.today.isEmpty {
+                    Text("Recent entries")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    VStack(spacing: 12) {
+                        ForEach(sections.today) { entry in
+                            EntryListItemView(entry: entry) {
+                                router.push(.entryDetail(id: entry.id))
+                            }
+                        }
+                    }
+                }
+
+                if !sections.past.isEmpty {
+                    Text("Past entries")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                        .padding(.top, sections.today.isEmpty ? 0 : 8)
+                    VStack(spacing: 12) {
+                        ForEach(sections.past) { entry in
+                            EntryListItemView(entry: entry) {
+                                router.push(.entryDetail(id: entry.id))
+                            }
+                        }
+                    }
+                }
+
+                Button {
+                    router.push(.allEntries)
+                } label: {
+                    HStack {
+                        Text("View all entries")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(themeManager.theme.textSecondary)
+                        Spacer()
+                        Text(">")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(themeManager.theme.textSecondary)
+                    }
+                    .padding(12)
+                    .pillSurface(cornerRadius: 12)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func splitEntriesByToday(_ entries: [ThoughtRecord]) -> (today: [ThoughtRecord], past: [ThoughtRecord]) {
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        var today: [ThoughtRecord] = []
+        var past: [ThoughtRecord] = []
+        for entry in entries {
+            guard let date = DateUtils.parseIso(entry.createdAt) else {
+                past.append(entry)
+                continue
+            }
+            if date >= startOfToday {
+                today.append(entry)
+            } else {
+                past.append(entry)
+            }
+        }
+        return (today, past)
     }
 }
