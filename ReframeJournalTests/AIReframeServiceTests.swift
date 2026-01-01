@@ -34,7 +34,11 @@ final class AIReframeServiceTests: XCTestCase {
             adaptiveResponses: [thought.id: responses],
             outcomesByThought: [thought.id: outcome],
             beliefAfterMainThought: 55,
-            notes: ""
+            notes: "",
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil
         )
 
         let service = AIReframeService(clientProvider: { throw OpenAIClient.OpenAIError.missingAPIKey })

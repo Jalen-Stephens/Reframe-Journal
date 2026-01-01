@@ -3,6 +3,17 @@ import Foundation
 final class ThoughtRecordRepository {
     private let store: ThoughtRecordStore
 
+    enum RepositoryError: LocalizedError {
+        case entryNotFound
+
+        var errorDescription: String? {
+            switch self {
+            case .entryNotFound:
+                return "Entry not found."
+            }
+        }
+    }
+
     init(store: ThoughtRecordStore) {
         self.store = store
     }
@@ -37,6 +48,18 @@ final class ThoughtRecordRepository {
 
     func deleteDraft() async throws {
         try await store.deleteDraft()
+    }
+
+    func upsertAIReframe(entryId: String, result: AIReframeResult, createdAt: Date = Date(), model: String? = nil, promptVersion: String? = nil) async throws {
+        guard var record = try await store.fetch(id: entryId) else {
+            throw RepositoryError.entryNotFound
+        }
+        record.aiReframe = result
+        record.aiReframeCreatedAt = createdAt
+        record.aiReframeModel = model
+        record.aiReframePromptVersion = promptVersion
+        record.updatedAt = DateUtils.nowIso()
+        try await store.upsert(record)
     }
 
     func flushPendingWrites() async {

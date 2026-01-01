@@ -49,7 +49,11 @@ final class WizardViewModel: ObservableObject {
             adaptiveResponses: base.adaptiveResponses,
             outcomesByThought: base.outcomesByThought,
             beliefAfterMainThought: base.beliefAfterMainThought,
-            notes: base.notes
+            notes: base.notes,
+            aiReframe: base.aiReframe,
+            aiReframeCreatedAt: base.aiReframeCreatedAt,
+            aiReframeModel: base.aiReframeModel,
+            aiReframePromptVersion: base.aiReframePromptVersion
         )
         draft = updated
         do {
