@@ -2,41 +2,106 @@ import Foundation
 
 @MainActor
 final class AIReframeViewModel: ObservableObject {
-    @Published var isGenerating: Bool = false
-    @Published var aiResult: AIReframeResult?
-    @Published var aiError: String?
+    @Published var isLoading: Bool = false
+    @Published var result: AIReframeResult?
+    @Published var error: String?
 
+    private let entryId: String
+    private let repository: ThoughtRecordRepository
     private let service: AIReframeService
 
-    init(service: AIReframeService) {
+    private var isDraftSource = false
+
+    init(entryId: String, repository: ThoughtRecordRepository, service: AIReframeService) {
+        self.entryId = entryId
+        self.repository = repository
         self.service = service
     }
 
-    func generateReframe(for record: ThoughtRecord) async {
-        guard !isGenerating else { return }
-        isGenerating = true
-        aiError = nil
+    func loadExisting() async {
+        isLoading = true
+        defer { isLoading = false }
+        error = nil
         do {
-            let result = try await service.generateReframe(for: record)
-            aiResult = result
+            if let record = try await repository.fetch(id: entryId) {
+                isDraftSource = false
+                result = record.aiReframe
+                return
+            }
+            if let draft = try await repository.fetchDraft(), draft.id == entryId {
+                isDraftSource = true
+                result = draft.aiReframe
+                return
+            }
+            result = nil
+            error = ThoughtRecordRepository.RepositoryError.entryNotFound.localizedDescription
+        } catch {
+            result = nil
+            error = error.localizedDescription
+        }
+    }
+
+    func generateAndSave() async {
+        await generateAndSave(replaceExisting: false)
+    }
+
+    func regenerateAndSave() async {
+        await generateAndSave(replaceExisting: true)
+    }
+
+    private func generateAndSave(replaceExisting: Bool) async {
+        guard !isLoading else { return }
+        isLoading = true
+        error = nil
+        if replaceExisting {
+            result = nil
+        }
+        do {
+            let record = try await loadRecord()
+            let generated = try await service.generateReframe(for: record)
+            let createdAt = Date()
+            if isDraftSource {
+                var updated = record
+                updated.aiReframe = generated
+                updated.aiReframeCreatedAt = createdAt
+                updated.aiReframeModel = service.modelName
+                updated.aiReframePromptVersion = service.promptVersion
+                updated.updatedAt = DateUtils.nowIso()
+                try await repository.saveDraft(updated)
+            } else {
+                try await repository.upsertAIReframe(
+                    entryId: record.id,
+                    result: generated,
+                    createdAt: createdAt,
+                    model: service.modelName,
+                    promptVersion: service.promptVersion
+                )
+            }
+            result = generated
         } catch {
             if let openAIError = error as? OpenAIClient.OpenAIError {
                 switch openAIError {
                 case .missingAPIKey:
-                    aiError = "Missing OpenAI API key. Set OPENAI_API_KEY in build settings or scheme."
+                    self.error = "Missing OpenAI API key. Set OPENAI_API_KEY in build settings or scheme."
                 default:
-                    aiError = openAIError.localizedDescription
+                    self.error = openAIError.localizedDescription
                 }
             } else {
-                aiError = error.localizedDescription
+                self.error = error.localizedDescription
             }
         }
-        isGenerating = false
+        isLoading = false
     }
 
-    func reset() {
-        aiResult = nil
-        aiError = nil
-        isGenerating = false
+    private func loadRecord() async throws -> ThoughtRecord {
+        if let record = try await repository.fetch(id: entryId) {
+            isDraftSource = false
+            return record
+        }
+        if let draft = try await repository.fetchDraft(), draft.id == entryId {
+            isDraftSource = true
+            return draft
+        }
+        throw ThoughtRecordRepository.RepositoryError.entryNotFound
     }
 }

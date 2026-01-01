@@ -4,6 +4,7 @@ enum Route: Hashable {
     case allEntries
     case entryDetail(id: String)
     case thoughtResponseDetail(entryId: String, thoughtId: String)
+    case aiReframeResult(entryId: String, action: AIReframeAction)
     case wizardStep1
     case wizardStep2
     case wizardStep3
@@ -11,6 +12,12 @@ enum Route: Hashable {
     case wizardStep5
     case wizardStep6
     case settings
+}
+
+enum AIReframeAction: Hashable {
+    case view
+    case generate
+    case regenerate
 }
 
 final class AppRouter: ObservableObject {

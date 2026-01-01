@@ -50,7 +50,7 @@ struct OpenAIClient {
         return nil
     }
 
-    func chatCompletion(systemMessage: String, userMessage: String) async throws -> String {
+    func chatCompletion(systemMessage: String, userMessage: String, model: String) async throws -> String {
         let url = URL(string: "https://api.openai.com/v1/chat/completions")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -58,7 +58,7 @@ struct OpenAIClient {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let payload = ChatCompletionRequest(
-            model: "gpt-4o-mini",
+            model: model,
             messages: [
                 Message(role: "system", content: systemMessage),
                 Message(role: "user", content: userMessage)

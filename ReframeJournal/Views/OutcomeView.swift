@@ -6,11 +6,11 @@ struct OutcomeView: View {
     @EnvironmentObject private var themeManager: ThemeManager
 
     @AppStorage("aiReframeEnabled") private var isAIReframeEnabled = false
-    @StateObject private var aiViewModel = AIReframeViewModel(service: AIReframeService())
 
     @State private var showIncompleteHint = false
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var showRegenerateConfirm = false
 
     var body: some View {
         StepContentContainer(title: "Review", step: 6, total: 6) {
@@ -31,10 +31,7 @@ struct OutcomeView: View {
 
             if let thought = appState.wizard.draft.automaticThoughts.first {
                 outcomeCard(for: thought)
-                aiControlsCard()
-                if let aiResult = aiViewModel.aiResult {
-                    aiResultCard(aiResult)
-                }
+                aiReframeCard()
             } else {
                 Text("Add an automatic thought before finishing the outcome.")
                     .font(.system(size: 13))
@@ -60,6 +57,14 @@ struct OutcomeView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(alertMessage)
+        }
+        .confirmationDialog("Regenerate AI Reframe?", isPresented: $showRegenerateConfirm) {
+            Button("Regenerate", role: .destructive) {
+                navigateToReframe(action: .regenerate)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will replace the existing AI Reframe.")
         }
         .onAppear {
             ensureOutcomes()
@@ -172,29 +177,30 @@ struct OutcomeView: View {
         .cardSurface(cornerRadius: 12, shadow: false)
     }
 
-    private func aiControlsCard() -> some View {
+    private func aiReframeCard() -> some View {
+        let hasReframe = appState.wizard.draft.aiReframe != nil
         VStack(alignment: .leading, spacing: 10) {
             Text("AI Reframe")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(themeManager.theme.textPrimary)
 
-            Button(action: generateReframe) {
-                HStack(spacing: 8) {
-                    if aiViewModel.isGenerating {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: themeManager.theme.onAccent))
-                    }
-                    Text(aiViewModel.isGenerating ? "Generating..." : "Generate Reframe")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(themeManager.theme.onAccent)
+            if hasReframe {
+                PrimaryButton(label: "View AI Reframe") {
+                    navigateToReframe(action: .view)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(themeManager.theme.accent)
-                .clipShape(Capsule())
-                .opacity(isGenerateDisabled ? 0.5 : 1)
+                Button("Regenerate") {
+                    showRegenerateConfirm = true
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.theme.accent)
+                .disabled(!isAIReframeEnabled)
+            } else {
+                PrimaryButton(
+                    label: "Generate Reframe",
+                    onPress: { navigateToReframe(action: .generate) },
+                    disabled: !isAIReframeEnabled
+                )
             }
-            .disabled(isGenerateDisabled)
 
             if !isAIReframeEnabled {
                 Text("Enable in Settings")
@@ -209,74 +215,15 @@ struct OutcomeView: View {
             Text("AI suggestions aren't a substitute for professional care.")
                 .font(.system(size: 12))
                 .foregroundColor(themeManager.theme.textSecondary)
-
-            if let error = aiViewModel.aiError {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(error)
-                        .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                    Button("Retry") {
-                        generateReframe()
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.accent)
-                }
-            }
         }
         .padding(12)
         .cardSurface(cornerRadius: 12, shadow: false)
     }
 
-    private func aiResultCard(_ result: AIReframeResult) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if !result.validation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text(result.validation)
-                    .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
-            }
-
-            Text("Reframe")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
-            Text(result.reframeSummary)
-                .font(.system(size: 13))
-                .foregroundColor(themeManager.theme.textPrimary)
-
-            if let balanced = result.balancedThought?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !balanced.isEmpty {
-                Text("Balanced thought")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
-                Text(balanced)
-                    .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textPrimary)
-            }
-
-            if !result.suggestions.isEmpty {
-                Text("Try this")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(result.suggestions, id: \.self) { suggestion in
-                        Text("- \(suggestion)")
-                            .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-                }
-            }
-        }
-        .padding(12)
-        .cardSurface(cornerRadius: 12, shadow: false)
-    }
-
-    private var isGenerateDisabled: Bool {
-        !isAIReframeEnabled || aiViewModel.isGenerating
-    }
-
-    private func generateReframe() {
-        guard isAIReframeEnabled else { return }
+    private func navigateToReframe(action: AIReframeAction) {
         Task {
-            await aiViewModel.generateReframe(for: appState.wizard.draft)
+            await appState.wizard.persistDraft()
+            router.push(.aiReframeResult(entryId: appState.wizard.draft.id, action: action))
         }
     }
 

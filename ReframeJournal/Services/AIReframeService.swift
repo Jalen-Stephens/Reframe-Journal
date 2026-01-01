@@ -2,6 +2,8 @@ import Foundation
 
 struct AIReframeService {
     private let clientProvider: () throws -> OpenAIClient
+    let modelName = "gpt-4o-mini"
+    let promptVersion = "v1"
 
     init(clientProvider: @escaping () throws -> OpenAIClient = {
         guard let key = OpenAIClient.loadAPIKey() else {
@@ -16,7 +18,7 @@ struct AIReframeService {
         let client = try clientProvider()
         let systemMessage = systemPrompt
         let userMessage = buildUserMessage(for: record)
-        let content = try await client.chatCompletion(systemMessage: systemMessage, userMessage: userMessage)
+        let content = try await client.chatCompletion(systemMessage: systemMessage, userMessage: userMessage, model: modelName)
         return parseResult(from: content)
     }
 
