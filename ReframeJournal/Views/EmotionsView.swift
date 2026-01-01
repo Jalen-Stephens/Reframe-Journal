@@ -233,7 +233,7 @@ struct EmotionsView: View {
     }
 
     private func nextStep() {
-        Task {
+        Task { @MainActor in
             await appState.wizard.persistDraft()
             router.push(.wizardStep5)
         }
@@ -242,7 +242,7 @@ struct EmotionsView: View {
     private var emotionPicker: some View {
         let usedLabels = appState.wizard.draft.emotions.map { $0.label }
         let available = commonEmotions.filter { emotion in
-            if let editId, emotionLabel == emotion {
+            if editId != nil && emotionLabel == emotion {
                 return true
             }
             return !usedLabels.contains(emotion)

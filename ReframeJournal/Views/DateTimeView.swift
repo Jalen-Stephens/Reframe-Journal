@@ -81,7 +81,7 @@ struct DateTimeView: View {
             StepBottomNavBar(
                 onBack: { router.pop() },
                 onNext: {
-                    Task {
+                    Task { @MainActor in
                         var draft = appState.wizard.draft
                         draft.createdAt = DateUtils.isoString(from: selectedDate)
                         await appState.wizard.persistDraft(draft)

@@ -30,7 +30,9 @@ struct ReframeJournalApp: App {
                 .preferredColorScheme(overrideScheme)
                 .onChange(of: scenePhase) { phase in
                     if phase == .inactive || phase == .background {
-                        Task { await thoughtStore.flushPendingWrites() }
+                        Task { @MainActor in
+                            await thoughtStore.flushPendingWrites()
+                        }
                     }
                 }
         }

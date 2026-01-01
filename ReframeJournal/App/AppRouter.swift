@@ -20,6 +20,7 @@ enum AIReframeAction: Hashable {
     case regenerate
 }
 
+@MainActor
 final class AppRouter: ObservableObject {
     @Published var path: [Route] = []
 

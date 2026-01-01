@@ -461,7 +461,9 @@ private struct EditEntrySheet: View {
             ForEach(sections, id: \.0) { section in
                 Button {
                     appState.wizard.setDraft(record, isEditing: true)
-                    Task { await appState.wizard.persistDraft(record) }
+                    Task { @MainActor in
+                        await appState.wizard.persistDraft(record)
+                    }
                     onDismiss()
                     router.push(section.1)
                 } label: {

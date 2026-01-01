@@ -36,7 +36,7 @@ struct HomeView: View {
                 VStack(spacing: 12) {
                     Button {
                         if appState.thoughtUsage.canCreateThought() {
-                            Task {
+                            Task { @MainActor in
                                 await appState.wizard.clearDraft()
                                 router.push(.wizardStep1)
                             }
@@ -105,7 +105,7 @@ struct HomeView: View {
                                     .tint(themeManager.theme.accent)
 
                                     Button(role: .destructive) {
-                                        Task {
+                                        Task { @MainActor in
                                             await viewModel.deleteEntry(id: entry.id)
                                         }
                                     } label: {
@@ -139,7 +139,7 @@ struct HomeView: View {
                                     .tint(themeManager.theme.accent)
 
                                     Button(role: .destructive) {
-                                        Task {
+                                        Task { @MainActor in
                                             await viewModel.deleteEntry(id: entry.id)
                                         }
                                     } label: {
@@ -246,7 +246,9 @@ struct HomeView: View {
 
     private func editEntry(_ entry: ThoughtRecord) {
         appState.wizard.setDraft(entry, isEditing: true)
-        Task { await appState.wizard.persistDraft(entry) }
+        Task { @MainActor in
+            await appState.wizard.persistDraft(entry)
+        }
         router.push(.wizardStep1)
     }
 }

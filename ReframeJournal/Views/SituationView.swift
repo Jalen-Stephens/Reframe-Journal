@@ -84,7 +84,7 @@ struct SituationView: View {
             StepBottomNavBar(
                 onBack: { router.pop() },
                 onNext: {
-                    Task {
+                    Task { @MainActor in
                         var draft = appState.wizard.draft
                         draft.situationText = situationText
                         draft.sensations = selectedSensations

@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class ThoughtRecordRepository {
     private let store: ThoughtRecordStore
 

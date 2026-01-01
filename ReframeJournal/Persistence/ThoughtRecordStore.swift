@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class ThoughtRecordStore: ObservableObject {
     @Published private(set) var entries: [ThoughtRecord] = []
 

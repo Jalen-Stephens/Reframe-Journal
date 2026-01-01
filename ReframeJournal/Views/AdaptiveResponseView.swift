@@ -184,7 +184,7 @@ struct AdaptiveResponseView: View {
 
     private func nextStep() {
         if canProceed() {
-            Task {
+            Task { @MainActor in
                 await appState.wizard.persistDraft()
                 router.push(.wizardStep6)
             }
@@ -342,7 +342,7 @@ struct AdaptiveResponseView: View {
             showIncompleteHint = true
             return
         }
-        Task {
+        Task { @MainActor in
             await appState.wizard.persistDraft()
             if isLastPrompt() {
                 nextStep()

@@ -43,7 +43,7 @@ struct OutcomeView: View {
         .safeAreaInset(edge: .bottom) {
             StepBottomNavBar(
                 onBack: {
-                    Task {
+                    Task { @MainActor in
                         await appState.wizard.persistDraft()
                         router.pop()
                     }
@@ -221,7 +221,7 @@ struct OutcomeView: View {
     }
 
     private func navigateToReframe(action: AIReframeAction) {
-        Task {
+        Task { @MainActor in
             await appState.wizard.persistDraft()
             router.push(.aiReframeResult(entryId: appState.wizard.draft.id, action: action))
         }
@@ -369,7 +369,7 @@ struct OutcomeView: View {
             return
         }
 
-        Task {
+        Task { @MainActor in
             var record = appState.wizard.draft
             let wasEditing = appState.wizard.isEditing
             record.updatedAt = DateUtils.nowIso()
@@ -377,7 +377,7 @@ struct OutcomeView: View {
                 try await appState.repository.upsert(record)
                 await appState.repository.flushPendingWrites()
                 if !wasEditing {
-                    await appState.thoughtUsage.incrementTodayCount()
+                    appState.thoughtUsage.incrementTodayCount()
                 }
                 await appState.wizard.clearDraft()
                 if wasEditing {
