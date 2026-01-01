@@ -35,9 +35,9 @@ final class AIReframeViewModel: ObservableObject {
             }
             result = nil
             error = ThoughtRecordRepository.RepositoryError.entryNotFound.localizedDescription
-        } catch {
+        } catch let err {
             result = nil
-            error = error.localizedDescription
+            error = err.localizedDescription
         }
     }
 
@@ -78,8 +78,8 @@ final class AIReframeViewModel: ObservableObject {
                 )
             }
             result = generated
-        } catch {
-            if let openAIError = error as? OpenAIClient.OpenAIError {
+        } catch let err {
+            if let openAIError = err as? OpenAIClient.OpenAIError {
                 switch openAIError {
                 case .missingAPIKey:
                     self.error = "Missing OpenAI API key. Set OPENAI_API_KEY in build settings or scheme."
@@ -87,7 +87,7 @@ final class AIReframeViewModel: ObservableObject {
                     self.error = openAIError.localizedDescription
                 }
             } else {
-                self.error = error.localizedDescription
+                self.error = err.localizedDescription
             }
         }
         isLoading = false

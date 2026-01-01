@@ -179,7 +179,7 @@ struct OutcomeView: View {
 
     private func aiReframeCard() -> some View {
         let hasReframe = appState.wizard.draft.aiReframe != nil
-        VStack(alignment: .leading, spacing: 10) {
+        return VStack(alignment: .leading, spacing: 10) {
             Text("AI Reframe")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(themeManager.theme.textPrimary)

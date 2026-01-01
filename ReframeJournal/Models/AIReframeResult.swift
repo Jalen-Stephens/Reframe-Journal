@@ -1,6 +1,6 @@
 import Foundation
 
-struct AIReframeResult: Codable, Equatable {
+struct AIReframeResult: Codable, Equatable, Hashable {
     let reframeSummary: String
     let balancedThought: String?
     let suggestions: [String]

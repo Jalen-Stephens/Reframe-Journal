@@ -30,7 +30,6 @@ struct AdaptiveResponseView: View {
                 let answeredCount = countAnsweredPrompts(for: thought.id)
                 let isComplete = answeredCount == AdaptivePrompts.all.count
                 let prompt = AdaptivePrompts.all[promptIndex]
-                let currentText = textValue(for: prompt.textKey, thoughtId: thought.id)
                 let currentBelief = beliefValue(for: prompt.beliefKey, thoughtId: thought.id)
 
                 VStack(alignment: .leading, spacing: 12) {

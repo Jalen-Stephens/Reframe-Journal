@@ -13,6 +13,7 @@ final class ThoughtRecordStore: ObservableObject {
     private var draftCache: ThoughtRecord?
     private var pendingSave: Task<Void, Never>?
     private var flushTask: Task<Void, Never>?
+    private var pendingSaveGeneration = 0
 
     init(baseURL: URL? = nil) {
         let fileManager = FileManager.default
@@ -150,13 +151,15 @@ final class ThoughtRecordStore: ObservableObject {
 
     private func scheduleSave(records: [ThoughtRecord]) {
         pendingSave?.cancel()
+        pendingSaveGeneration += 1
+        let generation = pendingSaveGeneration
         let snapshot = records
         let baseURL = baseURL
         let recordsURL = recordsURL
 #if DEBUG
         print("DEBOUNCE WRITE scheduled")
 #endif
-        pendingSave = Task.detached(priority: .utility) { [baseURL, recordsURL, snapshot, weak self] in
+        pendingSave = Task.detached(priority: .utility) { [baseURL, recordsURL, snapshot] in
             do {
                 try await Task.sleep(nanoseconds: 350_000_000)
                 guard !Task.isCancelled else { return }
@@ -178,8 +181,12 @@ final class ThoughtRecordStore: ObservableObject {
                 }
 #endif
             }
-            await MainActor.run {
-                self?.pendingSave = nil
+        }
+        let task = pendingSave
+        Task { @MainActor in
+            _ = await task?.value
+            if pendingSaveGeneration == generation {
+                pendingSave = nil
             }
         }
     }
