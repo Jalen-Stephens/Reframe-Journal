@@ -127,6 +127,8 @@ struct EntryDetailView: View {
                     emptyState: "No changes recorded yet."
                 )
 
+                aiReframeSection(record)
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Before snapshot")
                         .font(.system(size: 15, weight: .semibold))
@@ -455,6 +457,38 @@ private struct EditEntrySheet: View {
         }
         .padding(16)
         .background(themeManager.theme.background)
-        .presentationDetents([.medium])
+            .presentationDetents([.medium])
+    }
+
+    private func aiReframeSection(_ record: ThoughtRecord) -> some View {
+        let previewText = record.aiReframe?.reframeSummary.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("AI Reframe")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(themeManager.theme.textPrimary)
+
+            if let result = record.aiReframe {
+                Text(previewText.isEmpty ? result.validation : previewText)
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+                    .lineLimit(2)
+                Button("View") {
+                    router.push(.aiReframeResult(entryId: record.id, action: .view))
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.theme.accent)
+            } else {
+                Text("No AI Reframe yet.")
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+                Button("Generate") {
+                    router.push(.aiReframeResult(entryId: record.id, action: .generate))
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.theme.accent)
+            }
+        }
+        .padding(16)
+        .cardSurface(cornerRadius: 16)
     }
 }
