@@ -11,6 +11,7 @@ struct OutcomeView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var showRegenerateConfirm = false
+    @State private var selectedDepth: AIReframeDepth = .deep
 
     var body: some View {
         StepContentContainer(title: "Review", step: 6, total: 6) {
@@ -195,6 +196,13 @@ struct OutcomeView: View {
                 .foregroundColor(themeManager.theme.accent)
                 .disabled(!isAIReframeEnabled)
             } else {
+                Picker("Depth", selection: $selectedDepth) {
+                    ForEach(AIReframeDepth.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .disabled(!isAIReframeEnabled)
                 PrimaryButton(
                     label: "Generate Reframe",
                     onPress: { navigateToReframe(action: .generate) },
@@ -221,9 +229,10 @@ struct OutcomeView: View {
     }
 
     private func navigateToReframe(action: AIReframeAction) {
+        let depth = appState.wizard.draft.aiReframeDepth ?? selectedDepth
         Task { @MainActor in
             await appState.wizard.persistDraft()
-            router.push(.aiReframeResult(entryId: appState.wizard.draft.id, action: action))
+            router.push(.aiReframeResult(entryId: appState.wizard.draft.id, action: action, depth: depth))
         }
     }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AIReframeResultView: View {
     @EnvironmentObject private var router: AppRouter
@@ -161,6 +162,15 @@ struct AIReframeResultView: View {
                     Text(nonEmptyText(result.balancedThought, fallback: "You're making progress by slowing down and re-evaluating this thought."))
                         .font(.system(size: 13))
                         .foregroundColor(themeManager.theme.textPrimary)
+                    let isEmpty = (result.balancedThought ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    HStack(spacing: 10) {
+                        SecondaryActionButton(title: "Copy Balanced Thought", isDisabled: isEmpty) {
+                            copyText(result.balancedThought)
+                        }
+                        SecondaryActionButton(title: "Save as my new thought", isDisabled: isEmpty) {
+                            copyText(result.balancedThought)
+                        }
+                    }
                 }
             }
 
@@ -199,8 +209,12 @@ struct AIReframeResultView: View {
                     .foregroundColor(themeManager.theme.textPrimary)
             } content: {
                 VStack(alignment: .leading, spacing: 12) {
-                    textBlock(title: "Text message", text: result.communicationScript?.textMessage)
-                    textBlock(title: "In-person", text: result.communicationScript?.inPerson)
+                    textBlock(title: "Text message", text: result.communicationScript?.textMessage) {
+                        copyText(result.communicationScript?.textMessage)
+                    }
+                    textBlock(title: "In-person", text: result.communicationScript?.inPerson) {
+                        copyText(result.communicationScript?.inPerson)
+                    }
                 }
             }
 
@@ -301,7 +315,7 @@ struct AIReframeResultView: View {
         }
     }
 
-    private func textBlock(title: String, text: String?) -> some View {
+    private func textBlock(title: String, text: String?, onCopy: (() -> Void)? = nil) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
@@ -309,6 +323,11 @@ struct AIReframeResultView: View {
             Text(nonEmptyText(text, fallback: "Not provided."))
                 .font(.system(size: 12))
                 .foregroundColor(themeManager.theme.textSecondary)
+            if let onCopy {
+                SecondaryActionButton(title: "Copy", isDisabled: (text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
+                    onCopy()
+                }
+            }
         }
         .padding(12)
         .pillSurface(cornerRadius: 10)
@@ -317,6 +336,12 @@ struct AIReframeResultView: View {
     private func nonEmptyText(_ text: String?, fallback: String) -> String {
         let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return trimmed.isEmpty ? fallback : trimmed
+    }
+
+    private func copyText(_ text: String?) {
+        let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !trimmed.isEmpty else { return }
+        UIPasteboard.general.string = trimmed
     }
 
 }
