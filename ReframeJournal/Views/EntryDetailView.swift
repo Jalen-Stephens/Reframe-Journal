@@ -371,19 +371,21 @@ struct EntryDetailView: View {
     }
 
     private func aiReframeSection(_ record: ThoughtRecord) -> some View {
-        let previewText = record.aiReframe?.reframeSummary.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let previewText = record.aiReframe?.summary?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return VStack(alignment: .leading, spacing: 10) {
             Text("AI Reframe")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(themeManager.theme.textPrimary)
 
             if let result = record.aiReframe {
-                Text(previewText.isEmpty ? result.validation : previewText)
+                let fallback = result.validation ?? "AI Reframe saved."
+                Text(previewText.isEmpty ? fallback : previewText)
                     .font(.system(size: 12))
                     .foregroundColor(themeManager.theme.textSecondary)
                     .lineLimit(2)
                 Button("View") {
-                    router.push(.aiReframeResult(entryId: record.id, action: .view))
+                    let depth = record.aiReframeDepth ?? .deep
+                    router.push(.aiReframeResult(entryId: record.id, action: .view, depth: depth))
                 }
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(themeManager.theme.accent)
@@ -392,7 +394,7 @@ struct EntryDetailView: View {
                     .font(.system(size: 12))
                     .foregroundColor(themeManager.theme.textSecondary)
                 Button("Generate") {
-                    router.push(.aiReframeResult(entryId: record.id, action: .generate))
+                    router.push(.aiReframeResult(entryId: record.id, action: .generate, depth: .deep))
                 }
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(themeManager.theme.accent)
