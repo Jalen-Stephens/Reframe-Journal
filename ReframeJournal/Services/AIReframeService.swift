@@ -3,7 +3,7 @@ import Foundation
 struct AIReframeService {
     private let clientProvider: () throws -> OpenAIClient
     let modelName = "gpt-4o-mini"
-    let promptVersion = "v1"
+    let promptVersion = "v2"
 
     init(clientProvider: @escaping () throws -> OpenAIClient = {
         guard let key = OpenAIClient.loadAPIKey() else {
@@ -14,19 +14,19 @@ struct AIReframeService {
         self.clientProvider = clientProvider
     }
 
-    func generateReframe(for record: ThoughtRecord) async throws -> AIReframeResult {
+    func generateReframe(for record: ThoughtRecord, depth: AIReframeDepth) async throws -> AIReframeResult {
         let client = try clientProvider()
         let systemMessage = systemPrompt
-        let userMessage = buildUserMessage(for: record)
+        let userMessage = buildUserMessage(for: record, depth: depth)
         let content = try await client.chatCompletion(systemMessage: systemMessage, userMessage: userMessage, model: modelName)
         return parseResult(from: content)
     }
 
     var systemPrompt: String {
-        "You are a supportive CBT-style journaling assistant. Do not diagnose. Avoid medical claims. Keep tone kind, practical, and concise."
+        "You are a supportive CBT-style journaling assistant. Do not diagnose. Do not provide medical advice. Be kind, practical, and specific. Return STRICT JSON only."
     }
 
-    func buildUserMessage(for record: ThoughtRecord) -> String {
+    func buildUserMessage(for record: ThoughtRecord, depth: AIReframeDepth) -> String {
         let emotionsText = listOrPlaceholder(record.emotions.map { "\($0.label) (\($0.intensityBefore)%)" })
         let sensationsText = listOrPlaceholder(record.sensations)
         let thoughtsText = listOrPlaceholder(record.automaticThoughts.map { "\($0.text) (belief \($0.beliefBefore)%)" })
@@ -47,30 +47,53 @@ Evidence for/against: \(adaptiveText.evidence)
 Alternative responses / adaptive responses: \(adaptiveText.alternatives)
 Outcome / reflection: \(outcomesText)
 
-Please:
-- Validate feelings (1 sentence)
-- Reframe cognitive distortions if present
-- Provide a balanced alternative thought
-- Provide 2–4 actionable suggestions
-Keep tone supportive, non-clinical, and concise.
+Depth: \(depth.promptLabel)
 
-Return STRICT JSON with this shape:
+Constraints:
+- Keep tone supportive, non-judgmental, and non-clinical.
+- Avoid generic filler; tie statements to the entry details.
+- No diagnosis and no medical advice.
+
+Please return STRICT JSON with this shape:
 {
-  "reframe_summary": "...",
-  "balanced_thought": "...",
-  "suggestions": ["...", "..."],
-  "validation": "..."
+  "validation": "1–2 sentences validating feelings",
+  "what_might_be_happening": ["3–6 alternative explanations"],
+  "cognitive_distortions": [
+    {
+      "label": "e.g., mind reading",
+      "why_it_fits": "1 sentence",
+      "gentle_reframe": "1 sentence"
+    }
+  ],
+  "balanced_thought": "2–4 sentences, specific and believable",
+  "micro_action_plan": [
+    { "title": "Right now (2 minutes)", "steps": ["...", "..."] },
+    { "title": "Today", "steps": ["...", "..."] },
+    { "title": "If it happens again", "steps": ["...", "..."] }
+  ],
+  "communication_script": {
+    "text_message": "short supportive text message",
+    "in_person": "short in-person script"
+  },
+  "self_compassion": ["2–4 sentences"],
+  "reality_check_questions": ["5–8 questions"],
+  "one_small_experiment": {
+    "hypothesis": "what the user fears",
+    "experiment": "one small test they can try",
+    "what_to_observe": ["...", "..."]
+  },
+  "summary": "short wrap-up paragraph"
 }
 """
     }
 
     private func parseResult(from content: String) -> AIReframeResult {
         if let result = decodeJSON(from: content) {
-            return result
+            return attachRawResponse(result, raw: content)
         }
         if let trimmed = extractJSON(from: content),
            let result = decodeJSON(from: trimmed) {
-            return result
+            return attachRawResponse(result, raw: content)
         }
         return AIReframeResult.fallback(from: content)
     }
@@ -78,6 +101,22 @@ Return STRICT JSON with this shape:
     private func decodeJSON(from content: String) -> AIReframeResult? {
         guard let data = content.data(using: .utf8) else { return nil }
         return try? JSONDecoder().decode(AIReframeResult.self, from: data)
+    }
+
+    private func attachRawResponse(_ result: AIReframeResult, raw: String) -> AIReframeResult {
+        AIReframeResult(
+            validation: result.validation,
+            whatMightBeHappening: result.whatMightBeHappening,
+            cognitiveDistortions: result.cognitiveDistortions,
+            balancedThought: result.balancedThought,
+            microActionPlan: result.microActionPlan,
+            communicationScript: result.communicationScript,
+            selfCompassion: result.selfCompassion,
+            realityCheckQuestions: result.realityCheckQuestions,
+            oneSmallExperiment: result.oneSmallExperiment,
+            summary: result.summary,
+            rawResponse: raw
+        )
     }
 
     private func extractJSON(from content: String) -> String? {

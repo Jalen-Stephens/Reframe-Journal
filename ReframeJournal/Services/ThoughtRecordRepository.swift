@@ -51,7 +51,14 @@ final class ThoughtRecordRepository {
         try await store.deleteDraft()
     }
 
-    func upsertAIReframe(entryId: String, result: AIReframeResult, createdAt: Date = Date(), model: String? = nil, promptVersion: String? = nil) async throws {
+    func upsertAIReframe(
+        entryId: String,
+        result: AIReframeResult,
+        createdAt: Date = Date(),
+        model: String? = nil,
+        promptVersion: String? = nil,
+        depth: AIReframeDepth? = nil
+    ) async throws {
         guard var record = try await store.fetch(id: entryId) else {
             throw RepositoryError.entryNotFound
         }
@@ -59,6 +66,7 @@ final class ThoughtRecordRepository {
         record.aiReframeCreatedAt = createdAt
         record.aiReframeModel = model
         record.aiReframePromptVersion = promptVersion
+        record.aiReframeDepth = depth
         record.updatedAt = DateUtils.nowIso()
         try await store.upsert(record)
     }

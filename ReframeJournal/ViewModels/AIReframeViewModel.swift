@@ -9,13 +9,15 @@ final class AIReframeViewModel: ObservableObject {
     private let entryId: String
     private let repository: ThoughtRecordRepository
     private let service: AIReframeService
+    private var depth: AIReframeDepth
 
     private var isDraftSource = false
 
-    init(entryId: String, repository: ThoughtRecordRepository, service: AIReframeService) {
+    init(entryId: String, repository: ThoughtRecordRepository, service: AIReframeService, depth: AIReframeDepth) {
         self.entryId = entryId
         self.repository = repository
         self.service = service
+        self.depth = depth
     }
 
     func loadExisting() async {
@@ -26,11 +28,17 @@ final class AIReframeViewModel: ObservableObject {
             if let record = try await repository.fetch(id: entryId) {
                 isDraftSource = false
                 result = record.aiReframe
+                if let storedDepth = record.aiReframeDepth {
+                    depth = storedDepth
+                }
                 return
             }
             if let draft = try await repository.fetchDraft(), draft.id == entryId {
                 isDraftSource = true
                 result = draft.aiReframe
+                if let storedDepth = draft.aiReframeDepth {
+                    depth = storedDepth
+                }
                 return
             }
             result = nil
@@ -58,7 +66,7 @@ final class AIReframeViewModel: ObservableObject {
         }
         do {
             let record = try await loadRecord()
-            let generated = try await service.generateReframe(for: record)
+            let generated = try await service.generateReframe(for: record, depth: depth)
             let createdAt = Date()
             if isDraftSource {
                 var updated = record
@@ -66,6 +74,7 @@ final class AIReframeViewModel: ObservableObject {
                 updated.aiReframeCreatedAt = createdAt
                 updated.aiReframeModel = service.modelName
                 updated.aiReframePromptVersion = service.promptVersion
+                updated.aiReframeDepth = depth
                 updated.updatedAt = DateUtils.nowIso()
                 try await repository.saveDraft(updated)
             } else {
@@ -74,7 +83,8 @@ final class AIReframeViewModel: ObservableObject {
                     result: generated,
                     createdAt: createdAt,
                     model: service.modelName,
-                    promptVersion: service.promptVersion
+                    promptVersion: service.promptVersion,
+                    depth: depth
                 )
             }
             result = generated
@@ -103,5 +113,13 @@ final class AIReframeViewModel: ObservableObject {
             return draft
         }
         throw ThoughtRecordRepository.RepositoryError.entryNotFound
+    }
+
+    func updateDepth(_ depth: AIReframeDepth) {
+        self.depth = depth
+    }
+
+    func currentDepth() -> AIReframeDepth {
+        depth
     }
 }

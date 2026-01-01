@@ -53,7 +53,8 @@ final class WizardViewModel: ObservableObject {
             aiReframe: base.aiReframe,
             aiReframeCreatedAt: base.aiReframeCreatedAt,
             aiReframeModel: base.aiReframeModel,
-            aiReframePromptVersion: base.aiReframePromptVersion
+            aiReframePromptVersion: base.aiReframePromptVersion,
+            aiReframeDepth: base.aiReframeDepth
         )
         draft = updated
         do {

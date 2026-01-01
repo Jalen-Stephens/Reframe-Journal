@@ -38,11 +38,12 @@ final class AIReframeServiceTests: XCTestCase {
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,
-            aiReframePromptVersion: nil
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
         )
 
         let service = AIReframeService(clientProvider: { throw OpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record)
+        let message = service.buildUserMessage(for: record, depth: .deep)
 
         XCTAssertTrue(message.contains("Date/time: 2024-01-01T12:00:00Z"))
         XCTAssertTrue(message.contains("Situation: Work presentation"))
@@ -58,19 +59,36 @@ final class AIReframeServiceTests: XCTestCase {
     func testAIReframeResultDecodesJSON() throws {
         let json = """
         {
-          "reframe_summary": "You faced a tough moment.",
+          "validation": "It makes sense to feel stressed.",
+          "what_might_be_happening": ["There is a lot on your plate."],
+          "cognitive_distortions": [
+            { "label": "mind reading", "why_it_fits": "You assumed their reaction.", "gentle_reframe": "You don't have all the data yet." }
+          ],
           "balanced_thought": "I can prepare and ask for support.",
-          "suggestions": ["Take a short walk", "Write a quick plan"],
-          "validation": "It makes sense to feel stressed."
+          "micro_action_plan": [
+            { "title": "Today", "steps": ["Make a short list"] }
+          ],
+          "communication_script": {
+            "text_message": "Hey, can we talk later?",
+            "in_person": "I'd like to share what's on my mind."
+          },
+          "self_compassion": ["I'm doing my best with a lot right now."],
+          "reality_check_questions": ["What evidence supports this?"],
+          "one_small_experiment": {
+            "hypothesis": "They will judge me.",
+            "experiment": "Ask for quick feedback.",
+            "what_to_observe": ["Their tone"]
+          },
+          "summary": "You slowed down and found a more grounded view."
         }
         """
 
         let data = Data(json.utf8)
         let result = try JSONDecoder().decode(AIReframeResult.self, from: data)
 
-        XCTAssertEqual(result.reframeSummary, "You faced a tough moment.")
         XCTAssertEqual(result.balancedThought, "I can prepare and ask for support.")
-        XCTAssertEqual(result.suggestions, ["Take a short walk", "Write a quick plan"])
         XCTAssertEqual(result.validation, "It makes sense to feel stressed.")
+        XCTAssertEqual(result.whatMightBeHappening?.first, "There is a lot on your plate.")
+        XCTAssertEqual(result.cognitiveDistortions?.first?.label, "mind reading")
     }
 }

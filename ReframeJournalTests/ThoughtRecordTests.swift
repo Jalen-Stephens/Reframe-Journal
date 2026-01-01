@@ -37,7 +37,8 @@ final class ThoughtRecordTests: XCTestCase {
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,
-            aiReframePromptVersion: nil
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
         )
 
         let data = try JSONEncoder().encode(record)

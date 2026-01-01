@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F4B5C6D7E8091A2B3C4D5E6F /* AIReframeDepth.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4C5D6E708192A3B4C5D6E /* AIReframeDepth.swift */; };
 		F3A4B5C6D7E8091A2B3C4D5E /* AIReframeResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A3B4C5D6E708192A3B4C5D /* AIReframeResultView.swift */; };
 		E2F3A4B5061728394A5B6C7D /* AIReframeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5061728394A5B6C /* AIReframeServiceTests.swift */; };
 		A2B3C4D5E6F708192A3B4C5D /* AIReframeResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B6C /* AIReframeResult.swift */; };
@@ -77,6 +78,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F3B4C5D6E708192A3B4C5D6E /* AIReframeDepth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeDepth.swift; sourceTree = "<group>"; };
 		F2A3B4C5D6E708192A3B4C5D /* AIReframeResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeResultView.swift; sourceTree = "<group>"; };
 		E1F2A3B4C5061728394A5B6C /* AIReframeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeServiceTests.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B6C /* AIReframeResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeResult.swift; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 		29A95A9797C0B70CE139BAFB /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				F3B4C5D6E708192A3B4C5D6E /* AIReframeDepth.swift */,
 				A1B2C3D4E5F60718293A4B6C /* AIReframeResult.swift */,
 				0DA5A6B08FABCE630CF8B371 /* ThoughtRecord.swift */,
 			);
@@ -396,6 +399,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4B5C6D7E8091A2B3C4D5E6F /* AIReframeDepth.swift in Sources */,
 				F3A4B5C6D7E8091A2B3C4D5E /* AIReframeResultView.swift in Sources */,
 				A2B3C4D5E6F708192A3B4C5D /* AIReframeResult.swift in Sources */,
 				C2D3E4F5061728394A5B6C7D /* AIReframeService.swift in Sources */,
