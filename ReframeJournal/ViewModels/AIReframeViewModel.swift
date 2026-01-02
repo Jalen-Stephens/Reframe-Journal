@@ -89,7 +89,7 @@ final class AIReframeViewModel: ObservableObject {
             }
             result = generated
         } catch let err {
-            if let openAIError = err as? OpenAIClient.OpenAIError {
+            if let openAIError = err as? LegacyOpenAIClient.OpenAIError {
                 switch openAIError {
                 case .missingAPIKey:
                     self.error = "Missing OpenAI API key. Set OPENAI_API_KEY in build settings or scheme."

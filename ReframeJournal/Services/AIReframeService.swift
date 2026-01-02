@@ -1,15 +1,15 @@
 import Foundation
 
 struct AIReframeService {
-    private let clientProvider: () throws -> OpenAIClient
+    private let clientProvider: () throws -> LegacyOpenAIClient
     let modelName = "gpt-4o-mini"
     let promptVersion = "v2"
 
-    init(clientProvider: @escaping () throws -> OpenAIClient = {
-        guard let key = OpenAIClient.loadAPIKey() else {
-            throw OpenAIClient.OpenAIError.missingAPIKey
+    init(clientProvider: @escaping () throws -> LegacyOpenAIClient = {
+        guard let key = LegacyOpenAIClient.loadAPIKey() else {
+            throw LegacyOpenAIClient.OpenAIError.missingAPIKey
         }
-        return OpenAIClient(apiKey: key)
+        return LegacyOpenAIClient(apiKey: key)
     }) {
         self.clientProvider = clientProvider
     }

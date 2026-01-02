@@ -1,11 +1,14 @@
+// File: Views/HomeView.swift
 import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var themeManager: ThemeManager
+    @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @StateObject private var viewModel: HomeViewModel
     @State private var showDailyLimitAlert = false
+    @State private var showPaywall = false
 
     init(repository: ThoughtRecordRepository) {
         _viewModel = StateObject(wrappedValue: HomeViewModel(repository: repository))
@@ -35,14 +38,7 @@ struct HomeView: View {
 
                 VStack(spacing: 12) {
                     Button {
-                        if appState.thoughtUsage.canCreateThought() {
-                            Task { @MainActor in
-                                await appState.wizard.clearDraft()
-                                router.push(.wizardStep1)
-                            }
-                        } else {
-                            showDailyLimitAlert = true
-                        }
+                        startNewThoughtRecord()
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("New thought record")
@@ -189,10 +185,13 @@ struct HomeView: View {
         .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
             Button("OK", role: .cancel) {}
             Button("Upgrade") {
-                // TODO: Wire up subscription flow when StoreKit integration is ready.
+                showPaywall = true
             }
         } message: {
             Text("You've used your 3 free thoughts for today.\nCome back tomorrow, or upgrade for unlimited thoughts.")
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
 
@@ -202,6 +201,17 @@ struct HomeView: View {
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundColor(themeManager.theme.textPrimary)
             Spacer()
+            if !entitlementsManager.isPro {
+                Button("Upgrade") {
+                    showPaywall = true
+                }
+                .font(.system(size: 12))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .pillSurface(cornerRadius: 16)
+                .foregroundColor(themeManager.theme.textSecondary)
+                .buttonStyle(.plain)
+            }
             Button("Settings") {
                 router.push(.settings)
             }
@@ -210,6 +220,16 @@ struct HomeView: View {
             .padding(.vertical, 8)
             .pillSurface(cornerRadius: 16)
             .foregroundColor(themeManager.theme.textSecondary)
+            .buttonStyle(.plain)
+            Button {
+                startNewThoughtRecord()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 14, weight: .semibold))
+                    .padding(8)
+            }
+            .pillSurface(cornerRadius: 16)
+            .foregroundColor(themeManager.theme.textPrimary)
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
@@ -250,5 +270,16 @@ struct HomeView: View {
             await appState.wizard.persistDraft(entry)
         }
         router.push(.wizardStep1)
+    }
+
+    private func startNewThoughtRecord() {
+        if appState.thoughtUsage.canCreateThought() {
+            Task { @MainActor in
+                await appState.wizard.clearDraft()
+                router.push(.wizardStep1)
+            }
+        } else {
+            showDailyLimitAlert = true
+        }
     }
 }
