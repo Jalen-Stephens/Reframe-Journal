@@ -144,8 +144,10 @@ DerivedData/
 build/
 *.xcuserdata
 ReframeJournal.xcodeproj/xcuserdata/
+ReframeJournal.xcodeproj/xcshareddata/xcschemes/*.xcscheme
 *.xcuserstate
 *.xcscmblueprint
 *.xccheckout
 .swiftpm/
 .build/
+ReframeJournal.xcodeproj/project.xcworkspace/xcshareddata/
