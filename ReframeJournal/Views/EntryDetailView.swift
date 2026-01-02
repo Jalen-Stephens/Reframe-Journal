@@ -2,7 +2,6 @@ import SwiftUI
 
 struct EntryDetailView: View {
     @EnvironmentObject private var router: AppRouter
-    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeManager: ThemeManager
     @StateObject private var viewModel: EntryDetailViewModel
 
@@ -37,8 +36,7 @@ struct EntryDetailView: View {
     }
 
     private func content(for record: ThoughtRecord) -> some View {
-        let situationTitle = record.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let title = situationTitle.isEmpty ? "Untitled situation" : situationTitle
+        let title = entryTitle(for: record)
         let timeLabel = DateUtils.formatRelativeDateTime(record.createdAt)
         let status = statusFor(record)
         let thoughts = normalizeThoughts(record)
@@ -282,6 +280,22 @@ struct EntryDetailView: View {
         }
     }
 
+    private func entryTitle(for record: ThoughtRecord) -> String {
+        if let title = record.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
+            return title
+        }
+        let situation = record.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if situation.isEmpty {
+            return "New Entry"
+        }
+        let firstLine = situation.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? situation
+        if firstLine.count > 40 {
+            let index = firstLine.index(firstLine.startIndex, offsetBy: 40)
+            return String(firstLine[..<index])
+        }
+        return firstLine
+    }
+
     private func normalizeEmotionsBefore(_ record: ThoughtRecord) -> [NormalizedEmotion] {
         record.emotions.map {
             NormalizedEmotion(
@@ -439,50 +453,34 @@ private struct OutcomeDeltas {
 }
 
 private struct EditEntrySheet: View {
-    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var themeManager: ThemeManager
 
     let record: ThoughtRecord
     let onDismiss: () -> Void
 
-    private let sections: [(String, Route)] = [
-        ("Date & time", .wizardStep1),
-        ("Situation", .wizardStep2),
-        ("Automatic thought", .wizardStep3),
-        ("Emotions", .wizardStep4),
-        ("Adaptive responses", .wizardStep5),
-        ("Outcome", .wizardStep6)
-    ]
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Edit entry")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(themeManager.theme.textPrimary)
-            ForEach(sections, id: \.0) { section in
-                Button {
-                    appState.wizard.setDraft(record, isEditing: true)
-                    Task { @MainActor in
-                        await appState.wizard.persistDraft(record)
-                    }
-                    onDismiss()
-                    router.push(section.1)
-                } label: {
-                    HStack {
-                        Text(section.0)
-                            .font(.system(size: 14))
-                            .foregroundColor(themeManager.theme.textPrimary)
-                        Spacer()
-                        Text(">")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-                    .padding(12)
-                    .pillSurface(cornerRadius: 10)
+            Button {
+                onDismiss()
+                router.push(.thoughtEntry(id: record.id))
+            } label: {
+                HStack {
+                    Text("Edit in Notes view")
+                        .font(.system(size: 14))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    Spacer()
+                    Text(">")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textSecondary)
                 }
-                .buttonStyle(.plain)
+                .padding(12)
+                .pillSurface(cornerRadius: 10)
             }
+            .buttonStyle(.plain)
             Button("Cancel") {
                 onDismiss()
             }

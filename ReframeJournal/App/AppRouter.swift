@@ -3,6 +3,7 @@ import SwiftUI
 enum Route: Hashable {
     case allEntries
     case entryDetail(id: String)
+    case thoughtEntry(id: String?)
     case thoughtResponseDetail(entryId: String, thoughtId: String)
     case aiReframeResult(entryId: String, action: AIReframeAction, depth: AIReframeDepth)
     case wizardStep1

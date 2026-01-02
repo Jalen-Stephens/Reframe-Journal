@@ -1,31 +1,39 @@
 import SwiftUI
 
 struct EntryListItemView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-
     let entry: ThoughtRecord
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(thoughtLabel(for: entry))
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
-                    .lineLimit(2)
-                Text(DateUtils.formatRelativeDateTime(entry.createdAt))
-                    .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+            GlassCard(padding: AppTheme.cardPaddingCompact) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(titleLabel(for: entry))
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                    Text(DateUtils.formatRelativeDateTime(entry.createdAt))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardSurface(cornerRadius: 12, shadow: false)
         }
         .buttonStyle(.plain)
     }
 
-    private func thoughtLabel(for record: ThoughtRecord) -> String {
-        let thought = record.automaticThoughts.first?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return thought.isEmpty ? "Untitled thought" : thought
+    private func titleLabel(for record: ThoughtRecord) -> String {
+        if let title = record.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
+            return title
+        }
+        let situation = record.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if situation.isEmpty {
+            return "New Entry"
+        }
+        let firstLine = situation.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? situation
+        if firstLine.count > 40 {
+            let index = firstLine.index(firstLine.startIndex, offsetBy: 40)
+            return String(firstLine[..<index])
+        }
+        return firstLine
     }
 }
