@@ -5,6 +5,7 @@ final class ThoughtRecordTests: XCTestCase {
     func testEncodingDecodingRoundTrip() throws {
         let record = ThoughtRecord(
             id: "id_123",
+            title: "Work presentation",
             createdAt: "2024-01-01T12:00:00Z",
             updatedAt: "2024-01-01T12:30:00Z",
             situationText: "Presentation went poorly",

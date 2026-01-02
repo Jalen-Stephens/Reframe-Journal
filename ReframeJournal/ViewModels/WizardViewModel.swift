@@ -39,6 +39,7 @@ final class WizardViewModel: ObservableObject {
         let base = record ?? draft
         let updated = ThoughtRecord(
             id: base.id,
+            title: base.title,
             createdAt: base.createdAt,
             updatedAt: DateUtils.nowIso(),
             situationText: base.situationText,

@@ -42,7 +42,7 @@ struct AllEntriesView: View {
                             LazyVStack(spacing: 12) {
                                 ForEach(section.entries) { entry in
                                     EntryListItemView(entry: entry) {
-                                        router.push(.entryDetail(id: entry.id))
+                                        router.push(.thoughtEntry(id: entry.id))
                                     }
                                 }
                             }

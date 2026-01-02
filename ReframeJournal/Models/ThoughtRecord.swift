@@ -33,6 +33,7 @@ struct AdaptiveResponsesForThought: Codable, Hashable {
 
 struct ThoughtRecord: Codable, Identifiable, Hashable {
     let id: String
+    var title: String?
     var createdAt: String
     var updatedAt: String
     var situationText: String
@@ -53,6 +54,7 @@ struct ThoughtRecord: Codable, Identifiable, Hashable {
     static func empty(nowIso: String, id: String) -> ThoughtRecord {
         ThoughtRecord(
             id: id,
+            title: nil,
             createdAt: nowIso,
             updatedAt: nowIso,
             situationText: "",
