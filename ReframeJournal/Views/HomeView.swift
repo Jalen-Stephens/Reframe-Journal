@@ -20,38 +20,36 @@ struct HomeView: View {
             header
             List {
                 Text("Ground yourself and gently work through a moment, step by step.")
-                    .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                     .padding(.top, 8)
                     .listRowInsets(rowInsets)
                     .listRowSeparator(.hidden)
-                    .listRowBackground(themeManager.theme.background)
+                    .listRowBackground(Color.clear)
 
                 if let latest = viewModel.entries.first {
                     Text("Last worked on: \(latestThoughtLabel(for: latest)) · \(DateUtils.formatRelativeDate(latest.createdAt))")
-                        .font(.system(size: 13))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                         .listRowInsets(rowInsets)
                         .listRowSeparator(.hidden)
-                        .listRowBackground(themeManager.theme.background)
+                        .listRowBackground(Color.clear)
                 }
 
                 VStack(spacing: 12) {
                     Button {
                         startNewThoughtRecord()
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("New thought record")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(themeManager.theme.onAccent)
-                            Text("Work through a difficult moment step by step.")
-                                .font(.system(size: 13))
-                                .foregroundColor(themeManager.theme.onAccent.opacity(0.9))
+                        GlassCard(emphasized: true) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("New thought record")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Text("Work through a difficult moment step by step.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(16)
-                        .background(themeManager.theme.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     .buttonStyle(.plain)
 
@@ -59,38 +57,37 @@ struct HomeView: View {
                         Button {
                             router.push(.wizardStep1)
                         } label: {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Continue draft")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.textPrimary)
-                                Text("Pick up where you left off.")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(themeManager.theme.textSecondary)
+                            GlassCard(padding: AppTheme.cardPaddingCompact) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Continue draft")
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                    Text("Pick up where you left off.")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(14)
-                            .cardSurface(cornerRadius: 14, shadow: false)
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 .listRowInsets(rowInsets)
                 .listRowSeparator(.hidden)
-                .listRowBackground(themeManager.theme.background)
+                .listRowBackground(Color.clear)
 
                 if sections.today.isEmpty && sections.past.isEmpty {
                     Text("No entries yet. Start a new thought record above.")
-                        .font(.system(size: 13))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                         .listRowInsets(rowInsets)
                         .listRowSeparator(.hidden)
-                        .listRowBackground(themeManager.theme.background)
+                        .listRowBackground(Color.clear)
                 } else {
                     if !sections.today.isEmpty {
                         Section {
                             ForEach(sections.today) { entry in
                                 EntryListItemView(entry: entry) {
-                                    router.push(.entryDetail(id: entry.id))
+                                    router.push(.thoughtEntry(id: entry.id))
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button {
@@ -110,13 +107,10 @@ struct HomeView: View {
                                 }
                                 .listRowInsets(rowInsets)
                                 .listRowSeparator(.hidden)
-                                .listRowBackground(themeManager.theme.background)
+                                .listRowBackground(Color.clear)
                             }
                         } header: {
-                            Text("Recent entries")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
-                                .textCase(nil)
+                            GlassSectionHeader(text: "Recent entries")
                         }
                     }
 
@@ -124,7 +118,7 @@ struct HomeView: View {
                         Section {
                             ForEach(Array(sections.past.prefix(2))) { entry in
                                 EntryListItemView(entry: entry) {
-                                    router.push(.entryDetail(id: entry.id))
+                                    router.push(.thoughtEntry(id: entry.id))
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button {
@@ -144,41 +138,37 @@ struct HomeView: View {
                                 }
                                 .listRowInsets(rowInsets)
                                 .listRowSeparator(.hidden)
-                                .listRowBackground(themeManager.theme.background)
+                                .listRowBackground(Color.clear)
                             }
                         } header: {
-                            Text("Past entries")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
-                                .textCase(nil)
+                            GlassSectionHeader(text: "Past entries")
                         }
                     }
 
                     Button {
                         router.push(.allEntries)
                     } label: {
-                        HStack {
-                            Text("View all entries")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textSecondary)
-                            Spacer()
-                            Text(">")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                        GlassCard(padding: AppTheme.cardPaddingCompact) {
+                            HStack {
+                                Text("View all entries")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                AppIconView(icon: .arrowRight, size: AppTheme.iconSizeSmall)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                        .padding(12)
-                        .pillSurface(cornerRadius: 12)
                     }
                     .buttonStyle(.plain)
                     .listRowInsets(rowInsets)
                     .listRowSeparator(.hidden)
-                    .listRowBackground(themeManager.theme.background)
+                    .listRowBackground(Color.clear)
                 }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(GlassBackground())
         .task {
             await viewModel.loadIfNeeded()
         }
@@ -198,47 +188,48 @@ struct HomeView: View {
     private var header: some View {
         HStack {
             Text("Reframe Journal")
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.primary)
             Spacer()
             if !entitlementsManager.isPro {
-                Button("Upgrade") {
+                GlassPillButton {
                     showPaywall = true
+                } label: {
+                    HStack(spacing: 6) {
+                        AppIconView(icon: .sparkles, size: AppTheme.iconSizeSmall)
+                            .foregroundStyle(.secondary)
+                        Text("Upgrade")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                .font(.system(size: 12))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .pillSurface(cornerRadius: 16)
-                .foregroundColor(themeManager.theme.textSecondary)
-                .buttonStyle(.plain)
             }
-            Button("Settings") {
+            GlassIconButton(icon: .settings, size: AppTheme.iconSizeMedium, accessibilityLabel: "Settings") {
                 router.push(.settings)
             }
-            .font(.system(size: 12))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .pillSurface(cornerRadius: 16)
-            .foregroundColor(themeManager.theme.textSecondary)
-            .buttonStyle(.plain)
-            Button {
+
+            GlassIconButton(icon: .plus, size: AppTheme.iconSizeMedium, accessibilityLabel: "New entry") {
                 startNewThoughtRecord()
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 14, weight: .semibold))
-                    .padding(8)
             }
-            .pillSurface(cornerRadius: 16)
-            .foregroundColor(themeManager.theme.textPrimary)
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
     }
 
     private func latestThoughtLabel(for record: ThoughtRecord) -> String {
-        let thought = record.automaticThoughts.first?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return thought.isEmpty ? "Untitled thought" : thought
+        if let title = record.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
+            return title
+        }
+        let situation = record.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if situation.isEmpty {
+            return "New Entry"
+        }
+        let firstLine = situation.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? situation
+        if firstLine.count > 40 {
+            let index = firstLine.index(firstLine.startIndex, offsetBy: 40)
+            return String(firstLine[..<index])
+        }
+        return firstLine
     }
 
     private func splitEntriesByToday(_ entries: [ThoughtRecord]) -> (today: [ThoughtRecord], past: [ThoughtRecord]) {
@@ -265,19 +256,12 @@ struct HomeView: View {
     }
 
     private func editEntry(_ entry: ThoughtRecord) {
-        appState.wizard.setDraft(entry, isEditing: true)
-        Task { @MainActor in
-            await appState.wizard.persistDraft(entry)
-        }
-        router.push(.wizardStep1)
+        router.push(.thoughtEntry(id: entry.id))
     }
 
     private func startNewThoughtRecord() {
         if appState.thoughtUsage.canCreateThought() {
-            Task { @MainActor in
-                await appState.wizard.clearDraft()
-                router.push(.wizardStep1)
-            }
+            router.push(.thoughtEntry(id: nil))
         } else {
             showDailyLimitAlert = true
         }
