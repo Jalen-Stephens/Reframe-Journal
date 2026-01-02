@@ -1,9 +1,13 @@
+// File: Views/OutcomeView.swift
 import SwiftUI
 
 struct OutcomeView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeManager: ThemeManager
+    @EnvironmentObject private var entitlementsManager: EntitlementsManager
+    @EnvironmentObject private var limitsManager: LimitsManager
+    @EnvironmentObject private var rewardedAdManager: RewardedAdManager
 
     @AppStorage("aiReframeEnabled") private var isAIReframeEnabled = false
 
@@ -12,6 +16,11 @@ struct OutcomeView: View {
     @State private var alertMessage = ""
     @State private var showRegenerateConfirm = false
     @State private var selectedDepth: AIReframeDepth = .deep
+    @State private var showUnlockSheet = false
+    @State private var showAdErrorAlert = false
+    @State private var showPaywall = false
+    @State private var isGenerating = false
+    @State private var isLoadingAd = false
 
     var body: some View {
         StepContentContainer(title: "Review", step: 6, total: 6) {
@@ -66,6 +75,33 @@ struct OutcomeView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will replace the existing AI Reframe.")
+        }
+        .sheet(isPresented: $showUnlockSheet) {
+            UnlockReframeSheet(
+                isLoading: isLoadingAd,
+                onWatchAd: {
+                    Task { await handleWatchAd() }
+                },
+                onUpgrade: {
+                    showUnlockSheet = false
+                    showPaywall = true
+                }
+            )
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
+        .alert("Ad unavailable", isPresented: $showAdErrorAlert) {
+            Button("Retry") {
+                Task { await handleWatchAd() }
+            }
+            Button("Upgrade") {
+                showPaywall = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Ad unavailable. Try again later or upgrade to Pro.")
         }
         .onAppear {
             ensureOutcomes()
@@ -204,10 +240,15 @@ struct OutcomeView: View {
                 .pickerStyle(.segmented)
                 .disabled(!isAIReframeEnabled)
                 PrimaryButton(
-                    label: "Generate Reframe",
-                    onPress: { navigateToReframe(action: .generate) },
-                    disabled: !isAIReframeEnabled
+                    label: isGenerating ? "Generating..." : (entitlementsManager.isPro ? "Generate Reframe" : "Unlock AI Reframe"),
+                    onPress: handleGenerateReframe,
+                    disabled: !isAIReframeEnabled || isGenerating
                 )
+                if !entitlementsManager.isPro {
+                    Text("Watch a short ad to generate your reframe.")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                }
             }
 
             if !isAIReframeEnabled {
@@ -233,6 +274,89 @@ struct OutcomeView: View {
         Task { @MainActor in
             await appState.wizard.persistDraft()
             router.push(.aiReframeResult(entryId: appState.wizard.draft.id, action: action, depth: depth))
+        }
+    }
+
+    private func handleGenerateReframe() {
+        guard !isGenerating else { return }
+        Task { await startGenerateFlow() }
+    }
+
+    private func startGenerateFlow() async {
+        guard validateReframeLimits() else { return }
+        if entitlementsManager.isPro {
+            await generateReframe()
+        } else {
+            showUnlockSheet = true
+        }
+    }
+
+    private func handleWatchAd() async {
+        guard !isGenerating else { return }
+        showUnlockSheet = false
+        isLoadingAd = true
+        do {
+            let rewarded = try await rewardedAdManager.presentAd()
+            isLoadingAd = false
+            guard rewarded else {
+                showAdErrorAlert = true
+                return
+            }
+        } catch {
+            isLoadingAd = false
+            showAdErrorAlert = true
+            return
+        }
+
+        guard validateReframeLimits() else { return }
+        await generateReframe()
+    }
+
+    private func validateReframeLimits() -> Bool {
+        do {
+            try limitsManager.assertCanGenerateReframe()
+            return true
+        } catch {
+            alertMessage = "You've hit today's AI limit. Try again tomorrow."
+            showAlert = true
+            return false
+        }
+    }
+
+    private func generateReframe() async {
+        guard !isGenerating else { return }
+        isGenerating = true
+        defer { isGenerating = false }
+
+        let depth = appState.wizard.draft.aiReframeDepth ?? selectedDepth
+        let service = AIReframeService()
+
+        do {
+            let record = appState.wizard.draft
+            let generated = try await service.generateReframe(for: record, depth: depth)
+            var updated = record
+            updated.aiReframe = generated
+            updated.aiReframeCreatedAt = Date()
+            updated.aiReframeModel = service.modelName
+            updated.aiReframePromptVersion = service.promptVersion
+            updated.aiReframeDepth = depth
+            updated.updatedAt = DateUtils.nowIso()
+            appState.wizard.draft = updated
+            await appState.wizard.persistDraft(updated)
+            limitsManager.recordReframe()
+            router.push(.aiReframeResult(entryId: updated.id, action: .view, depth: depth))
+        } catch let err {
+            if let openAIError = err as? LegacyOpenAIClient.OpenAIError {
+                switch openAIError {
+                case .missingAPIKey:
+                    alertMessage = "Missing OpenAI API key. Set OPENAI_API_KEY in build settings or scheme."
+                default:
+                    alertMessage = openAIError.localizedDescription
+                }
+            } else {
+                alertMessage = err.localizedDescription
+            }
+            showAlert = true
         }
     }
 
@@ -399,5 +523,41 @@ struct OutcomeView: View {
                 showAlert = true
             }
         }
+    }
+}
+
+private struct UnlockReframeSheet: View {
+    let isLoading: Bool
+    let onWatchAd: () -> Void
+    let onUpgrade: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Unlock AI Reframe")
+                .font(.title3.bold())
+            Text("Watch a short ad to generate your reframe.")
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+
+            Button {
+                onWatchAd()
+            } label: {
+                HStack {
+                    if isLoading {
+                        ProgressView()
+                    }
+                    Text(isLoading ? "Loading Ad..." : "Watch Ad")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(isLoading)
+
+            Button("Upgrade to Pro") {
+                onUpgrade()
+            }
+            .disabled(isLoading)
+        }
+        .padding(24)
     }
 }

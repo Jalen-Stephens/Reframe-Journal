@@ -1,18 +1,29 @@
+// File: App/ReframeJournalApp.swift
 import SwiftUI
 
 @main
 struct ReframeJournalApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     @StateObject private var thoughtStore: ThoughtRecordStore
     @StateObject private var appState: AppState
     @StateObject private var router = AppRouter()
     @StateObject private var themeManager = ThemeManager()
+    @StateObject private var entitlementsManager = EntitlementsManager()
+    @StateObject private var limitsManager: LimitsManager
+    @StateObject private var rewardedAdManager: RewardedAdManager
+
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let store = ThoughtRecordStore()
+        let limits = LimitsManager()
+        let rewarded = RewardedAdManager(adUnitID: RewardedAdManager.loadAdUnitID())
         _thoughtStore = StateObject(wrappedValue: store)
         _appState = StateObject(wrappedValue: AppState(repository: ThoughtRecordRepository(store: store)))
+        _limitsManager = StateObject(wrappedValue: limits)
+        _rewardedAdManager = StateObject(wrappedValue: rewarded)
     }
 
     private var appAppearance: AppAppearance {
@@ -27,6 +38,9 @@ struct ReframeJournalApp: App {
                 .environmentObject(router)
                 .environmentObject(themeManager)
                 .environmentObject(thoughtStore)
+                .environmentObject(entitlementsManager)
+                .environmentObject(limitsManager)
+                .environmentObject(rewardedAdManager)
                 .preferredColorScheme(overrideScheme)
                 .onChange(of: scenePhase) { phase in
                     if phase == .inactive || phase == .background {
@@ -39,7 +53,6 @@ struct ReframeJournalApp: App {
     }
 
     private var overrideScheme: ColorScheme? {
-        // nil means "do not override", keeping Match System identical to the device appearance.
         switch appAppearance {
         case .system:
             return nil

@@ -42,7 +42,7 @@ final class AIReframeServiceTests: XCTestCase {
             aiReframeDepth: nil
         )
 
-        let service = AIReframeService(clientProvider: { throw OpenAIClient.OpenAIError.missingAPIKey })
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
         let message = service.buildUserMessage(for: record, depth: .deep)
 
         XCTAssertTrue(message.contains("Date/time: 2024-01-01T12:00:00Z"))
