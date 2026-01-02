@@ -19,7 +19,7 @@ struct AIReframeService {
         let systemMessage = systemPrompt
         let userMessage = buildUserMessage(for: record, depth: depth)
         let content = try await client.chatCompletion(systemMessage: systemMessage, userMessage: userMessage, model: modelName)
-        return parseResult(from: content)
+        return AIReframeResult.decodeAIReframe(from: content)
     }
 
     var systemPrompt: String {
@@ -53,6 +53,8 @@ Constraints:
 - Keep tone supportive, non-judgmental, and non-clinical.
 - Avoid generic filler; tie statements to the entry details.
 - No diagnosis and no medical advice.
+- Do not use placeholders like "(item)" or "..."; provide real, specific text.
+\(AIReframeResult.schemaForcingPrompt)
 
 Please return STRICT JSON with this shape:
 {
@@ -88,41 +90,7 @@ Please return STRICT JSON with this shape:
     }
 
     private func parseResult(from content: String) -> AIReframeResult {
-        if let result = decodeJSON(from: content) {
-            return attachRawResponse(result, raw: content)
-        }
-        if let trimmed = extractJSON(from: content),
-           let result = decodeJSON(from: trimmed) {
-            return attachRawResponse(result, raw: content)
-        }
-        return AIReframeResult.fallback(from: content)
-    }
-
-    private func decodeJSON(from content: String) -> AIReframeResult? {
-        guard let data = content.data(using: .utf8) else { return nil }
-        return try? JSONDecoder().decode(AIReframeResult.self, from: data)
-    }
-
-    private func attachRawResponse(_ result: AIReframeResult, raw: String) -> AIReframeResult {
-        AIReframeResult(
-            validation: result.validation,
-            whatMightBeHappening: result.whatMightBeHappening,
-            cognitiveDistortions: result.cognitiveDistortions,
-            balancedThought: result.balancedThought,
-            microActionPlan: result.microActionPlan,
-            communicationScript: result.communicationScript,
-            selfCompassion: result.selfCompassion,
-            realityCheckQuestions: result.realityCheckQuestions,
-            oneSmallExperiment: result.oneSmallExperiment,
-            summary: result.summary,
-            rawResponse: raw
-        )
-    }
-
-    private func extractJSON(from content: String) -> String? {
-        guard let start = content.firstIndex(of: "{") else { return nil }
-        guard let end = content.lastIndex(of: "}") else { return nil }
-        return String(content[start...end])
+        AIReframeResult.decodeAIReframe(from: content)
     }
 
     private func listOrPlaceholder(_ items: [String]) -> String {

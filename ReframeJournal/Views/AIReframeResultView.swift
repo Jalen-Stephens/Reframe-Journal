@@ -116,15 +116,16 @@ struct AIReframeResultView: View {
     }
 
     private func journeyContent(_ result: AIReframeResult) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
+        let display = AIReframeResult.normalizeFromRaw(result)
+        return VStack(alignment: .leading, spacing: 18) {
             StepCard(step: 1, title: "You're not alone", subtitle: "Validation") {
-                Text(nonEmptyText(result.validation, fallback: "Your feelings make sense given what you've shared."))
+                Text(nonEmptyText(display.validation, fallback: "Your feelings make sense given what you've shared."))
                     .font(.system(size: 13))
                     .foregroundColor(themeManager.theme.textPrimary)
             }
 
             StepCard(step: 2, title: "What might be happening", subtitle: "Alternative explanations") {
-                bulletList(result.whatMightBeHappening)
+                bulletList(display.whatMightBeHappening)
             }
 
             AccordionView(isExpanded: $expandedDistortions) {
@@ -133,8 +134,8 @@ struct AIReframeResultView: View {
                     .foregroundColor(themeManager.theme.textPrimary)
             } content: {
                 VStack(alignment: .leading, spacing: 10) {
-                    if let distortions = result.cognitiveDistortions, !distortions.isEmpty {
-                        ForEach(distortions, id: \\.self) { item in
+                    if let distortions = display.cognitiveDistortions, !distortions.isEmpty {
+                        ForEach(distortions, id: \.self) { item in
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(item.label)
                                     .font(.system(size: 13, weight: .semibold))
@@ -159,16 +160,16 @@ struct AIReframeResultView: View {
 
             StepCard(step: 4, title: "Balanced thought", subtitle: "A more believable reframe") {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(nonEmptyText(result.balancedThought, fallback: "You're making progress by slowing down and re-evaluating this thought."))
+                    Text(nonEmptyText(display.balancedThought, fallback: "You're making progress by slowing down and re-evaluating this thought."))
                         .font(.system(size: 13))
                         .foregroundColor(themeManager.theme.textPrimary)
-                    let isEmpty = (result.balancedThought ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    let isEmpty = (display.balancedThought ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                     HStack(spacing: 10) {
                         SecondaryActionButton(title: "Copy Balanced Thought", isDisabled: isEmpty) {
-                            copyText(result.balancedThought)
+                            copyText(display.balancedThought)
                         }
                         SecondaryActionButton(title: "Save as my new thought", isDisabled: isEmpty) {
-                            copyText(result.balancedThought)
+                            copyText(display.balancedThought)
                         }
                     }
                 }
@@ -179,12 +180,12 @@ struct AIReframeResultView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(themeManager.theme.textPrimary)
             } content: {
-                bulletList(result.realityCheckQuestions)
+                bulletList(display.realityCheckQuestions)
             }
 
             StepCard(step: 6, title: "Micro action plan", subtitle: "Small, doable steps") {
                 VStack(alignment: .leading, spacing: 12) {
-                    if let plans = result.microActionPlan, !plans.isEmpty {
+                    if let plans = display.microActionPlan, !plans.isEmpty {
                         ForEach(plans, id: \.title) { plan in
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(plan.title)
@@ -209,40 +210,33 @@ struct AIReframeResultView: View {
                     .foregroundColor(themeManager.theme.textPrimary)
             } content: {
                 VStack(alignment: .leading, spacing: 12) {
-                    textBlock(title: "Text message", text: result.communicationScript?.textMessage) {
-                        copyText(result.communicationScript?.textMessage)
+                    textBlock(title: "Text message", text: display.communicationScript?.textMessage) {
+                        copyText(display.communicationScript?.textMessage)
                     }
-                    textBlock(title: "In-person", text: result.communicationScript?.inPerson) {
-                        copyText(result.communicationScript?.inPerson)
+                    textBlock(title: "In-person", text: display.communicationScript?.inPerson) {
+                        copyText(display.communicationScript?.inPerson)
                     }
                 }
             }
 
             StepCard(step: 8, title: "Self-compassion lines", subtitle: "What you can say to yourself") {
-                bulletList(result.selfCompassion)
+                bulletList(display.selfCompassion)
             }
 
             StepCard(step: 9, title: "One small experiment", subtitle: "Test a belief gently") {
                 VStack(alignment: .leading, spacing: 8) {
-                    labeledParagraph(title: "Hypothesis", text: result.oneSmallExperiment?.hypothesis)
-                    labeledParagraph(title: "Experiment", text: result.oneSmallExperiment?.experiment)
-                    labeledBulletList(title: "What to observe", items: result.oneSmallExperiment?.whatToObserve)
+                    labeledParagraph(title: "Hypothesis", text: display.oneSmallExperiment?.hypothesis)
+                    labeledParagraph(title: "Experiment", text: display.oneSmallExperiment?.experiment)
+                    labeledBulletList(title: "What to observe", items: display.oneSmallExperiment?.whatToObserve)
                 }
             }
 
             StepCard(step: 10, title: "Summary", subtitle: "Wrap-up") {
-                Text(nonEmptyText(result.summary, fallback: "You took time to slow down and consider a more grounded view."))
+                Text(nonEmptyText(display.summary, fallback: "You took time to slow down and consider a more grounded view."))
                     .font(.system(size: 13))
                     .foregroundColor(themeManager.theme.textPrimary)
             }
 
-            if result.isFallbackOnly, let raw = result.rawResponse {
-                StepCard(step: 11, title: "Raw response", subtitle: "Fallback") {
-                    Text(raw)
-                        .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                }
-            }
         }
     }
 
@@ -276,7 +270,9 @@ struct AIReframeResultView: View {
     }
 
     private func bulletList(_ items: [String]?) -> some View {
-        let list = items?.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? []
+        let list = (items ?? [])
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { isValidListItem($0) }
         if list.isEmpty {
             return AnyView(
                 Text("No items provided.")
@@ -286,13 +282,27 @@ struct AIReframeResultView: View {
         }
         return AnyView(
             VStack(alignment: .leading, spacing: 6) {
-                ForEach(list, id: \\.self) { item in
-                    Text("- \\(item)")
+                ForEach(list, id: \.self) { item in
+                    Text("• \(item)")
                         .font(.system(size: 12))
                         .foregroundColor(themeManager.theme.textSecondary)
                 }
             }
         )
+    }
+
+    private func isValidListItem(_ text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return false }
+        let scrubbed = trimmed
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+            .replacingOccurrences(of: "\"", with: "")
+            .replacingOccurrences(of: "•", with: "")
+            .replacingOccurrences(of: "-", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let lowered = scrubbed.lowercased()
+        return lowered != "item" && lowered != "..." && lowered != "…"
     }
 
     private func labeledParagraph(title: String, text: String?) -> some View {
