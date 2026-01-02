@@ -12,6 +12,7 @@ struct ThemeTokens {
     let onAccent: Color
 }
 
+@MainActor
 final class ThemeManager: ObservableObject {
     // MARK: - State
     @Published var resolvedScheme: ColorScheme = .light

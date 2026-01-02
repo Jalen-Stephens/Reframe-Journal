@@ -127,6 +127,8 @@ struct EntryDetailView: View {
                     emptyState: "No changes recorded yet."
                 )
 
+                aiReframeSection(record)
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Before snapshot")
                         .font(.system(size: 15, weight: .semibold))
@@ -367,6 +369,40 @@ struct EntryDetailView: View {
 
         return OutcomeDeltas(belief: belief, emotions: emotions)
     }
+
+    private func aiReframeSection(_ record: ThoughtRecord) -> some View {
+        let previewText = record.aiReframe?.summary?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("AI Reframe")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(themeManager.theme.textPrimary)
+
+            if let result = record.aiReframe {
+                let fallback = result.validation ?? "AI Reframe saved."
+                Text(previewText.isEmpty ? fallback : previewText)
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+                    .lineLimit(2)
+                Button("View") {
+                    let depth = record.aiReframeDepth ?? .deep
+                    router.push(.aiReframeResult(entryId: record.id, action: .view, depth: depth))
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.theme.accent)
+            } else {
+                Text("No AI Reframe yet.")
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+                Button("Generate") {
+                    router.push(.aiReframeResult(entryId: record.id, action: .generate, depth: .deep))
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.theme.accent)
+            }
+        }
+        .padding(16)
+        .cardSurface(cornerRadius: 16)
+    }
 }
 
 private struct NormalizedThought: Identifiable {
@@ -427,7 +463,9 @@ private struct EditEntrySheet: View {
             ForEach(sections, id: \.0) { section in
                 Button {
                     appState.wizard.setDraft(record, isEditing: true)
-                    Task { await appState.wizard.persistDraft(record) }
+                    Task { @MainActor in
+                        await appState.wizard.persistDraft(record)
+                    }
                     onDismiss()
                     router.push(section.1)
                 } label: {

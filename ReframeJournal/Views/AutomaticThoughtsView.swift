@@ -68,7 +68,7 @@ struct AutomaticThoughtsView: View {
     }
 
     private func nextStep() {
-        Task {
+        Task { @MainActor in
             saveThought()
             await appState.wizard.persistDraft()
             router.push(.wizardStep4)

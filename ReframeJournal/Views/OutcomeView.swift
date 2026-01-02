@@ -5,9 +5,13 @@ struct OutcomeView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeManager: ThemeManager
 
+    @AppStorage("aiReframeEnabled") private var isAIReframeEnabled = false
+
     @State private var showIncompleteHint = false
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var showRegenerateConfirm = false
+    @State private var selectedDepth: AIReframeDepth = .deep
 
     var body: some View {
         StepContentContainer(title: "Review", step: 6, total: 6) {
@@ -27,109 +31,8 @@ struct OutcomeView: View {
             }
 
             if let thought = appState.wizard.draft.automaticThoughts.first {
-                let outcome = mergeOutcome(for: thought)
-                let isComplete = outcome.isComplete
-                let beliefDelta = outcome.beliefAfter - thought.beliefBefore
-                let deltaLabel: String = {
-                    if beliefDelta == 0 {
-                        return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% 0%"
-                    }
-                    if beliefDelta < 0 {
-                        return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↓ \(abs(beliefDelta))%"
-                    }
-                    return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↑ \(beliefDelta)%"
-                }()
-
-                VStack(alignment: .leading, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(thought.text)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textPrimary)
-                            .lineLimit(2)
-                        HStack {
-                            Text("Original \(thought.beliefBefore)%")
-                                .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
-                            Text(deltaLabel)
-                                .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
-                            if isComplete {
-                                Text("Complete")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(themeManager.theme.accent)
-                                    .foregroundColor(themeManager.theme.onAccent)
-                                    .clipShape(Capsule())
-                            }
-                        }
-                    }
-
-                    Text("How much do you believe this thought now?")
-                        .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                    Text("\(outcome.beliefAfter)%")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
-                    Slider(value: bindingForBelief(thoughtId: thought.id), in: 0...100, step: 1)
-                        .accentColor(themeManager.theme.accent)
-                    Text("Original belief: \(thought.beliefBefore)%")
-                        .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
-
-                    Divider()
-
-                    Text("Re-rate emotions")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
-                    if appState.wizard.draft.emotions.isEmpty {
-                        Text("No emotions were selected earlier.")
-                            .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
-                    }
-                    ForEach(appState.wizard.draft.emotions) { emotion in
-                        let currentIntensity = outcome.emotionsAfter[emotion.id] ?? emotion.intensityBefore
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Text(emotion.label)
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.textPrimary)
-                                Spacer()
-                                Text("Before: \(emotion.intensityBefore)")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
-                            }
-                            Text("\(currentIntensity)")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
-                            Slider(value: bindingForEmotion(thoughtId: thought.id, emotionId: emotion.id), in: 0...100, step: 1)
-                                .accentColor(themeManager.theme.accent)
-                        }
-                    }
-
-                    Divider()
-
-                    Text("Anything you want to note after this thought?")
-                        .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                    TextField("Optional reflection", text: bindingForReflection(thoughtId: thought.id))
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .submitLabel(.done)
-                        .onSubmit {
-                            dismissKeyboard()
-                        }
-                        .padding(10)
-                        .foregroundColor(themeManager.theme.textPrimary)
-                        .cardSurface(cornerRadius: 10, shadow: false)
-
-                    PrimaryButton(
-                        label: isComplete ? "Thought Complete" : "Mark Thought Complete",
-                        onPress: { markComplete(thoughtId: thought.id) },
-                        disabled: isComplete
-                    )
-                }
-                .padding(12)
-                .cardSurface(cornerRadius: 12, shadow: false)
+                outcomeCard(for: thought)
+                aiReframeCard()
             } else {
                 Text("Add an automatic thought before finishing the outcome.")
                     .font(.system(size: 13))
@@ -141,7 +44,7 @@ struct OutcomeView: View {
         .safeAreaInset(edge: .bottom) {
             StepBottomNavBar(
                 onBack: {
-                    Task {
+                    Task { @MainActor in
                         await appState.wizard.persistDraft()
                         router.pop()
                     }
@@ -156,8 +59,180 @@ struct OutcomeView: View {
         } message: {
             Text(alertMessage)
         }
+        .confirmationDialog("Regenerate AI Reframe?", isPresented: $showRegenerateConfirm) {
+            Button("Regenerate", role: .destructive) {
+                navigateToReframe(action: .regenerate)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will replace the existing AI Reframe.")
+        }
         .onAppear {
             ensureOutcomes()
+        }
+    }
+
+    private func outcomeCard(for thought: AutomaticThought) -> some View {
+        let outcome = mergeOutcome(for: thought)
+        let isComplete = outcome.isComplete
+        let beliefDelta = outcome.beliefAfter - thought.beliefBefore
+        let deltaLabel: String = {
+            if beliefDelta == 0 {
+                return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% 0%"
+            }
+            if beliefDelta < 0 {
+                return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↓ \(abs(beliefDelta))%"
+            }
+            return "\(thought.beliefBefore)% → \(outcome.beliefAfter)% ↑ \(beliefDelta)%"
+        }()
+
+        return VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(thought.text)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(themeManager.theme.textPrimary)
+                    .lineLimit(2)
+                HStack {
+                    Text("Original \(thought.beliefBefore)%")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                    Text(deltaLabel)
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                    if isComplete {
+                        Text("Complete")
+                            .font(.system(size: 11, weight: .semibold))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(themeManager.theme.accent)
+                            .foregroundColor(themeManager.theme.onAccent)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+
+            Text("How much do you believe this thought now?")
+                .font(.system(size: 12))
+                .foregroundColor(themeManager.theme.textSecondary)
+            Text("\(outcome.beliefAfter)%")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(themeManager.theme.textPrimary)
+            Slider(value: bindingForBelief(thoughtId: thought.id), in: 0...100, step: 1)
+                .accentColor(themeManager.theme.accent)
+            Text("Original belief: \(thought.beliefBefore)%")
+                .font(.system(size: 12))
+                .foregroundColor(themeManager.theme.textSecondary)
+
+            Divider()
+
+            Text("Re-rate emotions")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.theme.textPrimary)
+            if appState.wizard.draft.emotions.isEmpty {
+                Text("No emotions were selected earlier.")
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+            }
+            ForEach(appState.wizard.draft.emotions) { emotion in
+                let currentIntensity = outcome.emotionsAfter[emotion.id] ?? emotion.intensityBefore
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(emotion.label)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(themeManager.theme.textPrimary)
+                        Spacer()
+                        Text("Before: \(emotion.intensityBefore)")
+                            .font(.system(size: 12))
+                            .foregroundColor(themeManager.theme.textSecondary)
+                    }
+                    Text("\(currentIntensity)")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    Slider(value: bindingForEmotion(thoughtId: thought.id, emotionId: emotion.id), in: 0...100, step: 1)
+                        .accentColor(themeManager.theme.accent)
+                }
+            }
+
+            Divider()
+
+            Text("Anything you want to note after this thought?")
+                .font(.system(size: 12))
+                .foregroundColor(themeManager.theme.textSecondary)
+            TextField("Optional reflection", text: bindingForReflection(thoughtId: thought.id))
+                .textFieldStyle(PlainTextFieldStyle())
+                .submitLabel(.done)
+                .onSubmit {
+                    dismissKeyboard()
+                }
+                .padding(10)
+                .foregroundColor(themeManager.theme.textPrimary)
+                .cardSurface(cornerRadius: 10, shadow: false)
+
+            PrimaryButton(
+                label: isComplete ? "Thought Complete" : "Mark Thought Complete",
+                onPress: { markComplete(thoughtId: thought.id) },
+                disabled: isComplete
+            )
+        }
+        .padding(12)
+        .cardSurface(cornerRadius: 12, shadow: false)
+    }
+
+    private func aiReframeCard() -> some View {
+        let hasReframe = appState.wizard.draft.aiReframe != nil
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("AI Reframe")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(themeManager.theme.textPrimary)
+
+            if hasReframe {
+                PrimaryButton(label: "View AI Reframe") {
+                    navigateToReframe(action: .view)
+                }
+                Button("Regenerate") {
+                    showRegenerateConfirm = true
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(themeManager.theme.accent)
+                .disabled(!isAIReframeEnabled)
+            } else {
+                Picker("Depth", selection: $selectedDepth) {
+                    ForEach(AIReframeDepth.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .disabled(!isAIReframeEnabled)
+                PrimaryButton(
+                    label: "Generate Reframe",
+                    onPress: { navigateToReframe(action: .generate) },
+                    disabled: !isAIReframeEnabled
+                )
+            }
+
+            if !isAIReframeEnabled {
+                Text("Enable in Settings")
+                    .font(.system(size: 12))
+                    .foregroundColor(themeManager.theme.textSecondary)
+            }
+
+            Text("Your entry will be sent to OpenAI to generate suggestions.")
+                .font(.system(size: 12))
+                .foregroundColor(themeManager.theme.textSecondary)
+
+            Text("AI suggestions aren't a substitute for professional care.")
+                .font(.system(size: 12))
+                .foregroundColor(themeManager.theme.textSecondary)
+        }
+        .padding(12)
+        .cardSurface(cornerRadius: 12, shadow: false)
+    }
+
+    private func navigateToReframe(action: AIReframeAction) {
+        let depth = appState.wizard.draft.aiReframeDepth ?? selectedDepth
+        Task { @MainActor in
+            await appState.wizard.persistDraft()
+            router.push(.aiReframeResult(entryId: appState.wizard.draft.id, action: action, depth: depth))
         }
     }
 
@@ -303,7 +378,7 @@ struct OutcomeView: View {
             return
         }
 
-        Task {
+        Task { @MainActor in
             var record = appState.wizard.draft
             let wasEditing = appState.wizard.isEditing
             record.updatedAt = DateUtils.nowIso()
@@ -311,7 +386,7 @@ struct OutcomeView: View {
                 try await appState.repository.upsert(record)
                 await appState.repository.flushPendingWrites()
                 if !wasEditing {
-                    await appState.thoughtUsage.incrementTodayCount()
+                    appState.thoughtUsage.incrementTodayCount()
                 }
                 await appState.wizard.clearDraft()
                 if wasEditing {

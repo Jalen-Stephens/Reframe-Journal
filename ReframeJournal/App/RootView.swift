@@ -19,6 +19,8 @@ struct RootView: View {
                             EntryDetailView(entryId: id, repository: appState.repository)
                         case let .thoughtResponseDetail(entryId, thoughtId):
                             ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId, repository: appState.repository)
+                        case let .aiReframeResult(entryId, action, depth):
+                            AIReframeResultView(entryId: entryId, repository: appState.repository, action: action, depth: depth)
                         case .wizardStep1:
                             DateTimeView()
                         case .wizardStep2:

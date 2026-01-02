@@ -143,6 +143,7 @@ vite.config.ts.timestamp-*
 DerivedData/
 build/
 *.xcuserdata
+ReframeJournal.xcodeproj/xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
 *.xccheckout

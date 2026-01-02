@@ -30,7 +30,6 @@ struct AdaptiveResponseView: View {
                 let answeredCount = countAnsweredPrompts(for: thought.id)
                 let isComplete = answeredCount == AdaptivePrompts.all.count
                 let prompt = AdaptivePrompts.all[promptIndex]
-                let currentText = textValue(for: prompt.textKey, thoughtId: thought.id)
                 let currentBelief = beliefValue(for: prompt.beliefKey, thoughtId: thought.id)
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -185,7 +184,7 @@ struct AdaptiveResponseView: View {
 
     private func nextStep() {
         if canProceed() {
-            Task {
+            Task { @MainActor in
                 await appState.wizard.persistDraft()
                 router.push(.wizardStep6)
             }
@@ -343,7 +342,7 @@ struct AdaptiveResponseView: View {
             showIncompleteHint = true
             return
         }
-        Task {
+        Task { @MainActor in
             await appState.wizard.persistDraft()
             if isLastPrompt() {
                 nextStep()

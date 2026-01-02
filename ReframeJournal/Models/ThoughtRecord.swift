@@ -44,6 +44,11 @@ struct ThoughtRecord: Codable, Identifiable, Hashable {
     var outcomesByThought: [String: ThoughtOutcome]
     var beliefAfterMainThought: Int?
     var notes: String?
+    var aiReframe: AIReframeResult?
+    var aiReframeCreatedAt: Date?
+    var aiReframeModel: String?
+    var aiReframePromptVersion: String?
+    var aiReframeDepth: AIReframeDepth?
 
     static func empty(nowIso: String, id: String) -> ThoughtRecord {
         ThoughtRecord(
@@ -58,7 +63,12 @@ struct ThoughtRecord: Codable, Identifiable, Hashable {
             adaptiveResponses: [:],
             outcomesByThought: [:],
             beliefAfterMainThought: nil,
-            notes: ""
+            notes: "",
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
         )
     }
 }

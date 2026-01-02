@@ -5,6 +5,8 @@ struct EmotionsView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeManager: ThemeManager
 
+    @FocusState private var focusedField: FocusField?
+
     private let commonEmotions = [
         "Anxious",
         "Sad",
@@ -20,119 +22,155 @@ struct EmotionsView: View {
 
     @State private var emotionLabel: String = ""
     @State private var customEmotion: String = ""
+    @State private var isCustomEmotion: Bool = false
     @State private var intensityValue: Double = 50
     @State private var showPicker = false
     @State private var editId: String? = nil
     @State private var pendingDeleteId: String? = nil
 
+    private let customEmotionFieldId = "customEmotionField"
+
+    private enum FocusField: Hashable {
+        case customEmotion
+    }
+
     var body: some View {
-        StepContentContainer(title: "Emotions", step: 4, total: 6) {
-            Text("What emotion/s did you feel at the time? How intense was the emotion (0-100%)?")
-                .font(.system(size: 13))
-                .foregroundColor(themeManager.theme.textSecondary)
+        ScrollViewReader { proxy in
+            StepContentContainer(title: "Emotions", step: 4, total: 6) {
+                Text("What emotion/s did you feel at the time? How intense was the emotion (0-100%)?")
+                    .font(.system(size: 13))
+                    .foregroundColor(themeManager.theme.textSecondary)
 
-            Text("Emotion")
-                .font(.system(size: 14))
-                .foregroundColor(themeManager.theme.textSecondary)
-
-            Button {
-                showPicker = true
-            } label: {
-                HStack {
-                    Text(displayLabel())
-                        .font(.system(size: 15))
-                        .foregroundColor(emotionLabel.isEmpty ? themeManager.theme.placeholder : themeManager.theme.textPrimary)
-                    Spacer()
-                    Text("▼")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                }
-                .padding(10)
-                .pillSurface(cornerRadius: 6)
-            }
-            .buttonStyle(.plain)
-
-            if isCustomSelected() {
-                LabeledInput(label: "Custom emotion", placeholder: "Describe your emotion", text: $customEmotion)
-            }
-
-            if editId != nil {
-                HStack {
-                    Text("Editing emotion")
-                        .font(.system(size: 13))
-                        .foregroundColor(themeManager.theme.textSecondary)
-                    Spacer()
-                    Button("Cancel edit") {
-                        resetInputs()
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.accent)
-                }
-            }
-
-            VStack(spacing: 10) {
-                Text("\(Metrics.clampPercent(intensityValue))%")
-                    .font(.system(size: 32, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
-                Text("How intense was this emotion?")
+                Text("Emotion")
                     .font(.system(size: 14))
                     .foregroundColor(themeManager.theme.textSecondary)
-                Slider(value: $intensityValue, in: 0...100, step: 1)
-                    .accentColor(themeManager.theme.accent)
-                Text("0 = not at all, 100 = most intense")
-                    .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
-            }
 
-            PrimaryButton(
-                label: editId != nil ? "Save changes" : "Add emotion",
-                onPress: submitEmotion,
-                disabled: resolvedLabel().isEmpty
-            )
+                Button {
+                    showPicker = true
+                } label: {
+                    HStack {
+                        Text(displayLabel())
+                            .font(.system(size: 15))
+                            .foregroundColor(emotionLabel.isEmpty ? themeManager.theme.placeholder : themeManager.theme.textPrimary)
+                        Spacer()
+                        Text("▼")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(themeManager.theme.textSecondary)
+                    }
+                    .padding(10)
+                    .pillSurface(cornerRadius: 6)
+                }
+                .buttonStyle(.plain)
 
-            if appState.wizard.draft.emotions.isEmpty {
-                Text("Add at least one emotion to continue.")
-                    .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
-                    .padding(.top, 4)
-            }
+                if isCustomSelected() {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Custom emotion")
+                            .font(.system(size: 14))
+                            .foregroundColor(themeManager.theme.textSecondary)
+                        TextField("Describe your emotion", text: $customEmotion)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .submitLabel(.done)
+                            .onSubmit {
+                                dismissKeyboard()
+                            }
+                            .padding(10)
+                            .foregroundColor(themeManager.theme.textPrimary)
+                            .cardSurface(cornerRadius: 8, shadow: false)
+                            .focused($focusedField, equals: .customEmotion)
+                    }
+                    .id(customEmotionFieldId)
+                }
 
-            VStack(spacing: 12) {
-                ForEach(appState.wizard.draft.emotions) { emotion in
-                    ThoughtCardView(
-                        text: emotion.label,
-                        belief: emotion.intensityBefore,
-                        badgeLabel: "Intensity",
-                        onEdit: { startEdit(emotion) },
-                        onRemove: { pendingDeleteId = emotion.id }
-                    )
+                if editId != nil {
+                    HStack {
+                        Text("Editing emotion")
+                            .font(.system(size: 13))
+                            .foregroundColor(themeManager.theme.textSecondary)
+                        Spacer()
+                        Button("Cancel edit") {
+                            resetInputs()
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(themeManager.theme.accent)
+                    }
+                }
+
+                VStack(spacing: 10) {
+                    Text("\(Metrics.clampPercent(intensityValue))%")
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textPrimary)
+                    Text("How intense was this emotion?")
+                        .font(.system(size: 14))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                    Slider(value: $intensityValue, in: 0...100, step: 1)
+                        .accentColor(themeManager.theme.accent)
+                    Text("0 = not at all, 100 = most intense")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                }
+
+                PrimaryButton(
+                    label: editId != nil ? "Save changes" : "Add emotion",
+                    onPress: submitEmotion,
+                    disabled: resolvedLabel().isEmpty
+                )
+
+                if appState.wizard.draft.emotions.isEmpty {
+                    Text("Add at least one emotion to continue.")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                        .padding(.top, 4)
+                }
+
+                VStack(spacing: 12) {
+                    ForEach(appState.wizard.draft.emotions) { emotion in
+                        ThoughtCardView(
+                            text: emotion.label,
+                            belief: emotion.intensityBefore,
+                            badgeLabel: "Intensity",
+                            onEdit: { startEdit(emotion) },
+                            onRemove: { pendingDeleteId = emotion.id }
+                        )
+                    }
                 }
             }
-        }
-        .background(themeManager.theme.background.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .bottom) {
-            StepBottomNavBar(
-                onBack: { router.pop() },
-                onNext: nextStep,
-                isNextDisabled: appState.wizard.draft.emotions.isEmpty
-            )
-        }
-        .sheet(isPresented: $showPicker) {
-            emotionPicker
-        }
-        .confirmationDialog("Remove emotion?", isPresented: Binding(
-            get: { pendingDeleteId != nil },
-            set: { if !$0 { pendingDeleteId = nil } }
-        )) {
-            Button("Remove", role: .destructive) {
-                if let id = pendingDeleteId {
-                    appState.wizard.draft.emotions.removeAll { $0.id == id }
-                }
-                pendingDeleteId = nil
+            .background(themeManager.theme.background.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .bottom) {
+                StepBottomNavBar(
+                    onBack: { router.pop() },
+                    onNext: nextStep,
+                    isNextDisabled: appState.wizard.draft.emotions.isEmpty
+                )
             }
-            Button("Cancel", role: .cancel) {
-                pendingDeleteId = nil
+            .sheet(isPresented: $showPicker) {
+                emotionPicker
+            }
+            .confirmationDialog("Remove emotion?", isPresented: Binding(
+                get: { pendingDeleteId != nil },
+                set: { if !$0 { pendingDeleteId = nil } }
+            )) {
+                Button("Remove", role: .destructive) {
+                    if let id = pendingDeleteId {
+                        appState.wizard.draft.emotions.removeAll { $0.id == id }
+                    }
+                    pendingDeleteId = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingDeleteId = nil
+                }
+            }
+            .onChange(of: isCustomEmotion) { newValue in
+                if newValue {
+                    DispatchQueue.main.async {
+                        focusedField = .customEmotion
+                        withAnimation {
+                            proxy.scrollTo(customEmotionFieldId, anchor: .center)
+                        }
+                    }
+                } else {
+                    focusedField = nil
+                }
             }
         }
     }
@@ -145,7 +183,7 @@ struct EmotionsView: View {
     }
 
     private func isCustomSelected() -> Bool {
-        emotionLabel == "Custom..."
+        isCustomEmotion
     }
 
     private func resolvedLabel() -> String {
@@ -178,9 +216,11 @@ struct EmotionsView: View {
         if commonEmotions.contains(emotion.label) {
             emotionLabel = emotion.label
             customEmotion = ""
+            isCustomEmotion = false
         } else {
             emotionLabel = "Custom..."
             customEmotion = emotion.label
+            isCustomEmotion = true
         }
     }
 
@@ -189,10 +229,11 @@ struct EmotionsView: View {
         customEmotion = ""
         intensityValue = 50
         editId = nil
+        isCustomEmotion = false
     }
 
     private func nextStep() {
-        Task {
+        Task { @MainActor in
             await appState.wizard.persistDraft()
             router.push(.wizardStep5)
         }
@@ -201,7 +242,7 @@ struct EmotionsView: View {
     private var emotionPicker: some View {
         let usedLabels = appState.wizard.draft.emotions.map { $0.label }
         let available = commonEmotions.filter { emotion in
-            if let editId, emotionLabel == emotion {
+            if editId != nil && emotionLabel == emotion {
                 return true
             }
             return !usedLabels.contains(emotion)
@@ -216,6 +257,7 @@ struct EmotionsView: View {
                         Button(emotion) {
                             emotionLabel = emotion
                             customEmotion = ""
+                            isCustomEmotion = false
                             showPicker = false
                         }
                         .font(.system(size: 15))
@@ -224,6 +266,7 @@ struct EmotionsView: View {
                     }
                     Button("Custom...") {
                         emotionLabel = "Custom..."
+                        isCustomEmotion = true
                         showPicker = false
                     }
                     .font(.system(size: 15))
