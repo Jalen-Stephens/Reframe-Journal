@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0597D0C2BD5F3460115A2047 /* EmotionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D55C61CF6964611F106D910 /* EmotionsView.swift */; };
 		0BE5C113B242E7C02660892E /* AdaptivePrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF68E4F81363C2FB72B0B64 /* AdaptivePrompts.swift */; };
+		1A2B3C4D5E6F708192A3B4C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708192A3B4C5 /* Assets.xcassets */; };
 		B10000000000000000000002 /* EmotionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* EmotionItem.swift */; };
 		12274A4E040B47078CCD7560 /* SectionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546FB4220CEEF24D6A5B1D14 /* SectionCardView.swift */; };
 		23474AD469B91E8990ECFE97 /* ThoughtRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8941B34419C243A8D3CA80D5 /* ThoughtRecordStore.swift */; };
@@ -19,6 +20,7 @@
 		2F739D9ACA296BC3BFC3273D /* SituationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1DFD7F7F52522DE5279C2B /* SituationView.swift */; };
 		3B79AC2C4B2167530C1E6C6F /* ChangeSummaryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C1A2C353758ADB30EE5218 /* ChangeSummaryCardView.swift */; };
 		3F0788150F2C442B8A7E8933 /* EntryListItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9D27FA3CF9C0938F10E96 /* EntryListItemView.swift */; };
+		3A4B5C6D7E8F901234567891 /* ReframeLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D7E8F901234567890 /* ReframeLoadingView.swift */; };
 		B10000000000000000000006 /* NotesTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* NotesTextEditor.swift */; };
 		4E025C008F95000CC39428E7 /* ThoughtRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBBAF3FFE33047CA5DEA1DF /* ThoughtRecordTests.swift */; };
 		510D8D7CC3B582128B31BEDE /* ExpandableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568C492A6F061A5081934CF2 /* ExpandableTextView.swift */; };
@@ -116,6 +118,8 @@
 		082A0A7C10E54A7FE76D86D9 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		087306FB4D31EF378A1C1F1A /* Metrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metrics.swift; sourceTree = "<group>"; };
 		0DA5A6B08FABCE630CF8B371 /* ThoughtRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecord.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708192A3B4C5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3A4B5C6D7E8F901234567890 /* ReframeLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReframeLoadingView.swift; sourceTree = "<group>"; };
 		A10000000000000000000001 /* ThoughtEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtEntry.swift; sourceTree = "<group>"; };
 		A10000000000000000000002 /* EmotionItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmotionItem.swift; sourceTree = "<group>"; };
 		10AFCB6B783A2B675B407889 /* WizardProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WizardProgressView.swift; sourceTree = "<group>"; };
@@ -267,6 +271,7 @@
 				F8A1B2C3D4E5061728394A63 /* PaywallView.swift */,
 				425AF360D9A05BA0D2EC6FB7 /* PrimaryButton.swift */,
 				B241175175575E18450819BB /* ProgressPillView.swift */,
+				3A4B5C6D7E8F901234567890 /* ReframeLoadingView.swift */,
 				F8A1B2C3D4E5061728394A65 /* ReframeResultView.swift */,
 				546FB4220CEEF24D6A5B1D14 /* SectionCardView.swift */,
 				46308216C66CE393053779B5 /* SettingsView.swift */,
@@ -403,6 +408,7 @@
 		B7FB4A637C3DADEAC0108682 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1A2B3C4D5E6F708192A3B4C5 /* Assets.xcassets */,
 				38F868DC42216E26C93F2EA3 /* Info.plist */,
 				082A0A7C10E54A7FE76D86D9 /* Launch Screen.storyboard */,
 				6F647A442F079895005309DD /* ReframeJournal.storekit */,
@@ -539,6 +545,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A2B3C4D5E6F708192A3B4C6 /* Assets.xcassets in Resources */,
 				E61B11DF36D31B3ED9316798 /* Launch Screen.storyboard in Resources */,
 				6F647A452F079895005309DD /* ReframeJournal.storekit in Resources */,
 			);
@@ -578,6 +585,7 @@
 				773AA7F64660375B01D22426 /* EntryDetailView.swift in Sources */,
 				899DC5722809FB0C0D256089 /* EntryDetailViewModel.swift in Sources */,
 				3F0788150F2C442B8A7E8933 /* EntryListItemView.swift in Sources */,
+				3A4B5C6D7E8F901234567891 /* ReframeLoadingView.swift in Sources */,
 				510D8D7CC3B582128B31BEDE /* ExpandableTextView.swift in Sources */,
 				BA140D589F48239A7AB796DA /* HomeView.swift in Sources */,
 				B1A278BD93BBB3C399455A5A /* HomeViewModel.swift in Sources */,
