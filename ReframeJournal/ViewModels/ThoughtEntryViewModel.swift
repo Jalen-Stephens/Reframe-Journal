@@ -7,8 +7,9 @@ final class ThoughtEntryViewModel: ObservableObject {
         case sensations
         case emotions
         case automaticThoughts
-        case evidence
-        case balanced
+        case distortions
+        case adaptiveResponses
+        case outcome
     }
 
     enum Field: Hashable {
@@ -16,6 +17,9 @@ final class ThoughtEntryViewModel: ObservableObject {
         case situation
         case sensations
         case emotionName(UUID)
+        case automaticThought(String)
+        case adaptiveResponseText(thoughtId: String, key: AdaptivePrompts.TextKey)
+        case outcomeReflection(thoughtId: String)
     }
 
     @Published var title: String
@@ -23,6 +27,16 @@ final class ThoughtEntryViewModel: ObservableObject {
     @Published var situation: String
     @Published var sensations: String
     @Published var emotions: [EmotionItem]
+    @Published var automaticThoughts: [AutomaticThought]
+    @Published var thinkingStyles: [String]
+    @Published var adaptiveResponses: [String: AdaptiveResponsesForThought]
+    @Published var outcomesByThought: [String: ThoughtOutcome]
+    @Published var beliefAfterMainThought: Int?
+    @Published var aiReframe: AIReframeResult?
+    @Published var aiReframeCreatedAt: Date?
+    @Published var aiReframeModel: String?
+    @Published var aiReframePromptVersion: String?
+    @Published var aiReframeDepth: AIReframeDepth?
     @Published var maxRevealedSection: Section
     @Published var scrollTarget: Section?
     @Published var isLoading: Bool = true
@@ -39,6 +53,10 @@ final class ThoughtEntryViewModel: ObservableObject {
     private var isNewEntry = false
     private var recordId: String
 
+    var currentRecordId: String {
+        recordId
+    }
+
     init(entryId: String?, store: ThoughtEntryStore, thoughtUsage: ThoughtUsageService) {
         self.entryId = entryId
         self.store = store
@@ -49,6 +67,16 @@ final class ThoughtEntryViewModel: ObservableObject {
         situation = empty.situation
         sensations = empty.sensations
         emotions = empty.emotions
+        automaticThoughts = empty.automaticThoughts
+        thinkingStyles = empty.thinkingStyles
+        adaptiveResponses = empty.adaptiveResponses
+        outcomesByThought = empty.outcomesByThought
+        beliefAfterMainThought = empty.beliefAfterMainThought
+        aiReframe = empty.aiReframe
+        aiReframeCreatedAt = empty.aiReframeCreatedAt
+        aiReframeModel = empty.aiReframeModel
+        aiReframePromptVersion = empty.aiReframePromptVersion
+        aiReframeDepth = empty.aiReframeDepth
         maxRevealedSection = .situation
         recordId = empty.recordId
     }
@@ -144,6 +172,13 @@ final class ThoughtEntryViewModel: ObservableObject {
             return emotions.first.map { .emotionName($0.id) }
         case .emotionName(let id):
             return handleEmotionSubmit(for: id)
+        case .automaticThought(let id):
+            return handleAutomaticThoughtSubmit(for: id)
+        case .adaptiveResponseText(let thoughtId, let key):
+            return nextAdaptiveResponseField(for: thoughtId, key: key)
+        case .outcomeReflection:
+            revealNextSection(from: .outcome)
+            return nil
         }
     }
 
@@ -157,6 +192,12 @@ final class ThoughtEntryViewModel: ObservableObject {
             return .sensations
         case .emotionName:
             return .emotions
+        case .automaticThought:
+            return .automaticThoughts
+        case .adaptiveResponseText:
+            return .adaptiveResponses
+        case .outcomeReflection:
+            return .outcome
         }
     }
 
@@ -183,7 +224,11 @@ final class ThoughtEntryViewModel: ObservableObject {
             situation = appendNewline(to: situation)
         case .sensations:
             sensations = appendNewline(to: sensations)
-        case .title, .emotionName:
+        case .adaptiveResponseText(let thoughtId, let key):
+            updateAdaptiveResponse(thoughtId: thoughtId, key: key, value: appendNewline(to: adaptiveResponseValue(thoughtId: thoughtId, key: key)))
+        case .outcomeReflection(let thoughtId):
+            updateOutcomeReflection(thoughtId: thoughtId, value: appendNewline(to: outcomeReflection(for: thoughtId)))
+        case .title, .emotionName, .automaticThought:
             break
         }
     }
@@ -201,12 +246,48 @@ final class ThoughtEntryViewModel: ObservableObject {
             return .emotionName(newId)
         }
         revealNextSection(from: .emotions)
+        ensureAutomaticThoughtRow()
+        return automaticThoughts.first.map { .automaticThought($0.id) }
+    }
+
+    private func handleAutomaticThoughtSubmit(for id: String) -> Field? {
+        guard let index = automaticThoughts.firstIndex(where: { $0.id == id }) else {
+            return nil
+        }
+        let currentText = automaticThoughts[index].text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if index < automaticThoughts.count - 1 {
+            return .automaticThought(automaticThoughts[index + 1].id)
+        }
+        if !currentText.isEmpty {
+            let newId = addAutomaticThought()
+            return .automaticThought(newId)
+        }
+        revealNextSection(from: .automaticThoughts)
         return nil
+    }
+
+    private func nextAdaptiveResponseField(for thoughtId: String, key: AdaptivePrompts.TextKey) -> Field? {
+        let prompts = adaptiveResponseKeys
+        guard let index = prompts.firstIndex(of: key) else {
+            return .outcomeReflection(thoughtId: thoughtId)
+        }
+        let nextIndex = prompts.index(after: index)
+        guard prompts.indices.contains(nextIndex) else {
+            reveal(.outcome)
+            return .outcomeReflection(thoughtId: thoughtId)
+        }
+        return .adaptiveResponseText(thoughtId: thoughtId, key: prompts[nextIndex])
     }
 
     private func ensureEmotionRow() {
         if emotions.isEmpty {
             _ = addEmotion()
+        }
+    }
+
+    private func ensureAutomaticThoughtRow() {
+        if automaticThoughts.isEmpty {
+            _ = addAutomaticThought()
         }
     }
 
@@ -217,6 +298,16 @@ final class ThoughtEntryViewModel: ObservableObject {
         situation = entry.situation
         sensations = entry.sensations
         emotions = entry.emotions.isEmpty ? [EmotionItem(id: UUID(), name: "", intensity: 50)] : entry.emotions
+        automaticThoughts = entry.automaticThoughts
+        thinkingStyles = entry.thinkingStyles
+        adaptiveResponses = entry.adaptiveResponses
+        outcomesByThought = entry.outcomesByThought
+        beliefAfterMainThought = entry.beliefAfterMainThought
+        aiReframe = entry.aiReframe
+        aiReframeCreatedAt = entry.aiReframeCreatedAt
+        aiReframeModel = entry.aiReframeModel
+        aiReframePromptVersion = entry.aiReframePromptVersion
+        aiReframeDepth = entry.aiReframeDepth
         maxRevealedSection = revealedSection(for: entry)
         isTitleAutoManaged = entry.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         updateTitleFromSituation()
@@ -231,9 +322,24 @@ final class ThoughtEntryViewModel: ObservableObject {
             situation: situation,
             sensations: sensations,
             emotions: emotions,
+            automaticThoughts: automaticThoughts,
+            thinkingStyles: thinkingStyles,
+            adaptiveResponses: adaptiveResponses,
+            outcomesByThought: outcomesByThought,
+            beliefAfterMainThought: beliefAfterMainThought,
+            aiReframe: aiReframe,
+            aiReframeCreatedAt: aiReframeCreatedAt,
+            aiReframeModel: aiReframeModel,
+            aiReframePromptVersion: aiReframePromptVersion,
+            aiReframeDepth: aiReframeDepth,
             createdAt: baseRecord.flatMap { DateUtils.parseIso($0.createdAt) } ?? occurredAt,
             updatedAt: Date()
         )
+    }
+
+    func currentRecordSnapshot() -> ThoughtRecord {
+        let entry = buildEntry()
+        return entry.applying(to: baseRecord)
     }
 
     private func deriveTitle(from text: String) -> String {
@@ -254,6 +360,22 @@ final class ThoughtEntryViewModel: ObservableObject {
     private func revealedSection(for entry: ThoughtEntry) -> Section {
         let hasSensations = !entry.sensations.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let hasEmotions = entry.emotions.contains { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let hasThoughts = entry.automaticThoughts.contains { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let hasDistortions = !entry.thinkingStyles.isEmpty
+        let hasAdaptive = !entry.adaptiveResponses.isEmpty
+        let hasOutcome = !entry.outcomesByThought.isEmpty || entry.beliefAfterMainThought != nil
+        if hasOutcome {
+            return .outcome
+        }
+        if hasAdaptive {
+            return .adaptiveResponses
+        }
+        if hasDistortions {
+            return .distortions
+        }
+        if hasThoughts {
+            return .automaticThoughts
+        }
         if hasEmotions {
             return .emotions
         }
@@ -261,5 +383,83 @@ final class ThoughtEntryViewModel: ObservableObject {
             return .sensations
         }
         return .situation
+    }
+
+    private var adaptiveResponseKeys: [AdaptivePrompts.TextKey] {
+        [.evidenceText, .alternativeText, .outcomeText]
+    }
+
+    func addAutomaticThought() -> String {
+        let id = Identifiers.generateId()
+        automaticThoughts.append(AutomaticThought(id: id, text: "", beliefBefore: 50))
+        return id
+    }
+
+    func removeAutomaticThought(id: String) {
+        automaticThoughts.removeAll { $0.id == id }
+        adaptiveResponses[id] = nil
+        outcomesByThought[id] = nil
+        if automaticThoughts.isEmpty {
+            _ = addAutomaticThought()
+        }
+    }
+
+    func updateAdaptiveResponse(thoughtId: String, key: AdaptivePrompts.TextKey, value: String) {
+        var response = adaptiveResponses[thoughtId] ?? AdaptiveResponsesForThought(
+            evidenceText: "",
+            evidenceBelief: 0,
+            alternativeText: "",
+            alternativeBelief: 0,
+            outcomeText: "",
+            outcomeBelief: 0,
+            friendText: "",
+            friendBelief: 0
+        )
+        switch key {
+        case .evidenceText:
+            response.evidenceText = value
+        case .alternativeText:
+            response.alternativeText = value
+        case .outcomeText:
+            response.outcomeText = value
+        case .friendText:
+            response.friendText = value
+        }
+        adaptiveResponses[thoughtId] = response
+    }
+
+    func adaptiveResponseValue(thoughtId: String, key: AdaptivePrompts.TextKey) -> String {
+        guard let response = adaptiveResponses[thoughtId] else { return "" }
+        switch key {
+        case .evidenceText:
+            return response.evidenceText
+        case .alternativeText:
+            return response.alternativeText
+        case .outcomeText:
+            return response.outcomeText
+        case .friendText:
+            return response.friendText
+        }
+    }
+
+    func ensureOutcome(for thoughtId: String, beliefBefore: Int) -> ThoughtOutcome {
+        if let existing = outcomesByThought[thoughtId] {
+            return existing
+        }
+        let outcome = ThoughtOutcome(beliefAfter: beliefBefore, emotionsAfter: [:], reflection: "", isComplete: false)
+        outcomesByThought[thoughtId] = outcome
+        return outcome
+    }
+
+    func updateOutcomeReflection(thoughtId: String, value: String) {
+        let thought = automaticThoughts.first { $0.id == thoughtId }
+        let belief = thought?.beliefBefore ?? 50
+        var outcome = ensureOutcome(for: thoughtId, beliefBefore: belief)
+        outcome.reflection = value
+        outcomesByThought[thoughtId] = outcome
+    }
+
+    func outcomeReflection(for thoughtId: String) -> String {
+        outcomesByThought[thoughtId]?.reflection ?? ""
     }
 }

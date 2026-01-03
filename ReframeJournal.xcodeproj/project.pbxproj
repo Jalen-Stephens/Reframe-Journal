@@ -102,6 +102,9 @@
 		8A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift */; };
 		8A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift */; };
 		8A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift */; };
+		B10000000000000000000011 /* SuggestionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* SuggestionEngine.swift */; };
+		B10000000000000000000008 /* AIReframeNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* AIReframeNotesView.swift */; };
+		B10000000000000000000009 /* SuggestionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* SuggestionEngineTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -213,6 +216,9 @@
 		9A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconCheck.swift; sourceTree = "<group>"; };
 		9A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconArrowRight.swift; sourceTree = "<group>"; };
 		9A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconSparkles.swift; sourceTree = "<group>"; };
+		A10000000000000000000011 /* SuggestionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionEngine.swift; sourceTree = "<group>"; };
+		A10000000000000000000008 /* AIReframeNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeNotesView.swift; sourceTree = "<group>"; };
+		A10000000000000000000009 /* SuggestionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionEngineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -257,6 +263,7 @@
 				CFF93899497F29B20C03F371 /* AccordionView.swift */,
 				D44EEF31DBEB81E519A8571E /* AdaptiveResponseView.swift */,
 				F2A3B4C5D6E708192A3B4C5D /* AIReframeResultView.swift */,
+				A10000000000000000000008 /* AIReframeNotesView.swift */,
 				661A270E0AB73EFA2FE2EB80 /* AllEntriesView.swift */,
 				C45269AC21C5B5C5A74E81F7 /* AutomaticThoughtsView.swift */,
 				31C1A2C353758ADB30EE5218 /* ChangeSummaryCardView.swift */,
@@ -295,6 +302,7 @@
 				A479E1E4C7D75E85D48AD3B8 /* Info.plist */,
 				E1F2A3B4C5061728394A5B6C /* AIReframeServiceTests.swift */,
 				F8A1B2C3D4E5061728394A66 /* LimitsManagerTests.swift */,
+				A10000000000000000000009 /* SuggestionEngineTests.swift */,
 				7CBBAF3FFE33047CA5DEA1DF /* ThoughtRecordTests.swift */,
 			);
 			path = ReframeJournalTests;
@@ -337,6 +345,7 @@
 				B7B81E049560BD2F69940170 /* Identifiers.swift */,
 				F4A1B2C3D4E5061728394A5C /* KeyboardDismiss.swift */,
 				087306FB4D31EF378A1C1F1A /* Metrics.swift */,
+				A10000000000000000000011 /* SuggestionEngine.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -611,6 +620,7 @@
 				8A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift in Sources */,
 				F8B1C2D3E4F5061728394A5F /* LimitsManager.swift in Sources */,
 				97366111857C0FBA4E911B26 /* Metrics.swift in Sources */,
+				B10000000000000000000011 /* SuggestionEngine.swift in Sources */,
 				B10000000000000000000006 /* NotesTextEditor.swift in Sources */,
 				862BAAA2244902C29A28F9E9 /* OutcomeView.swift in Sources */,
 				5BDBB32002A3D826F8D30994 /* PrimaryButton.swift in Sources */,
@@ -633,6 +643,7 @@
 				7F6C7F8C3F1D4C80A2F5B2B1 /* StepHeaderView.swift in Sources */,
 				6EDB00E0B89BF6536EE3AA43 /* ThemeManager.swift in Sources */,
 				F8B1C2D3E4F5061728394A64 /* ThoughtDetailsView.swift in Sources */,
+				B10000000000000000000008 /* AIReframeNotesView.swift in Sources */,
 				B10000000000000000000005 /* ThoughtEntryNotesView.swift in Sources */,
 				B10000000000000000000001 /* ThoughtEntry.swift in Sources */,
 				B10000000000000000000003 /* ThoughtEntryStore.swift in Sources */,
@@ -655,6 +666,7 @@
 			files = (
 				E2F3A4B5061728394A5B6C7D /* AIReframeServiceTests.swift in Sources */,
 				F8B1C2D3E4F5061728394A66 /* LimitsManagerTests.swift in Sources */,
+				B10000000000000000000009 /* SuggestionEngineTests.swift in Sources */,
 				4E025C008F95000CC39428E7 /* ThoughtRecordTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

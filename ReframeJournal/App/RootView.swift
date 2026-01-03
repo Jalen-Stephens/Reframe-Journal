@@ -23,6 +23,8 @@ struct RootView: View {
                             ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId, repository: appState.repository)
                         case let .aiReframeResult(entryId, action, depth):
                             AIReframeResultView(entryId: entryId, repository: appState.repository, action: action, depth: depth)
+                        case let .aiReframeNotes(entryId):
+                            AIReframeNotesView(entryId: entryId, repository: appState.repository)
                         case .wizardStep1:
                             DateTimeView()
                         case .wizardStep2:

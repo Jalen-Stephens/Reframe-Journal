@@ -8,6 +8,16 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
     var situation: String
     var sensations: String
     var emotions: [EmotionItem]
+    var automaticThoughts: [AutomaticThought]
+    var thinkingStyles: [String]
+    var adaptiveResponses: [String: AdaptiveResponsesForThought]
+    var outcomesByThought: [String: ThoughtOutcome]
+    var beliefAfterMainThought: Int?
+    var aiReframe: AIReframeResult?
+    var aiReframeCreatedAt: Date?
+    var aiReframeModel: String?
+    var aiReframePromptVersion: String?
+    var aiReframeDepth: AIReframeDepth?
     var createdAt: Date
     var updatedAt: Date
 
@@ -19,6 +29,16 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
         situation: String,
         sensations: String,
         emotions: [EmotionItem],
+        automaticThoughts: [AutomaticThought],
+        thinkingStyles: [String],
+        adaptiveResponses: [String: AdaptiveResponsesForThought],
+        outcomesByThought: [String: ThoughtOutcome],
+        beliefAfterMainThought: Int?,
+        aiReframe: AIReframeResult?,
+        aiReframeCreatedAt: Date?,
+        aiReframeModel: String?,
+        aiReframePromptVersion: String?,
+        aiReframeDepth: AIReframeDepth?,
         createdAt: Date,
         updatedAt: Date
     ) {
@@ -29,6 +49,16 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
         self.situation = situation
         self.sensations = sensations
         self.emotions = emotions
+        self.automaticThoughts = automaticThoughts
+        self.thinkingStyles = thinkingStyles
+        self.adaptiveResponses = adaptiveResponses
+        self.outcomesByThought = outcomesByThought
+        self.beliefAfterMainThought = beliefAfterMainThought
+        self.aiReframe = aiReframe
+        self.aiReframeCreatedAt = aiReframeCreatedAt
+        self.aiReframeModel = aiReframeModel
+        self.aiReframePromptVersion = aiReframePromptVersion
+        self.aiReframeDepth = aiReframeDepth
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -44,6 +74,16 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
             situation: "",
             sensations: "",
             emotions: [EmotionItem(id: UUID(), name: "", intensity: 50)],
+            automaticThoughts: [],
+            thinkingStyles: [],
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil,
             createdAt: now,
             updatedAt: now
         )
@@ -63,6 +103,16 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
             let emotionId = UUID(uuidString: item.id) ?? UUID()
             return EmotionItem(id: emotionId, name: item.label, intensity: item.intensityBefore)
         }
+        automaticThoughts = record.automaticThoughts
+        thinkingStyles = record.thinkingStyles ?? []
+        adaptiveResponses = record.adaptiveResponses
+        outcomesByThought = record.outcomesByThought
+        beliefAfterMainThought = record.beliefAfterMainThought
+        aiReframe = record.aiReframe
+        aiReframeCreatedAt = record.aiReframeCreatedAt
+        aiReframeModel = record.aiReframeModel
+        aiReframePromptVersion = record.aiReframePromptVersion
+        aiReframeDepth = record.aiReframeDepth
         createdAt = createdDate
         updatedAt = updatedDate
     }
@@ -90,18 +140,18 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
             updatedAt: nowIso,
             situationText: situation,
             sensations: splitSensations(sensations),
-            automaticThoughts: baseRecord.automaticThoughts,
+            automaticThoughts: automaticThoughts,
             emotions: emotionItems,
-            thinkingStyles: baseRecord.thinkingStyles,
-            adaptiveResponses: baseRecord.adaptiveResponses,
-            outcomesByThought: baseRecord.outcomesByThought,
-            beliefAfterMainThought: baseRecord.beliefAfterMainThought,
+            thinkingStyles: thinkingStyles,
+            adaptiveResponses: adaptiveResponses,
+            outcomesByThought: outcomesByThought,
+            beliefAfterMainThought: beliefAfterMainThought,
             notes: baseRecord.notes,
-            aiReframe: baseRecord.aiReframe,
-            aiReframeCreatedAt: baseRecord.aiReframeCreatedAt,
-            aiReframeModel: baseRecord.aiReframeModel,
-            aiReframePromptVersion: baseRecord.aiReframePromptVersion,
-            aiReframeDepth: baseRecord.aiReframeDepth
+            aiReframe: aiReframe,
+            aiReframeCreatedAt: aiReframeCreatedAt,
+            aiReframeModel: aiReframeModel,
+            aiReframePromptVersion: aiReframePromptVersion,
+            aiReframeDepth: aiReframeDepth
         )
     }
 

@@ -53,7 +53,23 @@ struct HomeView: View {
                     }
                     .buttonStyle(.plain)
 
-                    if viewModel.hasDraft {
+                    if viewModel.hasDraft, let draftId = viewModel.draftEntryId {
+                        Button {
+                            router.push(.thoughtEntry(id: draftId))
+                        } label: {
+                            GlassCard(padding: AppTheme.cardPaddingCompact) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Continue draft")
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                    Text("Pick up where you left off.")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    } else if viewModel.hasWizardDraft {
                         Button {
                             router.push(.wizardStep1)
                         } label: {
@@ -62,7 +78,7 @@ struct HomeView: View {
                                     Text("Continue draft")
                                         .font(.headline)
                                         .foregroundStyle(.primary)
-                                    Text("Pick up where you left off.")
+                                    Text("Resume the step-by-step flow.")
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                 }
