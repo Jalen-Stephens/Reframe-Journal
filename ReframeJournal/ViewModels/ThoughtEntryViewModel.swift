@@ -7,7 +7,6 @@ final class ThoughtEntryViewModel: ObservableObject {
         case sensations
         case emotions
         case automaticThoughts
-        case distortions
         case adaptiveResponses
         case outcome
     }
@@ -255,12 +254,9 @@ final class ThoughtEntryViewModel: ObservableObject {
             return nil
         }
         let currentText = automaticThoughts[index].text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if index < automaticThoughts.count - 1 {
-            return .automaticThought(automaticThoughts[index + 1].id)
-        }
         if !currentText.isEmpty {
-            let newId = addAutomaticThought()
-            return .automaticThought(newId)
+            revealNextSection(from: .automaticThoughts)
+            return nil
         }
         revealNextSection(from: .automaticThoughts)
         return nil
@@ -289,6 +285,9 @@ final class ThoughtEntryViewModel: ObservableObject {
         if automaticThoughts.isEmpty {
             _ = addAutomaticThought()
         }
+        if automaticThoughts.count > 1 {
+            automaticThoughts = [automaticThoughts[0]]
+        }
     }
 
     private func apply(_ entry: ThoughtEntry) {
@@ -298,7 +297,7 @@ final class ThoughtEntryViewModel: ObservableObject {
         situation = entry.situation
         sensations = entry.sensations
         emotions = entry.emotions.isEmpty ? [EmotionItem(id: UUID(), name: "", intensity: 50)] : entry.emotions
-        automaticThoughts = entry.automaticThoughts
+        automaticThoughts = entry.automaticThoughts.isEmpty ? [] : [entry.automaticThoughts[0]]
         thinkingStyles = entry.thinkingStyles
         adaptiveResponses = entry.adaptiveResponses
         outcomesByThought = entry.outcomesByThought
@@ -361,7 +360,6 @@ final class ThoughtEntryViewModel: ObservableObject {
         let hasSensations = !entry.sensations.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let hasEmotions = entry.emotions.contains { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         let hasThoughts = entry.automaticThoughts.contains { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        let hasDistortions = !entry.thinkingStyles.isEmpty
         let hasAdaptive = !entry.adaptiveResponses.isEmpty
         let hasOutcome = !entry.outcomesByThought.isEmpty || entry.beliefAfterMainThought != nil
         if hasOutcome {
@@ -369,9 +367,6 @@ final class ThoughtEntryViewModel: ObservableObject {
         }
         if hasAdaptive {
             return .adaptiveResponses
-        }
-        if hasDistortions {
-            return .distortions
         }
         if hasThoughts {
             return .automaticThoughts
@@ -386,10 +381,13 @@ final class ThoughtEntryViewModel: ObservableObject {
     }
 
     private var adaptiveResponseKeys: [AdaptivePrompts.TextKey] {
-        [.evidenceText, .alternativeText, .outcomeText]
+        AdaptivePrompts.all.map { $0.textKey }
     }
 
     func addAutomaticThought() -> String {
+        if let existing = automaticThoughts.first {
+            return existing.id
+        }
         let id = Identifiers.generateId()
         automaticThoughts.append(AutomaticThought(id: id, text: "", beliefBefore: 50))
         return id

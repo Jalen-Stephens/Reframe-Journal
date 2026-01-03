@@ -9,9 +9,7 @@ struct ThoughtEntryNotesView: View {
     @StateObject private var viewModel: ThoughtEntryViewModel
     @FocusState private var focusedField: ThoughtEntryViewModel.Field?
     @State private var isDateSheetPresented = false
-    @State private var showEmotionList = false
     @State private var showEmotionSuggestions = false
-    @State private var showThoughtSuggestions = false
     @State private var showEmotionCheck = false
     @State private var wasEmotionsComplete = false
     @State private var showUnlockSheet = false
@@ -21,8 +19,6 @@ struct ThoughtEntryNotesView: View {
     @State private var isLoadingAd = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var customDistortion = ""
-    @State private var expandedThoughts: Set<String> = []
 
     @AppStorage("aiReframeEnabled") private var isAIReframeEnabled = false
 
@@ -39,18 +35,6 @@ struct ThoughtEntryNotesView: View {
         "Fatigue"
     ]
 
-    private let commonDistortions = [
-        "Mind reading",
-        "Catastrophizing",
-        "All-or-nothing",
-        "Overgeneralizing",
-        "Personalization",
-        "Should statements",
-        "Emotional reasoning",
-        "Labeling",
-        "Disqualifying the positive",
-        "Fortune telling"
-    ]
 
     init(entryId: String?, repository: ThoughtRecordRepository, thoughtUsage: ThoughtUsageService) {
         let store = ThoughtEntryStore(repository: repository)
@@ -111,17 +95,8 @@ struct ThoughtEntryNotesView: View {
         }
         .onChange(of: viewModel.automaticThoughts) { _ in
             viewModel.scheduleAutosave()
-            if hasAutomaticThoughts {
-                viewModel.reveal(.distortions)
-                viewModel.reveal(.adaptiveResponses)
-                viewModel.reveal(.outcome)
-            }
-        }
-        .onChange(of: viewModel.thinkingStyles) { _ in
-            viewModel.scheduleAutosave()
-            if hasAutomaticThoughts {
-                viewModel.reveal(.adaptiveResponses)
-            }
+            viewModel.reveal(.adaptiveResponses)
+            viewModel.reveal(.outcome)
         }
         .onChange(of: viewModel.adaptiveResponses) { _ in
             viewModel.scheduleAutosave()
@@ -167,15 +142,6 @@ struct ThoughtEntryNotesView: View {
         }
         .sheet(isPresented: $showPaywall) {
             PaywallView()
-        }
-        .sheet(isPresented: $showEmotionList) {
-            EmotionListSheet(
-                emotions: EmotionSuggestionEngine.defaultEmotions,
-                onSelect: { emotion in
-                    applyEmotionSuggestion(emotion)
-                    showEmotionList = false
-                }
-            )
         }
         .alert("", isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
@@ -277,14 +243,10 @@ struct ThoughtEntryNotesView: View {
             GlassDivider()
             automaticThoughtsSection
         }
-        if viewModel.isSectionVisible(.distortions) {
-            GlassDivider()
-            distortionsSection
-        }
-        if viewModel.isSectionVisible(.adaptiveResponses) {
-            GlassDivider()
-            adaptiveResponsesSection
-        }
+                    if viewModel.isSectionVisible(.adaptiveResponses) {
+                        GlassDivider()
+                        adaptiveResponsesSection
+                    }
         if viewModel.isSectionVisible(.outcome) {
             GlassDivider()
             outcomeSection
@@ -318,7 +280,7 @@ struct ThoughtEntryNotesView: View {
                 )
             }
 
-            if focusedField == .sensations, !sensationsSuggestions.isEmpty {
+            if shouldShowSensationSuggestions {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(sensationsSuggestions, id: \.self) { suggestion in
@@ -373,8 +335,16 @@ struct ThoughtEntryNotesView: View {
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(.secondary)
                         Spacer()
-                        GlassIconButton(icon: .plus, size: AppTheme.iconSizeSmall, accessibilityLabel: "Add from list") {
-                            showEmotionList = true
+                        GlassPillButton {
+                            let id = viewModel.addEmotion()
+                            focusedField = .emotionName(id)
+                        } label: {
+                            HStack(spacing: 6) {
+                                AppIconView(icon: .plus, size: AppTheme.iconSizeSmall)
+                                Text("Add Custom Emotion")
+                            }
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
                         }
                     }
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -401,8 +371,16 @@ struct ThoughtEntryNotesView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     Spacer()
-                    GlassIconButton(icon: .plus, size: AppTheme.iconSizeSmall, accessibilityLabel: "Add from list") {
-                        showEmotionList = true
+                    GlassPillButton {
+                        let id = viewModel.addEmotion()
+                        focusedField = .emotionName(id)
+                    } label: {
+                        HStack(spacing: 6) {
+                            AppIconView(icon: .plus, size: AppTheme.iconSizeSmall)
+                            Text("Add Custom Emotion")
+                        }
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -481,51 +459,15 @@ struct ThoughtEntryNotesView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 GlassSectionHeader(text: "AUTOMATIC THOUGHTS")
-                Spacer()
-                if hasAutomaticThoughts && !automaticThoughtSuggestions.isEmpty {
-                    GlassPillButton {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            showThoughtSuggestions.toggle()
-                        }
-                    } label: {
-                        Text(showThoughtSuggestions ? "Hide suggestions" : "Show suggestions")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-
-            if shouldShowThoughtSuggestions {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Suggested")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(automaticThoughtSuggestions, id: \.self) { suggestion in
-                                Button {
-                                    applyAutomaticThoughtSuggestion(suggestion)
-                                } label: {
-                                    GlassPill(padding: EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)) {
-                                        Text(suggestion)
-                                            .font(.footnote)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-                    .accessibilityLabel("Suggested automatic thoughts")
-                }
             }
 
             VStack(spacing: 12) {
-                ForEach($viewModel.automaticThoughts) { $thought in
+                if let binding = bindingForPrimaryThought() {
+                    let thought = binding.wrappedValue
                     GlassCard(padding: AppTheme.cardPaddingCompact) {
                         VStack(alignment: .leading, spacing: 8) {
                             NotesTextField(
-                                text: $thought.text,
+                                text: binding.text,
                                 isFocused: bindingForAutomaticThoughtFocus(id: thought.id),
                                 placeholder: "Automatic thought"
                             ) {
@@ -536,8 +478,8 @@ struct ThoughtEntryNotesView: View {
 
                             HStack(spacing: 12) {
                                 Slider(value: Binding(
-                                    get: { Double(thought.beliefBefore) },
-                                    set: { thought.beliefBefore = Int($0) }
+                                    get: { Double(binding.wrappedValue.beliefBefore) },
+                                    set: { binding.wrappedValue.beliefBefore = Int($0) }
                                 ), in: 0...100, step: 1)
                                 .tint(.secondary)
                                 .accessibilityLabel("Belief")
@@ -546,128 +488,36 @@ struct ThoughtEntryNotesView: View {
                                     .font(.footnote.monospacedDigit())
                                     .foregroundStyle(.secondary)
                                     .frame(width: 32, alignment: .trailing)
-
-                                GlassIconButton(icon: .minus, size: AppTheme.iconSizeSmall, accessibilityLabel: "Remove thought") {
-                                    viewModel.removeAutomaticThought(id: thought.id)
-                                }
                             }
                         }
                     }
-                }
-            }
-
-            GlassPillButton {
-                let id = viewModel.addAutomaticThought()
-                focusedField = .automaticThought(id)
-            } label: {
-                HStack(spacing: 6) {
-                    AppIconView(icon: .plus, size: AppTheme.iconSizeSmall)
-                    Text("Add Thought")
-                }
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-            }
-            .accessibilityLabel("Add thought")
-        }
-        .id(ThoughtEntryViewModel.Section.automaticThoughts)
-    }
-
-    private var distortionsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            GlassSectionHeader(text: "COGNITIVE DISTORTIONS")
-            GlassCard(padding: AppTheme.cardPaddingCompact) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Optional: tag any distortions you notice.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
-                        ForEach(commonDistortions, id: \.self) { distortion in
-                            let isSelected = viewModel.thinkingStyles.contains(distortion)
-                            Button {
-                                toggleDistortion(distortion)
-                            } label: {
-                                GlassPill(padding: EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)) {
-                                    Text(distortion)
-                                        .font(.footnote)
-                                        .foregroundStyle(isSelected ? .primary : .secondary)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    HStack {
-                        TextField("Add distortion", text: $customDistortion)
-                            .textFieldStyle(.plain)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .submitLabel(.done)
-                            .onSubmit {
-                                addCustomDistortion()
-                            }
-                        Button {
-                            addCustomDistortion()
-                        } label: {
-                            AppIconView(icon: .plus, size: AppTheme.iconSizeSmall)
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                        .frame(minWidth: AppTheme.minTapSize, minHeight: AppTheme.minTapSize)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .background(.ultraThinMaterial, in: Capsule(style: .continuous))
                 }
             }
         }
-        .id(ThoughtEntryViewModel.Section.distortions)
+        .id(ThoughtEntryViewModel.Section.automaticThoughts)
     }
 
     private var adaptiveResponsesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             GlassSectionHeader(text: "ADAPTIVE RESPONSES")
-            VStack(spacing: 12) {
-                ForEach(viewModel.automaticThoughts) { thought in
-                    let isExpanded = expandedThoughts.contains(thought.id)
-                    GlassCard(padding: AppTheme.cardPaddingCompact) {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text(thought.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Automatic thought" : thought.text)
-                                    .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(2)
-                                Spacer()
-                                Button {
-                                    toggleThoughtExpansion(thought.id)
-                                } label: {
-                                    AppIconView(icon: isExpanded ? .chevronDown : .chevronRight, size: AppTheme.iconSizeSmall)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .buttonStyle(.plain)
-                                .frame(minWidth: AppTheme.minTapSize, minHeight: AppTheme.minTapSize)
-                            }
-
-                            if isExpanded {
-                                adaptiveResponsePrompt(
-                                    label: "Evidence for & against",
-                                    placeholder: "What supports this thought? What doesn't?",
-                                    thoughtId: thought.id,
-                                    key: .evidenceText
-                                )
-                                adaptiveResponsePrompt(
-                                    label: "Alternative view",
-                                    placeholder: "Is there another explanation?",
-                                    thoughtId: thought.id,
-                                    key: .alternativeText
-                                )
-                                adaptiveResponsePrompt(
-                                    label: "Balanced perspective",
-                                    placeholder: "A more balanced way to see it...",
-                                    thoughtId: thought.id,
-                                    key: .outcomeText
-                                )
-                            }
+            if let thought = viewModel.automaticThoughts.first {
+                GlassCard(padding: AppTheme.cardPaddingCompact) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(AdaptivePrompts.all, id: \.id) { prompt in
+                            adaptiveResponsePrompt(
+                                label: prompt.label,
+                                placeholder: "Write your response...",
+                                thoughtId: thought.id,
+                                key: prompt.textKey
+                            )
                         }
                     }
+                }
+            } else {
+                GlassCard(padding: AppTheme.cardPaddingCompact) {
+                    Text("Add an automatic thought to continue.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -782,8 +632,14 @@ struct ThoughtEntryNotesView: View {
     }
 
     private func moveToNext(from field: ThoughtEntryViewModel.Field) {
+        if case .outcomeReflection = field {
+            focusField(nil)
+            dismissKeyboard()
+            viewModel.scheduleAutosave()
+            return
+        }
         let next = viewModel.nextField(after: field)
-        focusedField = next
+        focusField(next)
         if next == nil {
             viewModel.scheduleAutosave()
         }
@@ -800,7 +656,7 @@ struct ThoughtEntryNotesView: View {
             get: { focusedField == field },
             set: { isFocused in
                 if isFocused {
-                    focusedField = field
+                    focusField(field)
                 } else if focusedField == field {
                     focusedField = nil
                 }
@@ -813,7 +669,7 @@ struct ThoughtEntryNotesView: View {
             get: { focusedField == .emotionName(id) },
             set: { isFocused in
                 if isFocused {
-                    focusedField = .emotionName(id)
+                    focusField(.emotionName(id))
                 } else if focusedField == .emotionName(id) {
                     focusedField = nil
                 }
@@ -834,6 +690,10 @@ struct ThoughtEntryNotesView: View {
         let lower = trimmed.lowercased()
         guard !lower.isEmpty else { return available }
         return available.filter { $0.lowercased().hasPrefix(lower) }
+    }
+
+    private var shouldShowSensationSuggestions: Bool {
+        !sensationsSuggestions.isEmpty && (focusedField == .sensations || viewModel.sensations.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
     private var selectedSensations: Set<String> {
@@ -878,12 +738,33 @@ struct ThoughtEntryNotesView: View {
             get: { focusedField == .automaticThought(id) },
             set: { isFocused in
                 if isFocused {
-                    focusedField = .automaticThought(id)
+                    focusField(.automaticThought(id))
                 } else if focusedField == .automaticThought(id) {
                     focusedField = nil
                 }
             }
         )
+    }
+
+    private func bindingForPrimaryThought() -> Binding<AutomaticThought>? {
+        guard let first = viewModel.automaticThoughts.first,
+              let index = viewModel.automaticThoughts.firstIndex(where: { $0.id == first.id }) else {
+            let id = viewModel.addAutomaticThought()
+            focusedField = .automaticThought(id)
+            return nil
+        }
+        return $viewModel.automaticThoughts[index]
+    }
+
+    private func focusField(_ field: ThoughtEntryViewModel.Field?) {
+        guard let field else {
+            focusedField = nil
+            return
+        }
+        focusedField = nil
+        DispatchQueue.main.async {
+            focusedField = field
+        }
     }
 
     private func bindingForOutcomeReflection(thoughtId: String) -> Binding<String> {
@@ -1040,27 +921,11 @@ struct ThoughtEntryNotesView: View {
         )
     }
 
-    private var automaticThoughtSuggestions: [String] {
-        let suggestions = AutomaticThoughtSuggestionEngine.rankedSuggestions(
-            situation: viewModel.situation,
-            emotions: viewModel.emotions.map { $0.name }
-        )
-        let existing = Set(viewModel.automaticThoughts.map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() })
-        return suggestions.filter { !existing.contains($0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()) }
-    }
-
     private var shouldShowEmotionSuggestions: Bool {
         if !hasEmotions {
             return !emotionSuggestions.isEmpty
         }
         return showEmotionSuggestions && !emotionSuggestions.isEmpty
-    }
-
-    private var shouldShowThoughtSuggestions: Bool {
-        if !hasAutomaticThoughts {
-            return !automaticThoughtSuggestions.isEmpty
-        }
-        return showThoughtSuggestions && !automaticThoughtSuggestions.isEmpty
     }
 
     private func applyEmotionSuggestion(_ suggestion: String) {
@@ -1077,18 +942,6 @@ struct ThoughtEntryNotesView: View {
         focusedField = .emotionName(id)
     }
 
-    private func applyAutomaticThoughtSuggestion(_ suggestion: String) {
-        let normalized = suggestion.lowercased()
-        if let existing = viewModel.automaticThoughts.first(where: { $0.text.lowercased() == normalized }) {
-            focusedField = .automaticThought(existing.id)
-            return
-        }
-        let id = viewModel.addAutomaticThought()
-        if let index = viewModel.automaticThoughts.firstIndex(where: { $0.id == id }) {
-            viewModel.automaticThoughts[index].text = suggestion
-        }
-        focusedField = .automaticThought(id)
-    }
 
     private func continueToAutomaticThoughts() {
         viewModel.reveal(.automaticThoughts)
@@ -1119,31 +972,6 @@ struct ThoughtEntryNotesView: View {
             withAnimation(.easeInOut(duration: 0.2)) {
                 showEmotionCheck = false
             }
-        }
-    }
-
-    private func toggleDistortion(_ distortion: String) {
-        if let index = viewModel.thinkingStyles.firstIndex(of: distortion) {
-            viewModel.thinkingStyles.remove(at: index)
-        } else {
-            viewModel.thinkingStyles.append(distortion)
-        }
-    }
-
-    private func addCustomDistortion() {
-        let trimmed = customDistortion.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        if !viewModel.thinkingStyles.contains(trimmed) {
-            viewModel.thinkingStyles.append(trimmed)
-        }
-        customDistortion = ""
-    }
-
-    private func toggleThoughtExpansion(_ id: String) {
-        if expandedThoughts.contains(id) {
-            expandedThoughts.remove(id)
-        } else {
-            expandedThoughts.insert(id)
         }
     }
 
@@ -1264,37 +1092,6 @@ private struct DateTimeSheet: View {
                 }
             }
         }
-    }
-}
-
-private struct EmotionListSheet: View {
-    let emotions: [String]
-    let onSelect: (String) -> Void
-
-    @State private var searchText = ""
-
-    var body: some View {
-        NavigationStack {
-            List {
-                ForEach(filteredEmotions, id: \.self) { emotion in
-                    Button {
-                        onSelect(emotion)
-                    } label: {
-                        Text(emotion.capitalized)
-                            .foregroundStyle(.primary)
-                    }
-                }
-            }
-            .navigationTitle("Add Emotion")
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
-        }
-    }
-
-    private var filteredEmotions: [String] {
-        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return emotions }
-        let lower = trimmed.lowercased()
-        return emotions.filter { $0.lowercased().contains(lower) }
     }
 }
 
