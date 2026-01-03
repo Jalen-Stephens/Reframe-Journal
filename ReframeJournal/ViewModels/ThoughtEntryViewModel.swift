@@ -119,7 +119,7 @@ final class ThoughtEntryViewModel: ObservableObject {
             baseRecord = updated
             recordId = updated.id
             if isNewEntry && !didIncrementUsage {
-                thoughtUsage.incrementTodayCount()
+                thoughtUsage.incrementTodayCount(recordId: updated.id, createdAt: updated.createdAt)
                 didIncrementUsage = true
                 isNewEntry = false
             }

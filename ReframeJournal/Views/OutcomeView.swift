@@ -510,7 +510,7 @@ struct OutcomeView: View {
                 try await appState.repository.upsert(record)
                 await appState.repository.flushPendingWrites()
                 if !wasEditing {
-                    appState.thoughtUsage.incrementTodayCount()
+                    appState.thoughtUsage.incrementTodayCount(recordId: record.id, createdAt: record.createdAt)
                 }
                 await appState.wizard.clearDraft()
                 if wasEditing {
