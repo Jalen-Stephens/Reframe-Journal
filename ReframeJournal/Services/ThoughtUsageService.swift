@@ -5,6 +5,7 @@ final class ThoughtUsageService {
     private let usageDateKey = "thoughtUsageDate"
     private let usageCountKey = "thoughtUsageCount"
     private let usageIdsKey = "thoughtUsageIds"
+    private let devDisableLimitKey = "devDisableThoughtLimit"
     private let userDefaults: UserDefaults
 
     init(userDefaults: UserDefaults = .standard) {
@@ -47,6 +48,9 @@ final class ThoughtUsageService {
         if hasUnlimitedThoughts {
             return true
         }
+        if isDevLimitDisabled {
+            return true
+        }
         return getTodayCount() < 3
     }
 
@@ -67,5 +71,9 @@ final class ThoughtUsageService {
         formatter.timeZone = TimeZone.current
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
+    }
+
+    private var isDevLimitDisabled: Bool {
+        userDefaults.bool(forKey: devDisableLimitKey)
     }
 }
