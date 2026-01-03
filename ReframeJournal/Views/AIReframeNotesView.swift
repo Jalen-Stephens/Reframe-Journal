@@ -32,7 +32,12 @@ struct AIReframeNotesView: View {
                     reframeSection(title: "What might be happening", text: bulletList(display.whatMightBeHappening))
                     reframeSection(title: "Cognitive distortions", text: distortionsText(display.cognitiveDistortions))
                     reframeSection(title: "Balanced thought", text: display.balancedThought ?? "A balanced perspective will appear here.")
-                    reframeSection(title: "Suggested next step", text: suggestedNextStep(display))
+                    reframeSection(title: "Micro action plan", text: microActionText(display.microActionPlan))
+                    reframeSection(title: "Communication script", text: communicationScriptText(display.communicationScript))
+                    reframeSection(title: "Self compassion", text: bulletList(display.selfCompassion))
+                    reframeSection(title: "Reality check questions", text: bulletList(display.realityCheckQuestions))
+                    reframeSection(title: "One small experiment", text: experimentText(display.oneSmallExperiment))
+                    reframeSection(title: "Summary", text: display.summary ?? "")
                 } else {
                     Text("AI Reframe not available.")
                         .font(.footnote)
@@ -104,22 +109,52 @@ struct AIReframeNotesView: View {
         guard let distortions, !distortions.isEmpty else { return "" }
         return distortions.map { distortion in
             let label = distortion.label.trimmingCharacters(in: .whitespacesAndNewlines)
+            let why = distortion.whyItFits.trimmingCharacters(in: .whitespacesAndNewlines)
             let reframe = distortion.gentleReframe.trimmingCharacters(in: .whitespacesAndNewlines)
             if label.isEmpty { return reframe }
-            if reframe.isEmpty { return label }
-            return "\(label): \(reframe)"
+            if why.isEmpty && reframe.isEmpty { return label }
+            if reframe.isEmpty { return "\(label): \(why)" }
+            if why.isEmpty { return "\(label): \(reframe)" }
+            return "\(label): \(why)\n\(reframe)"
         }.joined(separator: "\n")
     }
 
-    private func suggestedNextStep(_ result: AIReframeResult) -> String {
-        if let plan = result.microActionPlan?.first {
-            let steps = plan.steps.map { "• \($0)" }.joined(separator: "\n")
-            return plan.title + "\n" + steps
+    private func microActionText(_ plan: [AIReframeResult.MicroActionPlanItem]?) -> String {
+        guard let plan, !plan.isEmpty else { return "" }
+        return plan.map { item in
+            let steps = item.steps.map { "• \($0)" }.joined(separator: "\n")
+            if steps.isEmpty {
+                return item.title
+            }
+            return item.title + "\n" + steps
+        }.joined(separator: "\n\n")
+    }
+
+    private func communicationScriptText(_ script: AIReframeResult.CommunicationScript?) -> String {
+        guard let script else { return "" }
+        var lines: [String] = []
+        if let text = script.textMessage, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.append("Text message:\n\(text)")
         }
-        if let experiment = result.oneSmallExperiment?.experiment {
-            return experiment
+        if let inPerson = script.inPerson, !inPerson.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.append("In person:\n\(inPerson)")
         }
-        return result.summary ?? ""
+        return lines.joined(separator: "\n\n")
+    }
+
+    private func experimentText(_ experiment: AIReframeResult.OneSmallExperiment?) -> String {
+        guard let experiment else { return "" }
+        var lines: [String] = []
+        if let hypothesis = experiment.hypothesis, !hypothesis.isEmpty {
+            lines.append("Hypothesis:\n\(hypothesis)")
+        }
+        if let action = experiment.experiment, !action.isEmpty {
+            lines.append("Experiment:\n\(action)")
+        }
+        if let observe = experiment.whatToObserve, !observe.isEmpty {
+            lines.append("What to observe:\n" + observe.map { "• \($0)" }.joined(separator: "\n"))
+        }
+        return lines.joined(separator: "\n\n")
     }
 
     private func dateLine(for record: ThoughtRecord) -> String {
