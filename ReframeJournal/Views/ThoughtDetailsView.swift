@@ -37,46 +37,51 @@ struct ThoughtDetailsView: View {
     var body: some View {
         let thought = store.thought(id: thoughtId)
 
-        VStack(alignment: .leading, spacing: 16) {
-            if let thought {
-                Text(thought.text)
-                    .font(.title2.bold())
+        ZStack {
+            VStack(alignment: .leading, spacing: 16) {
+                if let thought {
+                    Text(thought.text)
+                        .font(.title2.bold())
 
-                Text(thought.createdAt.formatted(date: .abbreviated, time: .shortened))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    Text(thought.createdAt.formatted(date: .abbreviated, time: .shortened))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
 
-                Divider()
+                    Divider()
 
-                if let response = thought.reframeResponse {
-                    ReframeSummaryCard(response: response)
+                    if let response = thought.reframeResponse {
+                        ReframeSummaryCard(response: response)
+                    } else {
+                        Text("No AI reframe yet.")
+                            .foregroundStyle(.secondary)
+                    }
                 } else {
-                    Text("No AI reframe yet.")
+                    Text("Entry not found.")
                         .foregroundStyle(.secondary)
                 }
-            } else {
-                Text("Entry not found.")
-                    .foregroundStyle(.secondary)
-            }
 
-            Spacer()
+                Spacer()
 
-            Button {
-                guard let thought else { return }
-                viewModel.generateReframe(for: thought)
-            } label: {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                } else {
-                    Text("Generate Reframe")
+                Button {
+                    guard let thought else { return }
+                    viewModel.generateReframe(for: thought)
+                } label: {
+                    Text(viewModel.isGenerating ? "Generating..." : "Generate Reframe")
                         .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.borderedProminent)
+                .disabled(viewModel.isLoading || thought == nil)
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(viewModel.isLoading || thought == nil)
+            .padding()
+            .allowsHitTesting(!viewModel.isGenerating)
+
+            if viewModel.isGenerating {
+                ReframeLoadingView()
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
-        .padding()
+        .animation(.easeInOut(duration: 0.25), value: viewModel.isGenerating)
         .navigationTitle("Entry")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $viewModel.isPresentingAdSheet) {
@@ -161,6 +166,7 @@ struct AdGateSheet: View {
 @MainActor
 final class ThoughtDetailsViewModel: ObservableObject {
     @Published var isLoading: Bool = false
+    @Published var isGenerating: Bool = false
     @Published var isPresentingAdSheet: Bool = false
     @Published var isPresentingPaywall: Bool = false
     @Published var isPresentingResult: Bool = false
@@ -216,6 +222,8 @@ final class ThoughtDetailsViewModel: ObservableObject {
             }
 
             try limits.assertCanGenerateReframe()
+            isGenerating = true
+            defer { isGenerating = false }
             let response = try await openAIClient.generateReframe(for: thought)
             await store.updateReframe(thoughtId: thought.id, response: response)
             limits.recordReframe()

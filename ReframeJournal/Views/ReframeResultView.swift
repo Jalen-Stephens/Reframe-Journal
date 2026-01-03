@@ -38,61 +38,66 @@ struct ReframeResultView: View {
         let thought = store.thought(id: thoughtId)
         let response = thought?.reframeResponse
 
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                if let thought {
-                    Text("Your Thought")
-                        .font(.headline)
-                    Text(thought.text)
-                        .font(.title3.weight(.semibold))
-                }
-
-                if let response {
-                    JourneySection(title: "Summary") {
-                        Text(response.summary)
+        ZStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    if let thought {
+                        Text("Your Thought")
+                            .font(.headline)
+                        Text(thought.text)
+                            .font(.title3.weight(.semibold))
                     }
 
-                    JourneySection(title: "Cognitive Distortions Detected") {
-                        BulletList(items: response.cognitiveDistortionsDetected)
-                    }
+                    if let response {
+                        JourneySection(title: "Summary") {
+                            Text(response.summary)
+                        }
 
-                    JourneySection(title: "Alternative Thoughts") {
-                        BulletList(items: response.alternativeThoughts)
-                    }
+                        JourneySection(title: "Cognitive Distortions Detected") {
+                            BulletList(items: response.cognitiveDistortionsDetected)
+                        }
 
-                    JourneySection(title: "Action Steps") {
-                        BulletList(items: response.actionSteps)
-                    }
+                        JourneySection(title: "Alternative Thoughts") {
+                            BulletList(items: response.alternativeThoughts)
+                        }
 
-                    JourneySection(title: "Compassionate Coach") {
-                        Text(response.compassionateCoachMessage)
-                    }
+                        JourneySection(title: "Action Steps") {
+                            BulletList(items: response.actionSteps)
+                        }
 
-                    JourneySection(title: "Suggested Experiment") {
-                        Text(response.suggestedExperiment)
-                    }
-                } else {
-                    Text("Reframe not available.")
-                        .foregroundStyle(.secondary)
-                }
+                        JourneySection(title: "Compassionate Coach") {
+                            Text(response.compassionateCoachMessage)
+                        }
 
-                Button {
-                    guard let thought else { return }
-                    viewModel.regenerate(for: thought)
-                } label: {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
+                        JourneySection(title: "Suggested Experiment") {
+                            Text(response.suggestedExperiment)
+                        }
                     } else {
-                        Text("Regenerate")
+                        Text("Reframe not available.")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button {
+                        guard let thought else { return }
+                        viewModel.regenerate(for: thought)
+                    } label: {
+                        Text(viewModel.isGenerating ? "Regenerating..." : "Regenerate")
                             .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(viewModel.isLoading || thought == nil)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(viewModel.isLoading || thought == nil)
+                .padding(24)
             }
-            .padding(24)
+            .allowsHitTesting(!viewModel.isGenerating)
+
+            if viewModel.isGenerating {
+                ReframeLoadingView(message: "Taking a moment to refresh this reframe...")
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
+        .animation(.easeInOut(duration: 0.25), value: viewModel.isGenerating)
         .navigationTitle("Reframe")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $viewModel.isPresentingAdSheet) {
@@ -159,6 +164,7 @@ private struct BulletList: View {
 @MainActor
 final class ReframeResultViewModel: ObservableObject {
     @Published var isLoading: Bool = false
+    @Published var isGenerating: Bool = false
     @Published var isPresentingAdSheet: Bool = false
     @Published var isPresentingPaywall: Bool = false
     @Published var isPresentingError: Bool = false
@@ -213,6 +219,8 @@ final class ReframeResultViewModel: ObservableObject {
             }
 
             try limits.assertCanGenerateReframe()
+            isGenerating = true
+            defer { isGenerating = false }
             let response = try await openAIClient.generateReframe(for: thought)
             await store.updateReframe(thoughtId: thought.id, response: response)
             limits.recordReframe()

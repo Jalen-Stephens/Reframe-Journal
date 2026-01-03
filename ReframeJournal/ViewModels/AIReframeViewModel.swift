@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 final class AIReframeViewModel: ObservableObject {
     @Published var isLoading: Bool = false
+    @Published var isGenerating: Bool = false
     @Published var result: AIReframeResult?
     @Published var error: String?
 
@@ -66,6 +67,8 @@ final class AIReframeViewModel: ObservableObject {
         }
         do {
             let record = try await loadRecord()
+            isGenerating = true
+            defer { isGenerating = false }
             let generated = try await service.generateReframe(for: record, depth: depth)
             let createdAt = Date()
             if isDraftSource {

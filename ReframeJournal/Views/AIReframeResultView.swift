@@ -24,36 +24,44 @@ struct AIReframeResultView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                header
-                Text("Journey: 10 steps")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textSecondary)
+        ZStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    header
+                    Text("Journey: 10 steps")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(themeManager.theme.textSecondary)
 
-                if let result = viewModel.result {
-                    journeyContent(result)
-                } else if viewModel.isLoading {
-                    loadingContent
-                } else if let error = viewModel.error {
-                    errorContent(error)
-                } else {
-                    emptyContent
-                }
+                    if let result = viewModel.result {
+                        journeyContent(result)
+                    } else if let error = viewModel.error {
+                        errorContent(error)
+                    } else {
+                        emptyContent
+                    }
 
-                Text("AI suggestions aren't a substitute for professional care.")
-                    .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
-                    .padding(.top, 4)
+                    Text("AI suggestions aren't a substitute for professional care.")
+                        .font(.system(size: 12))
+                        .foregroundColor(themeManager.theme.textSecondary)
+                        .padding(.top, 4)
 
-                if viewModel.result != nil {
-                    SecondaryActionButton(title: "Regenerate", isDisabled: !aiReframeEnabled) {
-                        Task { await viewModel.regenerateAndSave() }
+                    if viewModel.result != nil {
+                        SecondaryActionButton(title: "Regenerate", isDisabled: !aiReframeEnabled) {
+                            Task { await viewModel.regenerateAndSave() }
+                        }
                     }
                 }
+                .padding(16)
             }
-            .padding(16)
+            .allowsHitTesting(!viewModel.isGenerating)
+
+            if viewModel.isGenerating {
+                ReframeLoadingView()
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
+        .animation(.easeInOut(duration: 0.25), value: viewModel.isGenerating)
         .background(themeManager.theme.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
@@ -100,18 +108,6 @@ struct AIReframeResultView: View {
 
             Color.clear
                 .frame(width: 52, height: 28)
-        }
-    }
-
-    private var loadingContent: some View {
-        StepCard(step: 1, title: "Generating your journey", subtitle: "This can take a few moments.") {
-            HStack(spacing: 10) {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: themeManager.theme.accent))
-                Text("Generating...")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
-            }
         }
     }
 
