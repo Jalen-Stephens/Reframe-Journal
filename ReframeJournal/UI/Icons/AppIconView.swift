@@ -39,12 +39,18 @@ struct AppIconView: View {
             return HeroIconChevronLeft().path
         case .chevronDown:
             return HeroIconChevronDown().path
+        case .chevronRight:
+            return HeroIconChevronRight().path
         case .check:
             return HeroIconCheck().path
         case .sparkles:
             return HeroIconSparkles().path
         case .arrowRight:
             return HeroIconArrowRight().path
+        case .ellipsis:
+            return HeroIconEllipsis().path
+        case .share:
+            return HeroIconShare().path
         }
     }
 

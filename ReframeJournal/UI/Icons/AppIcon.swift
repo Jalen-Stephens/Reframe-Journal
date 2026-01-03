@@ -7,7 +7,10 @@ enum AppIcon: CaseIterable {
     case settings
     case chevronLeft
     case chevronDown
+    case chevronRight
     case check
     case sparkles
     case arrowRight
+    case ellipsis
+    case share
 }

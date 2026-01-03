@@ -102,6 +102,9 @@
 		8A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift */; };
 		8A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift */; };
 		8A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift */; };
+		8A1B2C3D4E5F60718293A4C6 /* HeroIconChevronRight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C6 /* HeroIconChevronRight.swift */; };
+		8A1B2C3D4E5F60718293A4C7 /* HeroIconEllipsis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C7 /* HeroIconEllipsis.swift */; };
+		8A1B2C3D4E5F60718293A4C8 /* HeroIconShare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B2C3D4E5F60718293A4C8 /* HeroIconShare.swift */; };
 		B10000000000000000000011 /* SuggestionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* SuggestionEngine.swift */; };
 		B10000000000000000000008 /* AIReframeNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* AIReframeNotesView.swift */; };
 		B10000000000000000000009 /* SuggestionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* SuggestionEngineTests.swift */; };
@@ -216,6 +219,9 @@
 		9A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconCheck.swift; sourceTree = "<group>"; };
 		9A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconArrowRight.swift; sourceTree = "<group>"; };
 		9A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconSparkles.swift; sourceTree = "<group>"; };
+		9A1B2C3D4E5F60718293A4C6 /* HeroIconChevronRight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconChevronRight.swift; sourceTree = "<group>"; };
+		9A1B2C3D4E5F60718293A4C7 /* HeroIconEllipsis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconEllipsis.swift; sourceTree = "<group>"; };
+		9A1B2C3D4E5F60718293A4C8 /* HeroIconShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroIconShare.swift; sourceTree = "<group>"; };
 		A10000000000000000000011 /* SuggestionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionEngine.swift; sourceTree = "<group>"; };
 		A10000000000000000000008 /* AIReframeNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeNotesView.swift; sourceTree = "<group>"; };
 		A10000000000000000000009 /* SuggestionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionEngineTests.swift; sourceTree = "<group>"; };
@@ -382,7 +388,10 @@
 				9A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift */,
 				9A1B2C3D4E5F60718293A4C1 /* HeroIconChevronLeft.swift */,
 				9A1B2C3D4E5F60718293A4C2 /* HeroIconChevronDown.swift */,
+				9A1B2C3D4E5F60718293A4C6 /* HeroIconChevronRight.swift */,
 				9A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift */,
+				9A1B2C3D4E5F60718293A4C7 /* HeroIconEllipsis.swift */,
+				9A1B2C3D4E5F60718293A4C8 /* HeroIconShare.swift */,
 				9A1B2C3D4E5F60718293A4BF /* HeroIconMinus.swift */,
 				9A1B2C3D4E5F60718293A4BE /* HeroIconPlus.swift */,
 				9A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift */,
@@ -614,7 +623,10 @@
 				8A1B2C3D4E5F60718293A4C3 /* HeroIconCheck.swift in Sources */,
 				8A1B2C3D4E5F60718293A4C1 /* HeroIconChevronLeft.swift in Sources */,
 				8A1B2C3D4E5F60718293A4C2 /* HeroIconChevronDown.swift in Sources */,
+				8A1B2C3D4E5F60718293A4C6 /* HeroIconChevronRight.swift in Sources */,
 				8A1B2C3D4E5F60718293A4C4 /* HeroIconArrowRight.swift in Sources */,
+				8A1B2C3D4E5F60718293A4C7 /* HeroIconEllipsis.swift in Sources */,
+				8A1B2C3D4E5F60718293A4C8 /* HeroIconShare.swift in Sources */,
 				8A1B2C3D4E5F60718293A4BF /* HeroIconMinus.swift in Sources */,
 				8A1B2C3D4E5F60718293A4BE /* HeroIconPlus.swift in Sources */,
 				8A1B2C3D4E5F60718293A4C5 /* HeroIconSparkles.swift in Sources */,
