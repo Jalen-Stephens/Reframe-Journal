@@ -11,7 +11,7 @@ struct AllEntriesView: View {
     }
 
     var body: some View {
-        ScrollView {
+        Group {
             if viewModel.entries.isEmpty {
                 VStack(spacing: 10) {
                     Text("No entries yet.")
@@ -34,23 +34,42 @@ struct AllEntriesView: View {
                 .padding(.top, 48)
                 .padding(.horizontal, 24)
             } else {
-                LazyVStack(alignment: .leading, spacing: 16) {
+                List {
                     ForEach(viewModel.sections()) { section in
-                        VStack(alignment: .leading, spacing: 12) {
+                        Section {
+                            ForEach(section.entries) { entry in
+                                EntryListItemView(entry: entry) {
+                                    router.push(.thoughtEntry(id: entry.id))
+                                }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button {
+                                        router.push(.thoughtEntry(id: entry.id))
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(notesPalette.accent)
+
+                                    Button(role: .destructive) {
+                                        Task { @MainActor in
+                                            await viewModel.deleteEntry(id: entry.id)
+                                        }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .listRowInsets(rowInsets)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                            }
+                        } header: {
                             Text(section.title)
                                 .font(.system(size: 14))
                                 .foregroundColor(notesPalette.textSecondary)
-                            LazyVStack(spacing: 12) {
-                                ForEach(section.entries) { entry in
-                                    EntryListItemView(entry: entry) {
-                                        router.push(.thoughtEntry(id: entry.id))
-                                    }
-                                }
-                            }
                         }
                     }
                 }
-                .padding(16)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .background(notesPalette.background.ignoresSafeArea())
@@ -66,5 +85,9 @@ struct AllEntriesView: View {
         .task {
             await viewModel.loadIfNeeded()
         }
+    }
+
+    private var rowInsets: EdgeInsets {
+        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
     }
 }
