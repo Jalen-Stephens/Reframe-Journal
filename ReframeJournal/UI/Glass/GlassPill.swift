@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct GlassPill<Content: View>: View {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.notesPalette) private var notesPalette
 
     let padding: EdgeInsets
     let content: Content
@@ -13,26 +13,24 @@ struct GlassPill<Content: View>: View {
     }
 
     var body: some View {
+        let shape = Capsule(style: .continuous)
         content
             .padding(padding)
-            .background(
-                .ultraThinMaterial,
-                in: Capsule(style: .continuous)
+            .background(notesPalette.glassFill, in: shape)
+            .overlay(
+                shape
+                    .fill(notesPalette.glassHighlight)
+                    .opacity(0.18)
             )
             .overlay(
-                Capsule(style: .continuous)
-                    .fill(AppTheme.glassHighlightGradient(for: colorScheme))
-                    .opacity(0.3)
-            )
-            .overlay(
-                Capsule(style: .continuous)
-                    .stroke(AppTheme.glassBorderColor(for: colorScheme), lineWidth: AppTheme.glassStrokeWidth)
+                shape
+                    .stroke(notesPalette.glassBorder, lineWidth: AppTheme.glassStrokeWidth)
             )
             .shadow(
-                color: AppTheme.glassShadowColor(for: colorScheme),
-                radius: AppTheme.glassShadowRadius * 0.5,
+                color: notesPalette.glassShadow,
+                radius: AppTheme.glassShadowRadius * 0.35,
                 x: 0,
-                y: AppTheme.glassShadowYOffset * 0.4
+                y: AppTheme.glassShadowYOffset * 0.3
             )
     }
 }

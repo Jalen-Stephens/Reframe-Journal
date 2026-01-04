@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct AccordionView<Header: View, Content: View>: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-
     let header: Header
     let content: Content
     @Binding var isExpanded: Bool

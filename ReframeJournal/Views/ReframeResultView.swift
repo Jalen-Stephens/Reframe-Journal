@@ -2,6 +2,8 @@
 import SwiftUI
 
 struct ReframeResultView: View {
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.dismiss) private var dismiss
     let thoughtId: UUID
     @ObservedObject private var store: ThoughtStore
     @ObservedObject private var entitlements: EntitlementsManager
@@ -89,6 +91,8 @@ struct ReframeResultView: View {
                 }
                 .padding(24)
             }
+            .scrollContentBackground(.hidden)
+            .background(notesPalette.background)
             .allowsHitTesting(!viewModel.isGenerating)
 
             if viewModel.isGenerating {
@@ -100,6 +104,14 @@ struct ReframeResultView: View {
         .animation(.easeInOut(duration: 0.25), value: viewModel.isGenerating)
         .navigationTitle("Reframe")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                GlassIconButton(icon: .chevronLeft, size: AppTheme.iconSizeMedium, accessibilityLabel: "Back") {
+                    dismiss()
+                }
+            }
+        }
         .sheet(isPresented: $viewModel.isPresentingAdSheet) {
             AdGateSheet(
                 onWatchAd: {
@@ -125,6 +137,7 @@ struct ReframeResultView: View {
 }
 
 private struct JourneySection<Content: View>: View {
+    @Environment(\.notesPalette) private var notesPalette
     let title: String
     @ViewBuilder let content: Content
 
@@ -140,7 +153,7 @@ private struct JourneySection<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(notesPalette.surface)
         )
     }
 }

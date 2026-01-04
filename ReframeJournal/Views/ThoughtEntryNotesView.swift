@@ -6,6 +6,7 @@ struct ThoughtEntryNotesView: View {
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @EnvironmentObject private var limitsManager: LimitsManager
     @EnvironmentObject private var rewardedAdManager: RewardedAdManager
+    @Environment(\.notesPalette) private var notesPalette
     @StateObject private var viewModel: ThoughtEntryViewModel
     @FocusState private var focusedField: ThoughtEntryViewModel.Field?
     @State private var isDateSheetPresented = false
@@ -202,10 +203,10 @@ struct ThoughtEntryNotesView: View {
                 } label: {
                     HStack(spacing: 6) {
                         AppIconView(icon: .check, size: AppTheme.iconSizeSmall)
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(notesPalette.textSecondary)
                         Text("Done")
                             .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(notesPalette.textSecondary)
                     }
                 }
             }
@@ -1158,11 +1159,11 @@ private struct ThoughtEntryPreviewWrapper: View {
         Group {
             if isReady {
                 ThoughtEntryNotesView(entryId: record.id, repository: repository, thoughtUsage: ThoughtUsageService())
-                    .environmentObject(ThemeManager())
                     .environmentObject(AppRouter())
                     .environmentObject(EntitlementsManager())
                     .environmentObject(LimitsManager())
                     .environmentObject(RewardedAdManager(adUnitID: RewardedAdManager.testAdUnitID))
+                    .notesTheme()
             } else {
                 Color.clear
                     .task {

@@ -5,6 +5,8 @@ import SwiftUI
 struct PaywallView: View {
     @EnvironmentObject private var entitlements: EntitlementsManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.colorScheme) private var colorScheme
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var didLoad: Bool = false
@@ -64,11 +66,23 @@ struct PaywallView: View {
                 }
                 .padding(24)
             }
+            .scrollContentBackground(.hidden)
+            .background(notesPalette.background)
             .navigationTitle("Upgrade")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbarBackground(notesPalette.background, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(colorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Close") { dismiss() }
+                    GlassPillButton {
+                        dismiss()
+                    } label: {
+                        Text("Done")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(notesPalette.textSecondary)
+                    }
                 }
             }
             .task {

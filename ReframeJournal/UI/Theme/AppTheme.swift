@@ -18,18 +18,4 @@ enum AppTheme {
     static let iconButtonSize: CGFloat = 40
     static let minTapSize: CGFloat = 44
 
-    static func glassHighlightGradient(for colorScheme: ColorScheme) -> LinearGradient {
-        let top = Color.white.opacity(colorScheme == .dark ? 0.16 : 0.35)
-        let mid = Color.white.opacity(colorScheme == .dark ? 0.08 : 0.2)
-        let bottom = Color.white.opacity(colorScheme == .dark ? 0.04 : 0.12)
-        return LinearGradient(colors: [top, mid, bottom], startPoint: .topLeading, endPoint: .bottomTrailing)
-    }
-
-    static func glassBorderColor(for colorScheme: ColorScheme) -> Color {
-        Color.white.opacity(colorScheme == .dark ? 0.18 : 0.28)
-    }
-
-    static func glassShadowColor(for colorScheme: ColorScheme) -> Color {
-        Color.black.opacity(colorScheme == .dark ? 0.35 : 0.12)
-    }
 }

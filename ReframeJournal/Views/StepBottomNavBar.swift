@@ -4,7 +4,7 @@ import UIKit
 #endif
 
 struct StepBottomNavBar: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @State private var isKeyboardVisible = false
 
     let onBack: () -> Void
@@ -37,7 +37,7 @@ struct StepBottomNavBar: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
-                    .tint(themeManager.theme.accent)
+                    .tint(notesPalette.accent)
                     .disabled(isNextDisabled)
 
                     Button(action: onBack) {
@@ -46,12 +46,12 @@ struct StepBottomNavBar: View {
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)
-                    .tint(themeManager.theme.textSecondary)
+                    .tint(notesPalette.textSecondary)
                     .disabled(isBackDisabled)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(themeManager.theme.background)
+                .background(notesPalette.background)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in

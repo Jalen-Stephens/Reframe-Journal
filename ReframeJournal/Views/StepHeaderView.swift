@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct StepHeaderView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let title: String
     let step: Int
@@ -12,7 +12,7 @@ struct StepHeaderView: View {
             Text(title)
                 .font(.headline)
                 .fontWeight(.semibold)
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             WizardProgressView(step: step, total: total)
         }
     }

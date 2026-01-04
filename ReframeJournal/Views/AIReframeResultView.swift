@@ -3,7 +3,7 @@ import UIKit
 
 struct AIReframeResultView: View {
     @EnvironmentObject private var router: AppRouter
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @AppStorage("aiReframeEnabled") private var aiReframeEnabled: Bool = false
 
     @StateObject private var viewModel: AIReframeViewModel
@@ -30,7 +30,7 @@ struct AIReframeResultView: View {
                     header
                     Text("Journey: 10 steps")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
 
                     if let result = viewModel.result {
                         journeyContent(result)
@@ -42,7 +42,7 @@ struct AIReframeResultView: View {
 
                     Text("AI suggestions aren't a substitute for professional care.")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                         .padding(.top, 4)
 
                     if viewModel.result != nil {
@@ -62,7 +62,7 @@ struct AIReframeResultView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: viewModel.isGenerating)
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             await viewModel.loadExisting()
@@ -95,14 +95,14 @@ struct AIReframeResultView: View {
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
             .pillSurface(cornerRadius: 10)
-            .foregroundColor(themeManager.theme.textPrimary)
+            .foregroundColor(notesPalette.textPrimary)
             .buttonStyle(.plain)
 
             Spacer()
 
             Text("AI Reframe")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
 
             Spacer()
 
@@ -117,7 +117,7 @@ struct AIReframeResultView: View {
             StepCard(step: 1, title: "You're not alone", subtitle: "Validation") {
                 Text(nonEmptyText(display.validation, fallback: "Your feelings make sense given what you've shared."))
                     .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
             }
 
             StepCard(step: 2, title: "What might be happening", subtitle: "Alternative explanations") {
@@ -127,7 +127,7 @@ struct AIReframeResultView: View {
             AccordionView(isExpanded: $expandedDistortions) {
                 Text("Step 3 · Cognitive distortions")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
             } content: {
                 VStack(alignment: .leading, spacing: 10) {
                     if let distortions = display.cognitiveDistortions, !distortions.isEmpty {
@@ -135,13 +135,13 @@ struct AIReframeResultView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(item.label)
                                     .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.textPrimary)
+                                    .foregroundColor(notesPalette.textPrimary)
                                 Text(item.whyItFits)
                                     .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
+                                    .foregroundColor(notesPalette.textSecondary)
                                 Text(item.gentleReframe)
                                     .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textPrimary)
+                                    .foregroundColor(notesPalette.textPrimary)
                             }
                             .padding(12)
                             .pillSurface(cornerRadius: 10)
@@ -149,7 +149,7 @@ struct AIReframeResultView: View {
                     } else {
                         Text("No clear distortions detected.")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                 }
             }
@@ -158,7 +158,7 @@ struct AIReframeResultView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(nonEmptyText(display.balancedThought, fallback: "You're making progress by slowing down and re-evaluating this thought."))
                         .font(.system(size: 13))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     let isEmpty = (display.balancedThought ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                     HStack(spacing: 10) {
                         SecondaryActionButton(title: "Copy Balanced Thought", isDisabled: isEmpty) {
@@ -174,7 +174,7 @@ struct AIReframeResultView: View {
             AccordionView(isExpanded: $expandedRealityChecks) {
                 Text("Step 5 · Reality-check questions")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
             } content: {
                 bulletList(display.realityCheckQuestions)
             }
@@ -186,7 +186,7 @@ struct AIReframeResultView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(plan.title)
                                     .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.textPrimary)
+                                    .foregroundColor(notesPalette.textPrimary)
                                 bulletList(plan.steps)
                             }
                             .padding(12)
@@ -195,7 +195,7 @@ struct AIReframeResultView: View {
                     } else {
                         Text("No action plan was provided.")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                 }
             }
@@ -203,7 +203,7 @@ struct AIReframeResultView: View {
             AccordionView(isExpanded: $expandedScripts) {
                 Text("Step 7 · Communication scripts")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
             } content: {
                 VStack(alignment: .leading, spacing: 12) {
                     textBlock(title: "Text message", text: display.communicationScript?.textMessage) {
@@ -230,7 +230,7 @@ struct AIReframeResultView: View {
             StepCard(step: 10, title: "Summary", subtitle: "Wrap-up") {
                 Text(nonEmptyText(display.summary, fallback: "You took time to slow down and consider a more grounded view."))
                     .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
             }
 
         }
@@ -254,12 +254,12 @@ struct AIReframeResultView: View {
                 } else {
                     Text("AI Reframe is disabled in Settings.")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                     Button("Open Settings") {
                         router.push(.settings)
                     }
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(themeManager.theme.accent)
+                    .foregroundColor(notesPalette.accent)
                 }
             }
         }
@@ -273,7 +273,7 @@ struct AIReframeResultView: View {
             return AnyView(
                 Text("No items provided.")
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             )
         }
         return AnyView(
@@ -281,7 +281,7 @@ struct AIReframeResultView: View {
                 ForEach(list, id: \.self) { item in
                     Text("• \(item)")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
             }
         )
@@ -305,10 +305,10 @@ struct AIReframeResultView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             Text(nonEmptyText(text, fallback: "Not provided."))
                 .font(.system(size: 12))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
         }
     }
 
@@ -316,7 +316,7 @@ struct AIReframeResultView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             bulletList(items)
         }
     }
@@ -325,10 +325,10 @@ struct AIReframeResultView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             Text(nonEmptyText(text, fallback: "Not provided."))
                 .font(.system(size: 12))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
             if let onCopy {
                 SecondaryActionButton(title: "Copy", isDisabled: (text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
                     onCopy()
@@ -353,7 +353,7 @@ struct AIReframeResultView: View {
 }
 
 private struct StepCard<Content: View>: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     let step: Int
     let title: String
     let subtitle: String
@@ -373,17 +373,17 @@ private struct StepCard<Content: View>: View {
                     .font(.system(size: 11, weight: .semibold))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(themeManager.theme.accent)
-                    .foregroundColor(themeManager.theme.onAccent)
+                    .background(notesPalette.accent)
+                    .foregroundColor(notesPalette.onAccent)
                     .clipShape(Capsule())
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
             }
             if !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             }
             content
         }
@@ -393,7 +393,7 @@ private struct StepCard<Content: View>: View {
 }
 
 private struct SecondaryActionButton: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     let title: String
     let isDisabled: Bool
     let action: () -> Void
@@ -405,7 +405,7 @@ private struct SecondaryActionButton: View {
             }
         }
         .font(.system(size: 13, weight: .semibold))
-        .foregroundColor(themeManager.theme.accent)
+        .foregroundColor(notesPalette.accent)
         .opacity(isDisabled ? 0.5 : 1)
         .disabled(isDisabled)
     }

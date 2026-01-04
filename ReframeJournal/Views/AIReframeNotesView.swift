@@ -203,28 +203,29 @@ final class AIReframeNotesViewModel: ObservableObject {
 }
 
 private struct GlassIconButtonLabel: View {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.notesPalette) private var notesPalette
     let icon: AppIcon
 
     var body: some View {
+        let shape = Circle()
         AppIconView(icon: icon, size: AppTheme.iconSizeMedium)
-            .foregroundStyle(.primary)
+            .foregroundStyle(notesPalette.icon)
             .frame(width: AppTheme.iconButtonSize, height: AppTheme.iconButtonSize)
-            .background(.ultraThinMaterial, in: Circle())
+            .background(notesPalette.glassFill, in: shape)
             .overlay(
-                Circle()
-                    .fill(AppTheme.glassHighlightGradient(for: colorScheme))
-                    .opacity(0.3)
+                shape
+                    .fill(notesPalette.glassHighlight)
+                    .opacity(0.18)
             )
             .overlay(
-                Circle()
-                    .stroke(AppTheme.glassBorderColor(for: colorScheme), lineWidth: AppTheme.glassStrokeWidth)
+                shape
+                    .stroke(notesPalette.glassBorder, lineWidth: AppTheme.glassStrokeWidth)
             )
             .shadow(
-                color: AppTheme.glassShadowColor(for: colorScheme),
-                radius: AppTheme.glassShadowRadius * 0.5,
+                color: notesPalette.glassShadow,
+                radius: AppTheme.glassShadowRadius * 0.35,
                 x: 0,
-                y: AppTheme.glassShadowYOffset * 0.4
+                y: AppTheme.glassShadowYOffset * 0.3
             )
             .frame(minWidth: AppTheme.minTapSize, minHeight: AppTheme.minTapSize)
     }

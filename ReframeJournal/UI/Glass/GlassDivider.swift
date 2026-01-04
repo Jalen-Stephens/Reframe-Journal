@@ -2,11 +2,11 @@
 import SwiftUI
 
 struct GlassDivider: View {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.notesPalette) private var notesPalette
 
     var body: some View {
         Rectangle()
-            .fill(AppTheme.glassBorderColor(for: colorScheme).opacity(colorScheme == .dark ? 0.5 : 0.35))
+            .fill(notesPalette.separator.opacity(0.6))
             .frame(height: 1)
             .frame(maxWidth: .infinity)
     }

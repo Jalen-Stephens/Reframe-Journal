@@ -2,6 +2,8 @@
 import SwiftUI
 
 struct AppIconView: View {
+    @Environment(\.notesPalette) private var notesPalette
+
     let icon: AppIcon
     let size: CGFloat
     let lineWidth: CGFloat
@@ -25,6 +27,7 @@ struct AppIconView: View {
                 .accessibilityHidden(true)
         }
         .frame(width: size, height: size)
+        .foregroundStyle(notesPalette.icon)
     }
 
     private var iconView: Path {

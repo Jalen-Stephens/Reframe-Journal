@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LabeledInput: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let label: String
     let placeholder: String
@@ -13,12 +13,12 @@ struct LabeledInput: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.system(size: 14))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
             if isMultiline {
                 ZStack(alignment: .topLeading) {
                     if text.isEmpty {
                         Text(placeholder)
-                            .foregroundColor(themeManager.theme.placeholder)
+                            .foregroundColor(notesPalette.placeholder)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 10)
                     }
@@ -27,7 +27,7 @@ struct LabeledInput: View {
                         .padding(4)
                         .background(Color.clear)
                         .scrollContentBackground(.hidden)
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                         .keyboardDismissToolbar()
                 }
                 .cardSurface(cornerRadius: 8, shadow: false)
@@ -39,7 +39,7 @@ struct LabeledInput: View {
                         dismissKeyboard()
                     }
                     .padding(10)
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                     .cardSurface(cornerRadius: 8, shadow: false)
             }
         }

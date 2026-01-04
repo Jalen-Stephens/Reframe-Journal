@@ -4,7 +4,7 @@ import SwiftUI
 struct OutcomeView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @EnvironmentObject private var limitsManager: LimitsManager
     @EnvironmentObject private var rewardedAdManager: RewardedAdManager
@@ -26,16 +26,16 @@ struct OutcomeView: View {
         StepContentContainer(title: "Review", step: 6, total: 6) {
             Text("Notice how your belief and emotions shift after working through the thought.")
                 .font(.system(size: 13))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
 
             HStack {
                 Text(completionLabel)
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                 if showIncompleteHint {
                     Text("Complete the thought to finish.")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
             }
 
@@ -45,10 +45,10 @@ struct OutcomeView: View {
             } else {
                 Text("Add an automatic thought before finishing the outcome.")
                     .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             }
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
             StepBottomNavBar(
@@ -126,22 +126,22 @@ struct OutcomeView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(thought.text)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                     .lineLimit(2)
                 HStack {
                     Text("Original \(thought.beliefBefore)%")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                     Text(deltaLabel)
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                     if isComplete {
                         Text("Complete")
                             .font(.system(size: 11, weight: .semibold))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(themeManager.theme.accent)
-                            .foregroundColor(themeManager.theme.onAccent)
+                            .background(notesPalette.accent)
+                            .foregroundColor(notesPalette.onAccent)
                             .clipShape(Capsule())
                     }
                 }
@@ -149,25 +149,25 @@ struct OutcomeView: View {
 
             Text("How much do you believe this thought now?")
                 .font(.system(size: 12))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
             Text("\(outcome.beliefAfter)%")
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             Slider(value: bindingForBelief(thoughtId: thought.id), in: 0...100, step: 1)
-                .accentColor(themeManager.theme.accent)
+                .accentColor(notesPalette.accent)
             Text("Original belief: \(thought.beliefBefore)%")
                 .font(.system(size: 12))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
 
             Divider()
 
             Text("Re-rate emotions")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             if appState.wizard.draft.emotions.isEmpty {
                 Text("No emotions were selected earlier.")
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             }
             ForEach(appState.wizard.draft.emotions) { emotion in
                 let currentIntensity = outcome.emotionsAfter[emotion.id] ?? emotion.intensityBefore
@@ -175,17 +175,17 @@ struct OutcomeView: View {
                     HStack {
                         Text(emotion.label)
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textPrimary)
+                            .foregroundColor(notesPalette.textPrimary)
                         Spacer()
                         Text("Before: \(emotion.intensityBefore)")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                     Text("\(currentIntensity)")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     Slider(value: bindingForEmotion(thoughtId: thought.id, emotionId: emotion.id), in: 0...100, step: 1)
-                        .accentColor(themeManager.theme.accent)
+                        .accentColor(notesPalette.accent)
                 }
             }
 
@@ -193,7 +193,7 @@ struct OutcomeView: View {
 
             Text("Anything you want to note after this thought?")
                 .font(.system(size: 12))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
             TextField("Optional reflection", text: bindingForReflection(thoughtId: thought.id))
                 .textFieldStyle(PlainTextFieldStyle())
                 .submitLabel(.done)
@@ -201,7 +201,7 @@ struct OutcomeView: View {
                     dismissKeyboard()
                 }
                 .padding(10)
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
                 .cardSurface(cornerRadius: 10, shadow: false)
 
             PrimaryButton(
@@ -219,7 +219,7 @@ struct OutcomeView: View {
         return VStack(alignment: .leading, spacing: 10) {
             Text("AI Reframe")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
 
             if hasReframe {
                 PrimaryButton(label: "View AI Reframe") {
@@ -229,7 +229,7 @@ struct OutcomeView: View {
                     showRegenerateConfirm = true
                 }
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(themeManager.theme.accent)
+                .foregroundColor(notesPalette.accent)
                 .disabled(!isAIReframeEnabled)
             } else {
                 Picker("Depth", selection: $selectedDepth) {
@@ -247,23 +247,23 @@ struct OutcomeView: View {
                 if !entitlementsManager.isPro {
                     Text("Watch a short ad to generate your reframe.")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
             }
 
             if !isAIReframeEnabled {
                 Text("Enable in Settings")
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             }
 
             Text("Your entry will be sent to OpenAI to generate suggestions.")
                 .font(.system(size: 12))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
 
             Text("AI suggestions aren't a substitute for professional care.")
                 .font(.system(size: 12))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
         }
         .padding(12)
         .cardSurface(cornerRadius: 12, shadow: false)

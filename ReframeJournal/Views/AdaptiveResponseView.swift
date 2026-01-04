@@ -3,7 +3,7 @@ import SwiftUI
 struct AdaptiveResponseView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     @FocusState private var focusedField: FocusField?
     @State private var promptIndex: Int = 0
@@ -19,11 +19,11 @@ struct AdaptiveResponseView: View {
         StepContentContainer(title: "Adaptive Response", step: 5, total: 6) {
             Text("Respond to the automatic thought using the prompts below. Add at least one grounded response.")
                 .font(.system(size: 13))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
             if showIncompleteHint {
                 Text("Complete at least one response before continuing.")
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             }
 
             if let thought = appState.wizard.draft.automaticThoughts.first {
@@ -36,32 +36,32 @@ struct AdaptiveResponseView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(thought.text)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textPrimary)
+                            .foregroundColor(notesPalette.textPrimary)
                             .lineLimit(2)
                         HStack {
                             Text("Original \(thought.beliefBefore)%")
                                 .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                             Text("\(answeredCount) / \(AdaptivePrompts.all.count) answered")
                                 .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                             Text(isComplete ? "Complete" : "Incomplete")
                                 .font(.system(size: 11, weight: .semibold))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(isComplete ? themeManager.theme.accent : themeManager.theme.muted)
-                                .foregroundColor(isComplete ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
+                                .background(isComplete ? notesPalette.accent : notesPalette.muted)
+                                .foregroundColor(isComplete ? notesPalette.onAccent : notesPalette.textSecondary)
                                 .clipShape(Capsule())
                         }
                     }
 
                     Text("Question \(promptIndex + 1) of \(AdaptivePrompts.all.count)")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
 
                     Text(prompt.label)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     TextField(
                         "Write a grounded response",
                         text: bindingForText(prompt.textKey, thoughtId: thought.id)
@@ -72,7 +72,7 @@ struct AdaptiveResponseView: View {
                         dismissKeyboard()
                     }
                     .padding(10)
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                     .cardSurface(cornerRadius: 10, shadow: false)
                     .focused($focusedField, equals: .response(thoughtId: thought.id, key: prompt.textKey))
 
@@ -80,14 +80,14 @@ struct AdaptiveResponseView: View {
                         HStack {
                             Text("How much do you believe this response?")
                                 .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                             Spacer()
                             Text("\(currentBelief)%")
                                 .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                         }
                         Slider(value: bindingForBelief(prompt.beliefKey, thoughtId: thought.id), in: 0...100, step: 1)
-                            .accentColor(themeManager.theme.accent)
+                            .accentColor(notesPalette.accent)
                         HStack(spacing: 8) {
                             ForEach(quickSetValues, id: \.self) { value in
                                 Button("\(value)") {
@@ -96,8 +96,8 @@ struct AdaptiveResponseView: View {
                                 .font(.system(size: 12, weight: .semibold))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 6)
-                                .background(value == currentBelief ? themeManager.theme.accent : themeManager.theme.muted)
-                                .foregroundColor(value == currentBelief ? themeManager.theme.onAccent : themeManager.theme.textSecondary)
+                                .background(value == currentBelief ? notesPalette.accent : notesPalette.muted)
+                                .foregroundColor(value == currentBelief ? notesPalette.onAccent : notesPalette.textSecondary)
                                 .clipShape(Capsule())
                             }
                         }
@@ -109,7 +109,7 @@ struct AdaptiveResponseView: View {
                         }
                         .disabled(promptIndex == 0)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(promptIndex == 0 ? themeManager.theme.textSecondary.opacity(0.5) : themeManager.theme.textSecondary)
+                        .foregroundColor(promptIndex == 0 ? notesPalette.textSecondary.opacity(0.5) : notesPalette.textSecondary)
 
                         Spacer()
 
@@ -117,7 +117,7 @@ struct AdaptiveResponseView: View {
                             handleInlineContinue()
                         }
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(themeManager.theme.accent)
+                        .foregroundColor(notesPalette.accent)
                     }
                 }
                 .padding(12)
@@ -125,10 +125,10 @@ struct AdaptiveResponseView: View {
             } else {
                 Text("Add an automatic thought before writing adaptive responses.")
                     .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             }
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
             StepBottomNavBar(

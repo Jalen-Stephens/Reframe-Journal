@@ -2,7 +2,8 @@ import SwiftUI
 
 struct AllEntriesView: View {
     @EnvironmentObject private var router: AppRouter
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: AllEntriesViewModel
 
     init(repository: ThoughtRecordRepository) {
@@ -15,10 +16,10 @@ struct AllEntriesView: View {
                 VStack(spacing: 10) {
                     Text("No entries yet.")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     Text("Your journal entries will appear here after you finish one.")
                         .font(.system(size: 13))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                         .multilineTextAlignment(.center)
                     Button("Back to Home") {
                         router.popToRoot()
@@ -27,7 +28,7 @@ struct AllEntriesView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .pillSurface(cornerRadius: 999)
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                     .buttonStyle(.plain)
                 }
                 .padding(.top, 48)
@@ -38,7 +39,7 @@ struct AllEntriesView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text(section.title)
                                 .font(.system(size: 14))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                             LazyVStack(spacing: 12) {
                                 ForEach(section.entries) { entry in
                                     EntryListItemView(entry: entry) {
@@ -52,8 +53,16 @@ struct AllEntriesView: View {
                 .padding(16)
             }
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .navigationTitle("All Entries")
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                GlassIconButton(icon: .chevronLeft, size: AppTheme.iconSizeMedium, accessibilityLabel: "Back") {
+                    dismiss()
+                }
+            }
+        }
         .task {
             await viewModel.loadIfNeeded()
         }

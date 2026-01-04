@@ -8,7 +8,6 @@ struct ReframeJournalApp: App {
     @StateObject private var thoughtStore: ThoughtRecordStore
     @StateObject private var appState: AppState
     @StateObject private var router = AppRouter()
-    @StateObject private var themeManager = ThemeManager()
     @StateObject private var entitlementsManager = EntitlementsManager()
     @StateObject private var limitsManager: LimitsManager
     @StateObject private var rewardedAdManager: RewardedAdManager
@@ -36,12 +35,12 @@ struct ReframeJournalApp: App {
             RootView()
                 .environmentObject(appState)
                 .environmentObject(router)
-                .environmentObject(themeManager)
                 .environmentObject(thoughtStore)
                 .environmentObject(entitlementsManager)
                 .environmentObject(limitsManager)
                 .environmentObject(rewardedAdManager)
                 .preferredColorScheme(overrideScheme)
+                .notesTheme()
                 .onChange(of: scenePhase) { phase in
                     if phase == .inactive || phase == .background {
                         Task { @MainActor in

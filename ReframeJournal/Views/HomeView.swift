@@ -4,7 +4,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AppRouter
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @StateObject private var viewModel: HomeViewModel
     @State private var showDailyLimitAlert = false
@@ -111,7 +111,7 @@ struct HomeView: View {
                                     } label: {
                                         Label("Edit", systemImage: "pencil")
                                     }
-                                    .tint(themeManager.theme.accent)
+                                    .tint(notesPalette.accent)
 
                                     Button(role: .destructive) {
                                         Task { @MainActor in
@@ -142,7 +142,7 @@ struct HomeView: View {
                                     } label: {
                                         Label("Edit", systemImage: "pencil")
                                     }
-                                    .tint(themeManager.theme.accent)
+                                    .tint(notesPalette.accent)
 
                                     Button(role: .destructive) {
                                         Task { @MainActor in

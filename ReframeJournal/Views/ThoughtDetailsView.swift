@@ -2,6 +2,8 @@
 import SwiftUI
 
 struct ThoughtDetailsView: View {
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.dismiss) private var dismiss
     let thoughtId: UUID
     @ObservedObject private var store: ThoughtStore
     @ObservedObject private var entitlements: EntitlementsManager
@@ -82,8 +84,17 @@ struct ThoughtDetailsView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: viewModel.isGenerating)
+        .background(notesPalette.background.ignoresSafeArea())
         .navigationTitle("Entry")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                GlassIconButton(icon: .chevronLeft, size: AppTheme.iconSizeMedium, accessibilityLabel: "Back") {
+                    dismiss()
+                }
+            }
+        }
         .sheet(isPresented: $viewModel.isPresentingAdSheet) {
             AdGateSheet(
                 onWatchAd: {
@@ -119,6 +130,7 @@ struct ThoughtDetailsView: View {
 }
 
 private struct ReframeSummaryCard: View {
+    @Environment(\.notesPalette) private var notesPalette
     let response: ReframeResponse
 
     var body: some View {
@@ -133,7 +145,7 @@ private struct ReframeSummaryCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(notesPalette.surface)
         )
     }
 }

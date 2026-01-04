@@ -3,12 +3,12 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
-            themeManager.theme.background.ignoresSafeArea()
+            notesPalette.background.ignoresSafeArea()
             NavigationStack(path: $router.path) {
                 HomeView(repository: appState.repository)
                     .navigationDestination(for: Route.self) { route in
@@ -44,11 +44,8 @@ struct RootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .onAppear {
-            themeManager.resolvedScheme = colorScheme
-        }
-        .onChange(of: colorScheme) { newValue in
-            themeManager.resolvedScheme = newValue
-        }
+        .toolbarBackground(notesPalette.background, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(colorScheme, for: .navigationBar)
     }
 }

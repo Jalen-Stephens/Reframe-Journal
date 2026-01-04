@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ThoughtCardView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let text: String
     let belief: Int
@@ -14,13 +14,13 @@ struct ThoughtCardView: View {
             HStack {
                 Text(text)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                     .lineLimit(2)
                 Spacer()
                 if let onEdit {
                     Button("Edit") { onEdit() }
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.accent)
+                        .foregroundColor(notesPalette.accent)
                 }
                 if let onRemove {
                     Button("Remove") { onRemove() }
@@ -32,15 +32,15 @@ struct ThoughtCardView: View {
                 if let badgeLabel {
                     Text(badgeLabel)
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(themeManager.theme.muted)
+                        .background(notesPalette.muted)
                         .clipShape(Capsule())
                 }
                 Text("\(belief)%")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                 Spacer()
             }
         }

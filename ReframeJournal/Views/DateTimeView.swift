@@ -3,7 +3,7 @@ import SwiftUI
 struct DateTimeView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     @State private var selectedDate: Date = Date()
     @State private var showDatePicker = false
@@ -13,19 +13,19 @@ struct DateTimeView: View {
         StepContentContainer(title: "Date & Time", step: 1, total: 6) {
             Text("When you noticed your mood change. If unsure, leave it as now.")
                 .font(.system(size: 13))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
 
             VStack(spacing: 12) {
                 HStack {
                     Text("Selected")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                     Spacer()
                     Button("Reset to now") {
                         selectedDate = Date()
                     }
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(themeManager.theme.accent)
+                    .foregroundColor(notesPalette.accent)
                 }
 
                 Button {
@@ -35,15 +35,15 @@ struct DateTimeView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Date")
                                 .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                             Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
+                                .foregroundColor(notesPalette.textPrimary)
                         }
                         Spacer()
                         Text(">")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                     .padding(12)
                     .pillSurface(cornerRadius: 12)
@@ -57,15 +57,15 @@ struct DateTimeView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Time")
                                 .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                             Text(selectedDate.formatted(date: .omitted, time: .shortened))
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
+                                .foregroundColor(notesPalette.textPrimary)
                         }
                         Spacer()
                         Text(">")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                     .padding(12)
                     .pillSurface(cornerRadius: 12)
@@ -75,7 +75,7 @@ struct DateTimeView: View {
             .padding(12)
             .cardSurface(cornerRadius: 14)
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
             StepBottomNavBar(
