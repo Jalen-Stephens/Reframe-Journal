@@ -9,6 +9,7 @@ struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
+    @State private var isPastEntriesExpanded = true
 
     init(repository: ThoughtRecordRepository) {
         _viewModel = StateObject(wrappedValue: HomeViewModel(repository: repository))
@@ -95,7 +96,28 @@ struct HomeView: View {
                     }
 
                     if !sections.past.isEmpty {
-                        Section {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isPastEntriesExpanded.toggle()
+                            }
+                        } label: {
+                            GlassCard(padding: AppTheme.cardPaddingCompact) {
+                                HStack {
+                                    Text("Recent entries")
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    AppIconView(icon: isPastEntriesExpanded ? .chevronDown : .chevronRight, size: AppTheme.iconSizeSmall)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .listRowInsets(rowInsets)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+
+                        if isPastEntriesExpanded {
                             ForEach(Array(sections.past.prefix(2))) { entry in
                                 EntryListItemView(entry: entry) {
                                     router.push(.thoughtEntry(id: entry.id))
@@ -120,8 +142,6 @@ struct HomeView: View {
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(Color.clear)
                             }
-                        } header: {
-                            GlassSectionHeader(text: "Past entries")
                         }
                     }
 
@@ -144,7 +164,7 @@ struct HomeView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
-                    Image("NuggieDogBedJournal")
+                    Image(isPastEntriesExpanded ? "NuggieStandingDogBed" : "NuggieDogBedJournal")
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: 220)
@@ -153,7 +173,7 @@ struct HomeView: View {
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 12, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                        .accessibilityLabel("Nuggie resting on a dog bed")
+                        .accessibilityLabel(isPastEntriesExpanded ? "Nuggie standing by a dog bed" : "Nuggie resting on a dog bed")
                 }
             }
             .listStyle(.plain)
