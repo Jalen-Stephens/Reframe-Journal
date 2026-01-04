@@ -72,7 +72,8 @@ struct ThoughtEntryNotesView: View {
                     viewModel.scheduleAutosave()
                 }
             )
-            .presentationDetents([.medium])
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .task {
             await viewModel.loadIfNeeded()
@@ -1050,6 +1051,10 @@ struct ThoughtEntryNotesView: View {
 }
 
 private struct DateTimeSheet: View {
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
+
     @Binding var selectedDate: Date
     let onDismiss: () -> Void
     let onQuickSelect: (Date) -> Void
@@ -1058,20 +1063,23 @@ private struct DateTimeSheet: View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
-                    Button("Now") {
+                    GlassPillButton {
                         onQuickSelect(Date())
+                    } label: {
+                        Text("Now")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(notesPalette.textSecondary)
                     }
-                    .buttonStyle(.bordered)
 
-                    Button("Yesterday") {
+                    GlassPillButton {
                         if let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date()) {
                             onQuickSelect(yesterday)
                         }
+                    } label: {
+                        Text("Yesterday")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(notesPalette.textSecondary)
                     }
-                    .buttonStyle(.bordered)
-
-                    Button("Custom...") {}
-                        .buttonStyle(.bordered)
                 }
 
                 DatePicker(
@@ -1080,15 +1088,24 @@ private struct DateTimeSheet: View {
                     displayedComponents: [.date, .hourAndMinute]
                 )
                 .datePickerStyle(.graphical)
+                .tint(notesPalette.textPrimary)
 
                 Spacer()
             }
             .padding(16)
             .navigationTitle("Edit Date & Time")
+            .toolbarBackground(notesPalette.background, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(colorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    GlassPillButton {
                         onDismiss()
+                        dismiss()
+                    } label: {
+                        Text("Done")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(notesPalette.textSecondary)
                     }
                 }
             }
