@@ -55,81 +55,6 @@ struct HomeView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
 
-                if viewModel.hasDraft, let draftId = viewModel.draftEntryId {
-                    Button {
-                        router.push(.thoughtEntry(id: draftId))
-                    } label: {
-                        GlassCard(padding: AppTheme.cardPaddingCompact) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Continue draft")
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                Text("Pick up where you left off.")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button {
-                            router.push(.thoughtEntry(id: draftId))
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
-                        }
-                        .tint(notesPalette.accent)
-
-                        Button(role: .destructive) {
-                            Task { @MainActor in
-                                await viewModel.deleteEntry(id: draftId)
-                                NotesDraftStore.clear()
-                                await viewModel.refresh()
-                            }
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
-                    .listRowInsets(rowInsets)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                } else if viewModel.hasWizardDraft {
-                    Button {
-                        router.push(.wizardStep1)
-                    } label: {
-                        GlassCard(padding: AppTheme.cardPaddingCompact) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Continue draft")
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                Text("Resume the step-by-step flow.")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button {
-                            router.push(.wizardStep1)
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
-                        }
-                        .tint(notesPalette.accent)
-
-                        Button(role: .destructive) {
-                            Task { @MainActor in
-                                await appState.wizard.clearDraft()
-                                await viewModel.refresh()
-                            }
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
-                    .listRowInsets(rowInsets)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                }
-
                 if sections.today.isEmpty && sections.past.isEmpty {
                     Text("No entries yet. Start a new thought record above.")
                         .font(.footnote)
@@ -218,10 +143,22 @@ struct HomeView: View {
                     .listRowInsets(rowInsets)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+
+                    Image("NuggieDogBedJournal")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 220)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 6)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 12, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .accessibilityLabel("Nuggie resting on a dog bed")
                 }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .scrollDisabled(true)
         }
         .background(GlassBackground())
         .task {
