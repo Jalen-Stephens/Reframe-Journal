@@ -9,6 +9,8 @@ enum AppIcon: CaseIterable {
     case chevronDown
     case chevronRight
     case check
+    case checkCircle
+    case circle
     case sparkles
     case arrowRight
     case ellipsis

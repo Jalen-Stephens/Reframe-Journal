@@ -1,6 +1,27 @@
 // Purpose: Renders Heroicons outline symbols with consistent sizing and stroke styling.
 import SwiftUI
 
+// MARK: - Local Heroicons paths
+
+private struct HeroIconCircle {
+    var path: Path {
+        Path { path in
+            path.addEllipse(in: CGRect(x: 3.0, y: 3.0, width: 18.0, height: 18.0))
+        }
+    }
+}
+
+private struct HeroIconCheckCircle {
+    var path: Path {
+        var path = Path()
+        path.addEllipse(in: CGRect(x: 3.0, y: 3.0, width: 18.0, height: 18.0))
+        path.move(to: CGPoint(x: 8.0, y: 12.5))
+        path.addLine(to: CGPoint(x: 11.0, y: 15.0))
+        path.addLine(to: CGPoint(x: 16.0, y: 9.5))
+        return path
+    }
+}
+
 struct AppIconView: View {
     @Environment(\.notesPalette) private var notesPalette
 
@@ -46,6 +67,10 @@ struct AppIconView: View {
             return HeroIconChevronRight().path
         case .check:
             return HeroIconCheck().path
+        case .checkCircle:
+            return HeroIconCheckCircle().path
+        case .circle:
+            return HeroIconCircle().path
         case .sparkles:
             return HeroIconSparkles().path
         case .arrowRight:

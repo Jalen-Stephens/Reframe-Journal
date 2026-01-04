@@ -74,3 +74,39 @@ struct ThoughtRecord: Codable, Identifiable, Hashable {
         )
     }
 }
+
+enum EntryCompletionStatus: Equatable {
+    case complete
+    case draft
+
+    var icon: AppIcon {
+        switch self {
+        case .complete:
+            return .checkCircle
+        case .draft:
+            return .circle
+        }
+    }
+
+    var accessibilityLabel: String {
+        switch self {
+        case .complete:
+            return "Completed entry"
+        case .draft:
+            return "Draft entry"
+        }
+    }
+}
+
+extension ThoughtRecord {
+    /// Completion is inferred from saved AI reframe or a completed outcome step.
+    var completionStatus: EntryCompletionStatus {
+        if aiReframe != nil {
+            return .complete
+        }
+        if outcomesByThought.values.contains(where: { $0.isComplete }) {
+            return .complete
+        }
+        return .draft
+    }
+}
