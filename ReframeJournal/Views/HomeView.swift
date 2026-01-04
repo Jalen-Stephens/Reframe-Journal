@@ -36,60 +36,99 @@ struct HomeView: View {
                         .listRowBackground(Color.clear)
                 }
 
-                VStack(spacing: 12) {
+                Button {
+                    startNewThoughtRecord()
+                } label: {
+                    GlassCard(emphasized: true) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("New thought record")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("Work through a difficult moment step by step.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+                .listRowInsets(rowInsets)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+
+                if viewModel.hasDraft, let draftId = viewModel.draftEntryId {
                     Button {
-                        startNewThoughtRecord()
+                        router.push(.thoughtEntry(id: draftId))
                     } label: {
-                        GlassCard(emphasized: true) {
+                        GlassCard(padding: AppTheme.cardPaddingCompact) {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("New thought record")
+                                Text("Continue draft")
                                     .font(.headline)
                                     .foregroundStyle(.primary)
-                                Text("Work through a difficult moment step by step.")
+                                Text("Pick up where you left off.")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
                         }
                     }
                     .buttonStyle(.plain)
-
-                    if viewModel.hasDraft, let draftId = viewModel.draftEntryId {
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button {
                             router.push(.thoughtEntry(id: draftId))
                         } label: {
-                            GlassCard(padding: AppTheme.cardPaddingCompact) {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Continue draft")
-                                        .font(.headline)
-                                        .foregroundStyle(.primary)
-                                    Text("Pick up where you left off.")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                }
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        .tint(notesPalette.accent)
+
+                        Button(role: .destructive) {
+                            Task { @MainActor in
+                                await viewModel.deleteEntry(id: draftId)
+                                NotesDraftStore.clear()
+                                await viewModel.refresh()
+                            }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                    .listRowInsets(rowInsets)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                } else if viewModel.hasWizardDraft {
+                    Button {
+                        router.push(.wizardStep1)
+                    } label: {
+                        GlassCard(padding: AppTheme.cardPaddingCompact) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Continue draft")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Text("Resume the step-by-step flow.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
                             }
                         }
-                        .buttonStyle(.plain)
-                    } else if viewModel.hasWizardDraft {
+                    }
+                    .buttonStyle(.plain)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button {
                             router.push(.wizardStep1)
                         } label: {
-                            GlassCard(padding: AppTheme.cardPaddingCompact) {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Continue draft")
-                                        .font(.headline)
-                                        .foregroundStyle(.primary)
-                                    Text("Resume the step-by-step flow.")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
+                            Label("Edit", systemImage: "pencil")
                         }
-                        .buttonStyle(.plain)
+                        .tint(notesPalette.accent)
+
+                        Button(role: .destructive) {
+                            Task { @MainActor in
+                                await appState.wizard.clearDraft()
+                                await viewModel.refresh()
+                            }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
+                    .listRowInsets(rowInsets)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
-                .listRowInsets(rowInsets)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
 
                 if sections.today.isEmpty && sections.past.isEmpty {
                     Text("No entries yet. Start a new thought record above.")
@@ -187,6 +226,11 @@ struct HomeView: View {
         .background(GlassBackground())
         .task {
             await viewModel.loadIfNeeded()
+        }
+        .onAppear {
+            if viewModel.hasLoaded {
+                Task { await viewModel.refresh() }
+            }
         }
         .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
             Button("OK", role: .cancel) {}
