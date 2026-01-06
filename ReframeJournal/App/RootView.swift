@@ -18,7 +18,7 @@ struct RootView: View {
                         case let .entryDetail(id):
                             EntryDetailView(entryId: id, repository: appState.repository)
                         case let .thoughtEntry(id):
-                            ThoughtEntryNotesView(entryId: id, repository: appState.repository, thoughtUsage: appState.thoughtUsage)
+                            NotesStyleEntryView(entryId: id, repository: appState.repository, thoughtUsage: appState.thoughtUsage)
                         case let .thoughtResponseDetail(entryId, thoughtId):
                             ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId, repository: appState.repository)
                         case let .aiReframeResult(entryId, action, depth):

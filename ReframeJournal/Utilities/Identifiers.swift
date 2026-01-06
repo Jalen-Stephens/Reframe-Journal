@@ -6,6 +6,13 @@ enum Identifiers {
     }
 }
 
+// MARK: - Entry Notifications
+
+extension Notification.Name {
+    /// Posted when a thought entry is saved. HomeView listens for this to refresh.
+    static let thoughtEntrySaved = Notification.Name("thoughtEntrySaved")
+}
+
 struct NotesDraftStore {
     struct Draft: Equatable {
         let entryId: String

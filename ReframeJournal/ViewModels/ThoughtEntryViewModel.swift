@@ -122,6 +122,8 @@ final class ThoughtEntryViewModel: ObservableObject {
                 didIncrementUsage = true
                 isNewEntry = false
             }
+            // Post notification so HomeView can refresh its list
+            NotificationCenter.default.post(name: .thoughtEntrySaved, object: nil)
         } catch {
 #if DEBUG
             print("ThoughtEntryViewModel save failed", error)

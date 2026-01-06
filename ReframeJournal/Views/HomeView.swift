@@ -16,8 +16,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        let sections = splitEntriesByToday(viewModel.entries)
-        return VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             header
             List {
                 Text("Ground yourself and gently work through a moment, step by step.")
@@ -56,7 +55,7 @@ struct HomeView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
 
-                if sections.today.isEmpty && sections.past.isEmpty {
+                if viewModel.entries.isEmpty {
                     Text("No entries yet. Start a new thought record above.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -64,84 +63,53 @@ struct HomeView: View {
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                 } else {
-                    if !sections.today.isEmpty {
-                        Section {
-                            ForEach(sections.today) { entry in
-                                EntryListItemView(entry: entry) {
-                                    router.push(.thoughtEntry(id: entry.id))
-                                }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button {
-                                        editEntry(entry)
-                                    } label: {
-                                        Label("Edit", systemImage: "pencil")
-                                    }
-                                    .tint(notesPalette.accent)
-
-                                    Button(role: .destructive) {
-                                        Task { @MainActor in
-                                            await viewModel.deleteEntry(id: entry.id)
-                                        }
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                }
-                                .listRowInsets(rowInsets)
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
+                    // FIXED: Single "Recent entries" collapsible section with max 2 entries
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isPastEntriesExpanded.toggle()
+                        }
+                    } label: {
+                        GlassCard(padding: AppTheme.cardPaddingCompact) {
+                            HStack {
+                                Text("Recent entries")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                AppIconView(icon: isPastEntriesExpanded ? .chevronDown : .chevronRight, size: AppTheme.iconSizeSmall)
+                                    .foregroundStyle(.secondary)
                             }
-                        } header: {
-                            GlassSectionHeader(text: "Recent entries")
                         }
                     }
+                    .buttonStyle(.plain)
+                    .listRowInsets(rowInsets)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
 
-                    if !sections.past.isEmpty {
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                isPastEntriesExpanded.toggle()
+                    if isPastEntriesExpanded {
+                        // Show only the first 2 entries (regardless of today/past)
+                        ForEach(Array(viewModel.entries.prefix(2))) { entry in
+                            EntryListItemView(entry: entry) {
+                                router.push(.thoughtEntry(id: entry.id))
                             }
-                        } label: {
-                            GlassCard(padding: AppTheme.cardPaddingCompact) {
-                                HStack {
-                                    Text("Recent entries")
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.secondary)
-                                    Spacer()
-                                    AppIconView(icon: isPastEntriesExpanded ? .chevronDown : .chevronRight, size: AppTheme.iconSizeSmall)
-                                        .foregroundStyle(.secondary)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    editEntry(entry)
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
                                 }
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .listRowInsets(rowInsets)
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
+                                .tint(notesPalette.accent)
 
-                        if isPastEntriesExpanded {
-                            ForEach(Array(sections.past.prefix(2))) { entry in
-                                EntryListItemView(entry: entry) {
-                                    router.push(.thoughtEntry(id: entry.id))
-                                }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button {
-                                        editEntry(entry)
-                                    } label: {
-                                        Label("Edit", systemImage: "pencil")
+                                Button(role: .destructive) {
+                                    Task { @MainActor in
+                                        await viewModel.deleteEntry(id: entry.id)
                                     }
-                                    .tint(notesPalette.accent)
-
-                                    Button(role: .destructive) {
-                                        Task { @MainActor in
-                                            await viewModel.deleteEntry(id: entry.id)
-                                        }
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
                                 }
-                                .listRowInsets(rowInsets)
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
                             }
+                            .listRowInsets(rowInsets)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                         }
                     }
 
@@ -169,8 +137,8 @@ struct HomeView: View {
                         .scaledToFit()
                         .frame(maxWidth: 220)
                         .frame(maxWidth: .infinity)
-                        .padding(.top, 6)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 12, trailing: 16))
+                        .padding(.top, 2)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 12, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                         .accessibilityLabel(isPastEntriesExpanded ? "Nuggie standing by a dog bed" : "Nuggie resting on a dog bed")
@@ -188,6 +156,10 @@ struct HomeView: View {
             if viewModel.hasLoaded {
                 Task { await viewModel.refresh() }
             }
+        }
+        // FIXED: Listen for entry save notifications to ensure list refreshes reliably
+        .onReceive(NotificationCenter.default.publisher(for: .thoughtEntrySaved)) { _ in
+            Task { await viewModel.refresh() }
         }
         .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
             Button("OK", role: .cancel) {}
@@ -208,19 +180,6 @@ struct HomeView: View {
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(.primary)
             Spacer()
-            if !entitlementsManager.isPro {
-                GlassPillButton {
-                    showPaywall = true
-                } label: {
-                    HStack(spacing: 6) {
-                        AppIconView(icon: .sparkles, size: AppTheme.iconSizeSmall)
-                            .foregroundStyle(.secondary)
-                        Text("Upgrade")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
             GlassIconButton(icon: .settings, size: AppTheme.iconSizeMedium, accessibilityLabel: "Settings") {
                 router.push(.settings)
             }
@@ -247,25 +206,6 @@ struct HomeView: View {
             return String(firstLine[..<index])
         }
         return firstLine
-    }
-
-    private func splitEntriesByToday(_ entries: [ThoughtRecord]) -> (today: [ThoughtRecord], past: [ThoughtRecord]) {
-        let calendar = Calendar.current
-        let startOfToday = calendar.startOfDay(for: Date())
-        var today: [ThoughtRecord] = []
-        var past: [ThoughtRecord] = []
-        for entry in entries {
-            guard let date = DateUtils.parseIso(entry.createdAt) else {
-                past.append(entry)
-                continue
-            }
-            if date >= startOfToday {
-                today.append(entry)
-            } else {
-                past.append(entry)
-            }
-        }
-        return (today, past)
     }
 
     private var rowInsets: EdgeInsets {
