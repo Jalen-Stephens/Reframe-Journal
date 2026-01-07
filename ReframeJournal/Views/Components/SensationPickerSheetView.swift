@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 struct SensationPickerSheetView: View {
     @Environment(\.notesPalette) private var notesPalette
 
@@ -42,7 +43,7 @@ struct SensationPickerSheetView: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .toolbar(.hidden, for: .navigationBar)
-        .onChange(of: showCustomInput) { newValue in
+        .onChange(of: showCustomInput) { _, newValue in
             if newValue {
                 isCustomFocused = true
             }
@@ -176,7 +177,6 @@ struct SensationPickerSheetView: View {
         selectedSensations.contains { $0.caseInsensitiveCompare(value) == .orderedSame }
     }
 
-    @MainActor
     private func toggleSelection(_ value: String) {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -187,7 +187,6 @@ struct SensationPickerSheetView: View {
         }
     }
 
-    @MainActor
     private func addCustomSensation() {
         let trimmed = customText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -199,7 +198,6 @@ struct SensationPickerSheetView: View {
         isCustomFocused = false
     }
 
-    @MainActor
     private func handleDone() {
         let trimmed = customText.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty {

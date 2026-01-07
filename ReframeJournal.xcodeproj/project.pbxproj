@@ -11,12 +11,12 @@
 		0BE5C113B242E7C02660892E /* AdaptivePrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF68E4F81363C2FB72B0B64 /* AdaptivePrompts.swift */; };
 		1A2B3C4D5E6F708192A3B4C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708192A3B4C5 /* Assets.xcassets */; };
 		B10000000000000000000002 /* EmotionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* EmotionItem.swift */; };
+		B10000000000000000000020 /* JournalEntryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000020 /* JournalEntryStore.swift */; };
+		B10000000000000000000021 /* ModelContainerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000021 /* ModelContainerConfig.swift */; };
+		B10000000000000000000022 /* JournalEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000022 /* JournalEntry.swift */; };
 		12274A4E040B47078CCD7560 /* SectionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546FB4220CEEF24D6A5B1D14 /* SectionCardView.swift */; };
-		23474AD469B91E8990ECFE97 /* ThoughtRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8941B34419C243A8D3CA80D5 /* ThoughtRecordStore.swift */; };
-		B10000000000000000000003 /* ThoughtEntryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* ThoughtEntryStore.swift */; };
 		243ECDEC3EA366FC87AD623C /* AutomaticThoughtsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45269AC21C5B5C5A74E81F7 /* AutomaticThoughtsView.swift */; };
 		24C71267BA9EFA6BCBB14D1F /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB76E48463E6ACFE94D79025 /* AppState.swift */; };
-		250F0006F57CFB86F1036DD7 /* AllEntriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3FF21876F476C61A91583E /* AllEntriesViewModel.swift */; };
 		2F739D9ACA296BC3BFC3273D /* SituationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1DFD7F7F52522DE5279C2B /* SituationView.swift */; };
 		3B79AC2C4B2167530C1E6C6F /* ChangeSummaryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C1A2C353758ADB30EE5218 /* ChangeSummaryCardView.swift */; };
 		3F0788150F2C442B8A7E8933 /* EntryListItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9D27FA3CF9C0938F10E96 /* EntryListItemView.swift */; };
@@ -51,7 +51,6 @@
 		AF8538F8AD4BE3A44AE431A5 /* SlimMeterRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A29FDF5CD76A8F7218286ED /* SlimMeterRowView.swift */; };
 		B09A98A062EE42BCA8E5C4C9 /* AppAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4975A525AB4A82A134F502 /* AppAppearance.swift */; };
 		B0C1D2E3F4A5061728394A5B /* SensationPickerSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B2C3D4E5F60718293A4B5C /* SensationPickerSheetView.swift */; };
-		B1A278BD93BBB3C399455A5A /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52D7165210280A0F072C95E /* HomeViewModel.swift */; };
 		B2C3D4E5F60718293A4B5C6D /* OpenAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5061728394A5B6C /* OpenAIClient.swift */; };
 		B2E1196C821235FFC2297082 /* ThoughtCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7593019C057F861DCFFECBA6 /* ThoughtCardView.swift */; };
 		B4A3B2C1D0E9F8A7B6C5D4E3 /* ThoughtUsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2E3D4C5B6A79808192A3B4 /* ThoughtUsageService.swift */; };
@@ -109,6 +108,17 @@
 		B10000000000000000000008 /* AIReframeNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* AIReframeNotesView.swift */; };
 		B10000000000000000000009 /* SuggestionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* SuggestionEngineTests.swift */; };
 		B10000000000000000000012 /* NotesStyleEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* NotesStyleEntryView.swift */; };
+		C10000000000000000000001 /* ThoughtEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000001 /* ThoughtEntryTests.swift */; };
+		C10000000000000000000002 /* DateUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000002 /* DateUtilsTests.swift */; };
+		C10000000000000000000003 /* MetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000003 /* MetricsTests.swift */; };
+		C10000000000000000000004 /* IdentifiersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000004 /* IdentifiersTests.swift */; };
+		C10000000000000000000005 /* AIReframeResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000005 /* AIReframeResultTests.swift */; };
+		C10000000000000000000006 /* AIReframeDepthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000006 /* AIReframeDepthTests.swift */; };
+		C10000000000000000000007 /* ThoughtUsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000007 /* ThoughtUsageServiceTests.swift */; };
+		C10000000000000000000008 /* AdaptivePromptsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000008 /* AdaptivePromptsTests.swift */; };
+		C10000000000000000000009 /* ThoughtModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000009 /* ThoughtModelTests.swift */; };
+		C10000000000000000000010 /* ThoughtRecordExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */; };
+		C10000000000000000000011 /* JournalEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000011 /* JournalEntryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -129,6 +139,9 @@
 		3A4B5C6D7E8F901234567890 /* ReframeLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReframeLoadingView.swift; sourceTree = "<group>"; };
 		A10000000000000000000001 /* ThoughtEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtEntry.swift; sourceTree = "<group>"; };
 		A10000000000000000000002 /* EmotionItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmotionItem.swift; sourceTree = "<group>"; };
+		A10000000000000000000020 /* JournalEntryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntryStore.swift; sourceTree = "<group>"; };
+		A10000000000000000000021 /* ModelContainerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerConfig.swift; sourceTree = "<group>"; };
+		A10000000000000000000022 /* JournalEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntry.swift; sourceTree = "<group>"; };
 		10AFCB6B783A2B675B407889 /* WizardProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WizardProgressView.swift; sourceTree = "<group>"; };
 		18E52E5CE02DB158DCFF76DE /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
 		1D5D5102BC1CBB4188BD250A /* OutcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutcomeView.swift; sourceTree = "<group>"; };
@@ -156,8 +169,6 @@
 		7D55C61CF6964611F106D910 /* EmotionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmotionsView.swift; sourceTree = "<group>"; };
 		7E30587AECC6EFE96513A19B /* ThoughtRecordRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordRepository.swift; sourceTree = "<group>"; };
 		7F6C7F8B3F1D4C80A2F5B2B0 /* StepHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepHeaderView.swift; sourceTree = "<group>"; };
-		8941B34419C243A8D3CA80D5 /* ThoughtRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordStore.swift; sourceTree = "<group>"; };
-		A10000000000000000000003 /* ThoughtEntryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtEntryStore.swift; sourceTree = "<group>"; };
 		8BA6D8D4085F2AEE3AA99A0B /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		8D2E3F405162738495A6B7C9 /* StepContentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepContentContainer.swift; sourceTree = "<group>"; };
 		8F60033E301CE97D6A6B26C9 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
@@ -171,7 +182,6 @@
 		C1D2E3F4A5061728394A5B6C /* AIReframeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeService.swift; sourceTree = "<group>"; };
 		C45269AC21C5B5C5A74E81F7 /* AutomaticThoughtsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticThoughtsView.swift; sourceTree = "<group>"; };
 		C776E243CD9B32161BB92B86 /* LabeledInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabeledInput.swift; sourceTree = "<group>"; };
-		CA3FF21876F476C61A91583E /* AllEntriesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesViewModel.swift; sourceTree = "<group>"; };
 		A10000000000000000000004 /* ThoughtEntryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtEntryViewModel.swift; sourceTree = "<group>"; };
 		CCF9D27FA3CF9C0938F10E96 /* EntryListItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryListItemView.swift; sourceTree = "<group>"; };
 		A10000000000000000000005 /* ThoughtEntryNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtEntryNotesView.swift; sourceTree = "<group>"; };
@@ -186,7 +196,6 @@
 		A10000000000000000000006 /* NotesTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesTextEditor.swift; sourceTree = "<group>"; };
 		E1F2A3B4C5061728394A5B6C /* AIReframeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeServiceTests.swift; sourceTree = "<group>"; };
 		E46312FE3978E03DDBCCC38F /* ReframeJournalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReframeJournalApp.swift; sourceTree = "<group>"; };
-		E52D7165210280A0F072C95E /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		ED787A3A0146DF8813BE657E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		F0A1B2C3D4E5061728394A5C /* SurfaceStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfaceStyles.swift; sourceTree = "<group>"; };
 		F1B2C3D4E5F60718293A4B5C /* SensationPickerSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensationPickerSheetView.swift; sourceTree = "<group>"; };
@@ -227,6 +236,17 @@
 		A10000000000000000000008 /* AIReframeNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeNotesView.swift; sourceTree = "<group>"; };
 		A10000000000000000000009 /* SuggestionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionEngineTests.swift; sourceTree = "<group>"; };
 		A10000000000000000000012 /* NotesStyleEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesStyleEntryView.swift; sourceTree = "<group>"; };
+		C20000000000000000000001 /* ThoughtEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtEntryTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000002 /* DateUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtilsTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000003 /* MetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000004 /* IdentifiersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifiersTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000005 /* AIReframeResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeResultTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000006 /* AIReframeDepthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeDepthTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000007 /* ThoughtUsageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtUsageServiceTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000008 /* AdaptivePromptsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptivePromptsTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000009 /* ThoughtModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtModelTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordExtensionTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000011 /* JournalEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,6 +276,7 @@
 				F3B4C5D6E708192A3B4C5D6E /* AIReframeDepth.swift */,
 				A1B2C3D4E5F60718293A4B6C /* AIReframeResult.swift */,
 				A10000000000000000000002 /* EmotionItem.swift */,
+				A10000000000000000000022 /* JournalEntry.swift */,
 				F8A1B2C3D4E5061728394A62 /* ReframeResponse.swift */,
 				A10000000000000000000001 /* ThoughtEntry.swift */,
 				F8A1B2C3D4E5061728394A61 /* Thought.swift */,
@@ -309,10 +330,21 @@
 			isa = PBXGroup;
 			children = (
 				A479E1E4C7D75E85D48AD3B8 /* Info.plist */,
+				C20000000000000000000008 /* AdaptivePromptsTests.swift */,
+				C20000000000000000000006 /* AIReframeDepthTests.swift */,
+				C20000000000000000000005 /* AIReframeResultTests.swift */,
 				E1F2A3B4C5061728394A5B6C /* AIReframeServiceTests.swift */,
+				C20000000000000000000002 /* DateUtilsTests.swift */,
+				C20000000000000000000004 /* IdentifiersTests.swift */,
+				C20000000000000000000011 /* JournalEntryTests.swift */,
 				F8A1B2C3D4E5061728394A66 /* LimitsManagerTests.swift */,
+				C20000000000000000000003 /* MetricsTests.swift */,
 				A10000000000000000000009 /* SuggestionEngineTests.swift */,
+				C20000000000000000000001 /* ThoughtEntryTests.swift */,
+				C20000000000000000000009 /* ThoughtModelTests.swift */,
+				C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */,
 				7CBBAF3FFE33047CA5DEA1DF /* ThoughtRecordTests.swift */,
+				C20000000000000000000007 /* ThoughtUsageServiceTests.swift */,
 			);
 			path = ReframeJournalTests;
 			sourceTree = "<group>";
@@ -335,9 +367,7 @@
 			isa = PBXGroup;
 			children = (
 				D1E2F3A4B5061728394A5B6C /* AIReframeViewModel.swift */,
-				CA3FF21876F476C61A91583E /* AllEntriesViewModel.swift */,
 				D537A34287202955112F8BAB /* EntryDetailViewModel.swift */,
-				E52D7165210280A0F072C95E /* HomeViewModel.swift */,
 				A10000000000000000000004 /* ThoughtEntryViewModel.swift */,
 				1EBFBB6C8833ECA386CC7AFB /* ThoughtResponseDetailViewModel.swift */,
 				7685FB9A44932CF9C0F3349F /* WizardViewModel.swift */,
@@ -474,8 +504,8 @@
 		EE5BE045B3B290C037D76B69 /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000003 /* ThoughtEntryStore.swift */,
-				8941B34419C243A8D3CA80D5 /* ThoughtRecordStore.swift */,
+				A10000000000000000000020 /* JournalEntryStore.swift */,
+				A10000000000000000000021 /* ModelContainerConfig.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -591,7 +621,6 @@
 				0BE5C113B242E7C02660892E /* AdaptivePrompts.swift in Sources */,
 				51DD3E0559533372EA2AC62D /* AdaptiveResponseView.swift in Sources */,
 				CBDCB538647242A62761632B /* AllEntriesView.swift in Sources */,
-				250F0006F57CFB86F1036DD7 /* AllEntriesViewModel.swift in Sources */,
 				A85E0FC1B33DB7B614615316 /* AppRouter.swift in Sources */,
 				B09A98A062EE42BCA8E5C4C9 /* AppAppearance.swift in Sources */,
 				24C71267BA9EFA6BCBB14D1F /* AppState.swift in Sources */,
@@ -603,13 +632,15 @@
 				F8B1C2D3E4F5061728394A5E /* EntitlementsManager.swift in Sources */,
 				0597D0C2BD5F3460115A2047 /* EmotionsView.swift in Sources */,
 				B10000000000000000000002 /* EmotionItem.swift in Sources */,
+				B10000000000000000000020 /* JournalEntryStore.swift in Sources */,
+				B10000000000000000000021 /* ModelContainerConfig.swift in Sources */,
+				B10000000000000000000022 /* JournalEntry.swift in Sources */,
 				773AA7F64660375B01D22426 /* EntryDetailView.swift in Sources */,
 				899DC5722809FB0C0D256089 /* EntryDetailViewModel.swift in Sources */,
 				3F0788150F2C442B8A7E8933 /* EntryListItemView.swift in Sources */,
 				3A4B5C6D7E8F901234567891 /* ReframeLoadingView.swift in Sources */,
 				510D8D7CC3B582128B31BEDE /* ExpandableTextView.swift in Sources */,
 				BA140D589F48239A7AB796DA /* HomeView.swift in Sources */,
-				B1A278BD93BBB3C399455A5A /* HomeViewModel.swift in Sources */,
 				6D7FF0544F37811F03C58FEA /* Identifiers.swift in Sources */,
 				F4A1B2C3D4E5061728394A5B /* KeyboardDismiss.swift in Sources */,
 				FEF20C27AE1A5A0CE8AFE380 /* LabeledInput.swift in Sources */,
@@ -662,13 +693,11 @@
 				B10000000000000000000008 /* AIReframeNotesView.swift in Sources */,
 				B10000000000000000000005 /* ThoughtEntryNotesView.swift in Sources */,
 				B10000000000000000000001 /* ThoughtEntry.swift in Sources */,
-				B10000000000000000000003 /* ThoughtEntryStore.swift in Sources */,
 				B10000000000000000000004 /* ThoughtEntryViewModel.swift in Sources */,
 				B2E1196C821235FFC2297082 /* ThoughtCardView.swift in Sources */,
 				F8B1C2D3E4F5061728394A61 /* Thought.swift in Sources */,
 				E3A1C31C54E4F3315848A261 /* ThoughtRecord.swift in Sources */,
 				D3C6C4A98614E4C15AB54031 /* ThoughtRecordRepository.swift in Sources */,
-				23474AD469B91E8990ECFE97 /* ThoughtRecordStore.swift in Sources */,
 				9CA0327104A0DF6A81FC02C7 /* ThoughtResponseDetailView.swift in Sources */,
 				DEB0AF120B68CFB7EAA0956C /* ThoughtResponseDetailViewModel.swift in Sources */,
 				F4385CB82BEF4417830A4B09 /* WizardProgressView.swift in Sources */,
@@ -680,10 +709,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C10000000000000000000008 /* AdaptivePromptsTests.swift in Sources */,
+				C10000000000000000000006 /* AIReframeDepthTests.swift in Sources */,
+				C10000000000000000000005 /* AIReframeResultTests.swift in Sources */,
 				E2F3A4B5061728394A5B6C7D /* AIReframeServiceTests.swift in Sources */,
+				C10000000000000000000002 /* DateUtilsTests.swift in Sources */,
+				C10000000000000000000004 /* IdentifiersTests.swift in Sources */,
+				C10000000000000000000011 /* JournalEntryTests.swift in Sources */,
 				F8B1C2D3E4F5061728394A66 /* LimitsManagerTests.swift in Sources */,
+				C10000000000000000000003 /* MetricsTests.swift in Sources */,
 				B10000000000000000000009 /* SuggestionEngineTests.swift in Sources */,
+				C10000000000000000000001 /* ThoughtEntryTests.swift in Sources */,
+				C10000000000000000000009 /* ThoughtModelTests.swift in Sources */,
+				C10000000000000000000010 /* ThoughtRecordExtensionTests.swift in Sources */,
 				4E025C008F95000CC39428E7 /* ThoughtRecordTests.swift in Sources */,
+				C10000000000000000000007 /* ThoughtUsageServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -757,7 +797,7 @@
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -824,7 +864,7 @@
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

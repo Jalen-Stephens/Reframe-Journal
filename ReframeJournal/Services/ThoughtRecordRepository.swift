@@ -1,56 +1,81 @@
+// File: Services/ThoughtRecordRepository.swift
+// Repository layer for journal entry persistence
+// Now uses SwiftData via JournalEntryStore
+
 import Foundation
+import SwiftData
 
 @MainActor
-final class ThoughtRecordRepository {
-    private let store: ThoughtRecordStore
-
+final class ThoughtRecordRepository: ObservableObject {
+    private let store: JournalEntryStore
+    
     enum RepositoryError: LocalizedError {
         case entryNotFound
-
+        case saveFailed(Error)
+        
         var errorDescription: String? {
             switch self {
             case .entryNotFound:
                 return "Entry not found."
+            case .saveFailed(let error):
+                return "Failed to save: \(error.localizedDescription)"
             }
         }
     }
-
-    init(store: ThoughtRecordStore) {
-        self.store = store
+    
+    init(modelContext: ModelContext) {
+        self.store = JournalEntryStore(modelContext: modelContext)
     }
-
+    
+    // MARK: - Fetch Operations
+    
     func fetchRecent(limit: Int = 20) async throws -> [ThoughtRecord] {
-        try await store.fetchAll(limit: limit)
+        try store.fetchRecentAsRecords(limit: limit)
     }
-
+    
     func fetchAll() async throws -> [ThoughtRecord] {
-        try await store.fetchAll()
+        try store.fetchAllAsRecords()
     }
-
+    
     func fetch(id: String) async throws -> ThoughtRecord? {
-        try await store.fetch(id: id)
+        try store.fetchAsRecord(id: id)
     }
-
+    
+    /// Fetches a JournalEntry directly (for use with SwiftData @Query)
+    func fetchEntry(id: String) throws -> JournalEntry? {
+        try store.fetch(id: id)
+    }
+    
+    // MARK: - Write Operations
+    
     func upsert(_ record: ThoughtRecord) async throws {
-        try await store.upsert(record)
+        do {
+            try store.upsert(record)
+        } catch {
+            throw RepositoryError.saveFailed(error)
+        }
     }
-
+    
     func delete(id: String) async throws {
-        try await store.delete(id: id)
+        try store.delete(id: id)
     }
-
+    
+    // MARK: - Draft Operations
+    
     func fetchDraft() async throws -> ThoughtRecord? {
-        try await store.fetchDraft()
+        try store.fetchDraftAsRecord()
     }
-
+    
     func saveDraft(_ record: ThoughtRecord) async throws {
-        try await store.saveDraft(record)
+        try store.saveDraft(record)
     }
-
+    
     func deleteDraft() async throws {
-        try await store.deleteDraft()
+        try store.deleteDraft()
     }
-
+    
+    // MARK: - AI Reframe Operations
+    
     func upsertAIReframe(
         entryId: String,
         result: AIReframeResult,
@@ -59,19 +84,25 @@ final class ThoughtRecordRepository {
         promptVersion: String? = nil,
         depth: AIReframeDepth? = nil
     ) async throws {
-        guard var record = try await store.fetch(id: entryId) else {
+        guard let entry = try store.fetch(id: entryId) else {
             throw RepositoryError.entryNotFound
         }
-        record.aiReframe = result
-        record.aiReframeCreatedAt = createdAt
-        record.aiReframeModel = model
-        record.aiReframePromptVersion = promptVersion
-        record.aiReframeDepth = depth
-        record.updatedAt = DateUtils.nowIso()
-        try await store.upsert(record)
+        
+        entry.aiReframe = result
+        entry.aiReframeCreatedAt = createdAt
+        entry.aiReframeModel = model
+        entry.aiReframePromptVersion = promptVersion
+        entry.aiReframeDepth = depth
+        entry.updatedAt = Date()
+        
+        try store.save()
     }
-
+    
+    // MARK: - Compatibility
+    
+    /// No longer needed with SwiftData - writes are immediate
     func flushPendingWrites() async {
-        await store.flushPendingWrites()
+        // SwiftData saves are synchronous, no flushing needed
+        try? store.save()
     }
 }

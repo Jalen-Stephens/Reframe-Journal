@@ -59,17 +59,7 @@ final class ThoughtRecordTests: XCTestCase {
         XCTAssertEqual(Metrics.clampPercent(120), 100)
     }
 
-    func testPersistenceReadWrite() async throws {
-        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let store = ThoughtRecordStore(baseURL: tempDir)
-        let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
-
-        try await store.upsert(record)
-        let fetched = try await store.fetch(id: "id_test")
-        XCTAssertEqual(fetched?.id, "id_test")
-
-        try await store.delete(id: "id_test")
-        let deleted = try await store.fetch(id: "id_test")
-        XCTAssertNil(deleted)
-    }
+    // Note: testPersistenceReadWrite was removed because ThoughtRecordStore
+    // was replaced by JournalEntryStore (SwiftData) in the iCloud sync migration.
+    // SwiftData persistence is tested via JournalEntryTests.
 }

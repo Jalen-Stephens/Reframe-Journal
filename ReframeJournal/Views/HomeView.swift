@@ -1,19 +1,28 @@
 // File: Views/HomeView.swift
+// Home screen with SwiftData @Query for automatic list updates
+
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AppRouter
     @Environment(\.notesPalette) private var notesPalette
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
-    @StateObject private var viewModel: HomeViewModel
+    @Environment(\.modelContext) private var modelContext
+    
+    // MARK: - SwiftData Query
+    // This automatically updates the view when entries change - no manual refresh needed!
+    @Query(
+        filter: #Predicate<JournalEntry> { !$0.isDraft },
+        sort: \JournalEntry.createdAt,
+        order: .reverse
+    )
+    private var allEntries: [JournalEntry]
+    
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
     @State private var isPastEntriesExpanded = true
-
-    init(repository: ThoughtRecordRepository) {
-        _viewModel = StateObject(wrappedValue: HomeViewModel(repository: repository))
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -27,8 +36,8 @@ struct HomeView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
-                if let latest = viewModel.entries.first {
-                    Text("Last worked on: \(latestThoughtLabel(for: latest)) · \(DateUtils.formatRelativeDate(latest.createdAt))")
+                if let latest = allEntries.first {
+                    Text("Last worked on: \(latestThoughtLabel(for: latest)) · \(DateUtils.formatRelativeDate(DateUtils.isoString(from: latest.createdAt)))")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .listRowInsets(rowInsets)
@@ -55,15 +64,26 @@ struct HomeView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
 
-                if viewModel.entries.isEmpty {
+                if allEntries.isEmpty {
                     Text("No entries yet. Start a new thought record above.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .listRowInsets(rowInsets)
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
+                    
+                    Image("NuggieStandingDogBed")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 220)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 24)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .accessibilityLabel("Nuggie standing by a dog bed")
                 } else {
-                    // FIXED: Single "Recent entries" collapsible section with max 2 entries
+                    // "Recent entries" collapsible section with max 2 entries
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             isPastEntriesExpanded.toggle()
@@ -86,23 +106,22 @@ struct HomeView: View {
                     .listRowBackground(Color.clear)
 
                     if isPastEntriesExpanded {
-                        // Show only the first 2 entries (regardless of today/past)
-                        ForEach(Array(viewModel.entries.prefix(2))) { entry in
-                            EntryListItemView(entry: entry) {
-                                router.push(.thoughtEntry(id: entry.id))
+                        // Show only the first 2 entries
+                        ForEach(Array(allEntries.prefix(2))) { entry in
+                            let record = entry.toThoughtRecord()
+                            EntryListItemView(entry: record) {
+                                router.push(.thoughtEntry(id: entry.recordId))
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button {
-                                    editEntry(entry)
+                                    router.push(.thoughtEntry(id: entry.recordId))
                                 } label: {
                                     Label("Edit", systemImage: "pencil")
                                 }
                                 .tint(notesPalette.accent)
 
                                 Button(role: .destructive) {
-                                    Task { @MainActor in
-                                        await viewModel.deleteEntry(id: entry.id)
-                                    }
+                                    deleteEntry(entry)
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -149,18 +168,6 @@ struct HomeView: View {
             .scrollDisabled(true)
         }
         .background(GlassBackground())
-        .task {
-            await viewModel.loadIfNeeded()
-        }
-        .onAppear {
-            if viewModel.hasLoaded {
-                Task { await viewModel.refresh() }
-            }
-        }
-        // FIXED: Listen for entry save notifications to ensure list refreshes reliably
-        .onReceive(NotificationCenter.default.publisher(for: .thoughtEntrySaved)) { _ in
-            Task { await viewModel.refresh() }
-        }
         .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
             Button("OK", role: .cancel) {}
             Button("Upgrade") {
@@ -192,11 +199,11 @@ struct HomeView: View {
         .padding(.top, 12)
     }
 
-    private func latestThoughtLabel(for record: ThoughtRecord) -> String {
-        if let title = record.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
+    private func latestThoughtLabel(for entry: JournalEntry) -> String {
+        if let title = entry.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
             return title
         }
-        let situation = record.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let situation = entry.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
         if situation.isEmpty {
             return "New Entry"
         }
@@ -212,8 +219,9 @@ struct HomeView: View {
         EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
     }
 
-    private func editEntry(_ entry: ThoughtRecord) {
-        router.push(.thoughtEntry(id: entry.id))
+    private func deleteEntry(_ entry: JournalEntry) {
+        modelContext.delete(entry)
+        try? modelContext.save()
     }
 
     private func startNewThoughtRecord() {

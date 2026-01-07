@@ -1,4 +1,8 @@
+// File: ViewModels/ThoughtEntryViewModel.swift
+// ViewModel for journal entry editing - updated for SwiftData
+
 import Foundation
+import SwiftData
 
 @MainActor
 final class ThoughtEntryViewModel: ObservableObject {
@@ -41,9 +45,9 @@ final class ThoughtEntryViewModel: ObservableObject {
     @Published var isLoading: Bool = true
 
     private let entryId: String?
-    private let store: ThoughtEntryStore
+    private let store: JournalEntryStore
     private let thoughtUsage: ThoughtUsageService
-    private var baseRecord: ThoughtRecord?
+    private var journalEntry: JournalEntry?
     private var autosaveTask: Task<Void, Never>?
     private var hasLoaded = false
     private var isTitleAutoManaged = true
@@ -56,9 +60,9 @@ final class ThoughtEntryViewModel: ObservableObject {
         recordId
     }
 
-    init(entryId: String?, store: ThoughtEntryStore, thoughtUsage: ThoughtUsageService) {
+    init(entryId: String?, modelContext: ModelContext, thoughtUsage: ThoughtUsageService) {
         self.entryId = entryId
-        self.store = store
+        self.store = JournalEntryStore(modelContext: modelContext)
         self.thoughtUsage = thoughtUsage
         let empty = ThoughtEntry.empty(now: Date())
         title = empty.title
@@ -89,14 +93,15 @@ final class ThoughtEntryViewModel: ObservableObject {
             return
         }
         do {
-            guard let record = try await store.fetchRecord(id: entryId) else {
+            guard let entry = try store.fetch(id: entryId) else {
                 recordId = entryId
                 isNewEntry = true
                 return
             }
-            baseRecord = record
-            let entry = ThoughtEntry(record: record)
-            apply(entry)
+            journalEntry = entry
+            let thoughtEntry = ThoughtEntry(record: entry.toThoughtRecord())
+            apply(thoughtEntry)
+            recordId = entry.recordId
             isNewEntry = false
         } catch {
             isNewEntry = true
@@ -114,16 +119,26 @@ final class ThoughtEntryViewModel: ObservableObject {
     func saveNow() async {
         let entry = buildEntry()
         do {
-            let updated = try await store.upsert(entry, baseRecord: baseRecord)
-            baseRecord = updated
-            recordId = updated.id
-            if isNewEntry && !didIncrementUsage {
-                thoughtUsage.incrementTodayCount(recordId: updated.id, createdAt: updated.createdAt)
+            if let existing = journalEntry {
+                // Update existing entry
+                existing.update(from: entry.applying(to: existing.toThoughtRecord()))
+                existing.updatedAt = Date()
+                try store.save()
+            } else {
+                // Create new entry
+                let record = entry.applying(to: nil)
+                let newEntry = JournalEntry(from: record)
+                try store.upsert(newEntry)
+                journalEntry = try store.fetch(id: newEntry.recordId)
+                recordId = newEntry.recordId
+            }
+            
+            if isNewEntry && !didIncrementUsage, let entry = journalEntry {
+                thoughtUsage.incrementTodayCount(recordId: entry.recordId, createdAt: DateUtils.isoString(from: entry.createdAt))
                 didIncrementUsage = true
                 isNewEntry = false
             }
-            // Post notification so HomeView can refresh its list
-            NotificationCenter.default.post(name: .thoughtEntrySaved, object: nil)
+            // No need to post notification - SwiftData @Query handles reactivity automatically
         } catch {
 #if DEBUG
             print("ThoughtEntryViewModel save failed", error)
@@ -333,14 +348,14 @@ final class ThoughtEntryViewModel: ObservableObject {
             aiReframeModel: aiReframeModel,
             aiReframePromptVersion: aiReframePromptVersion,
             aiReframeDepth: aiReframeDepth,
-            createdAt: baseRecord.flatMap { DateUtils.parseIso($0.createdAt) } ?? occurredAt,
+            createdAt: journalEntry?.createdAt ?? occurredAt,
             updatedAt: Date()
         )
     }
 
     func currentRecordSnapshot() -> ThoughtRecord {
         let entry = buildEntry()
-        return entry.applying(to: baseRecord)
+        return entry.applying(to: journalEntry?.toThoughtRecord())
     }
 
     private func deriveTitle(from text: String) -> String {

@@ -81,7 +81,7 @@ struct AIReframeResultView: View {
                 await viewModel.regenerateAndSave()
             }
         }
-        .onChange(of: depth) { newValue in
+        .onChange(of: depth) { _, newValue in
             viewModel.updateDepth(newValue)
         }
     }
