@@ -19,7 +19,7 @@ env:
   PROJECT_PATH: ReframeJournal.xcodeproj
   SIMULATOR_NAME: iPhone 15
   SIMULATOR_OS: "17.5"
-  COVERAGE_THRESHOLD: 10
+  COVERAGE_THRESHOLD: 50
 
 jobs:
   test:
@@ -96,56 +96,109 @@ jobs:
           # Generate JSON coverage report
           xcrun xccov view --report --json "$XCRESULT_PATH" > coverage.json
           
-          # Extract coverage using Python script
+          # Extract coverage using Python script (excludes Views from calculation)
           cat > extract_coverage.py << 'EOF'
           import json
           import sys
           
+          # Folders to EXCLUDE from coverage calculation (UI code that can't be unit tested)
+          EXCLUDED_PATHS = ['/Views/', '/UI/']
+          
+          # Folders to INCLUDE in coverage calculation (testable business logic)
+          INCLUDED_PATHS = ['/Models/', '/Services/', '/Utilities/', '/ViewModels/', '/Persistence/', '/App/']
+          
           with open('coverage.json', 'r') as f:
               data = json.load(f)
           
-          for target in data.get('targets', []):
-              if 'ReframeJournal.app' in target.get('name', ''):
-                  line_cov = target.get('lineCoverage', 0)
-                  if isinstance(line_cov, (int, float)):
-                      print(f'{line_cov * 100:.2f}')
-                      sys.exit(0)
+          total_lines = 0
+          covered_lines = 0
+          total_lines_filtered = 0
+          covered_lines_filtered = 0
           
-          print('0.00')
+          for target in data.get('targets', []):
+              if 'ReframeJournal.app' not in target.get('name', ''):
+                  continue
+                  
+              for file_data in target.get('files', []):
+                  path = file_data.get('path', '')
+                  
+                  # Get file's coverage data
+                  file_covered = file_data.get('coveredLines', 0)
+                  file_total = file_data.get('executableLines', 0)
+                  
+                  # Add to total
+                  total_lines += file_total
+                  covered_lines += file_covered
+                  
+                  # Check if file should be included in filtered coverage
+                  is_excluded = any(excl in path for excl in EXCLUDED_PATHS)
+                  is_included = any(incl in path for incl in INCLUDED_PATHS)
+                  
+                  if is_included and not is_excluded:
+                      total_lines_filtered += file_total
+                      covered_lines_filtered += file_covered
+          
+          # Calculate percentages
+          total_pct = (covered_lines / total_lines * 100) if total_lines > 0 else 0
+          filtered_pct = (covered_lines_filtered / total_lines_filtered * 100) if total_lines_filtered > 0 else 0
+          
+          # Output both values
+          print(f"TOTAL:{total_pct:.2f}")
+          print(f"FILTERED:{filtered_pct:.2f}")
+          print(f"TOTAL_LINES:{total_lines}")
+          print(f"COVERED_LINES:{covered_lines}")
+          print(f"FILTERED_LINES:{total_lines_filtered}")
+          print(f"FILTERED_COVERED:{covered_lines_filtered}")
           EOF
           
-          COVERAGE_PERCENT=$(python3 extract_coverage.py)
+          # Run coverage extraction
+          COVERAGE_OUTPUT=$(python3 extract_coverage.py)
           
-          echo "Line Coverage: ${COVERAGE_PERCENT}%"
-          echo "coverage_percent=$COVERAGE_PERCENT" >> $GITHUB_OUTPUT
+          TOTAL_COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "^TOTAL:" | cut -d: -f2)
+          FILTERED_COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "^FILTERED:" | cut -d: -f2)
+          TOTAL_LINES=$(echo "$COVERAGE_OUTPUT" | grep "^TOTAL_LINES:" | cut -d: -f2)
+          COVERED_LINES=$(echo "$COVERAGE_OUTPUT" | grep "^COVERED_LINES:" | cut -d: -f2)
+          FILTERED_LINES=$(echo "$COVERAGE_OUTPUT" | grep "^FILTERED_LINES:" | cut -d: -f2)
+          FILTERED_COVERED=$(echo "$COVERAGE_OUTPUT" | grep "^FILTERED_COVERED:" | cut -d: -f2)
+          
+          echo ""
+          echo "=== Coverage Summary ==="
+          echo "Total Coverage (all files):     ${TOTAL_COVERAGE}% (${COVERED_LINES}/${TOTAL_LINES} lines)"
+          echo "Testable Coverage (excl Views): ${FILTERED_COVERAGE}% (${FILTERED_COVERED}/${FILTERED_LINES} lines)"
+          echo ""
+          echo "Excluded from threshold: Views/, UI/"
+          echo "Included in threshold:   Models/, Services/, Utilities/, ViewModels/, Persistence/, App/"
+          
+          # Store for later steps
+          echo "coverage_percent=$FILTERED_COVERAGE" >> $GITHUB_OUTPUT
+          echo "total_coverage=$TOTAL_COVERAGE" >> $GITHUB_OUTPUT
           
           # Print detailed coverage report
           echo ""
-          echo "=== Coverage Summary ==="
-          xcrun xccov view --report "$XCRESULT_PATH" | head -50
+          echo "=== Detailed Coverage Report ==="
+          xcrun xccov view --report "$XCRESULT_PATH" | head -60
           
-          # Check threshold
+          # Check threshold against FILTERED coverage (testable code only)
           THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
           
           echo ""
           echo "=== Coverage Threshold Check ==="
-          echo "Current Coverage: ${COVERAGE_PERCENT}%"
+          echo "Testable Code Coverage: ${FILTERED_COVERAGE}%"
           echo "Required Threshold: ${THRESHOLD}%"
           
-          PASS=$(python3 -c "print('true' if float('${COVERAGE_PERCENT}') >= float('${THRESHOLD}') else 'false')")
+          PASS=$(python3 -c "print('true' if float('${FILTERED_COVERAGE}') >= float('${THRESHOLD}') else 'false')")
           
           if [ "$PASS" = "false" ]; then
             echo ""
-            echo "::error::Code coverage ${COVERAGE_PERCENT}% is below the required threshold of ${THRESHOLD}%"
+            echo "::error::Testable code coverage ${FILTERED_COVERAGE}% is below the required threshold of ${THRESHOLD}%"
             echo ""
             echo "To fix this:"
-            echo "1. Add more unit tests for uncovered code paths"
-            echo "2. Focus on testing business logic in Services/, ViewModels/, and Utilities/"
-            echo "3. Run 'xcodebuild test' locally to see coverage details"
+            echo "1. Add more unit tests for Models/, Services/, Utilities/, ViewModels/"
+            echo "2. Run 'xcodebuild test' locally to see coverage details"
             exit 1
           else
             echo ""
-            echo "Code coverage ${COVERAGE_PERCENT}% meets the required threshold of ${THRESHOLD}%"
+            echo "✅ Testable code coverage ${FILTERED_COVERAGE}% meets the required threshold of ${THRESHOLD}%"
           fi
 
       - name: Upload test results
@@ -162,22 +215,28 @@ jobs:
       - name: Post coverage summary
         if: always()
         run: |
-          COVERAGE="${{ steps.coverage.outputs.coverage_percent }}"
+          TESTABLE_COVERAGE="${{ steps.coverage.outputs.coverage_percent }}"
+          TOTAL_COVERAGE="${{ steps.coverage.outputs.total_coverage }}"
           THRESHOLD="${{ env.COVERAGE_THRESHOLD }}"
           
-          if [ -n "$COVERAGE" ]; then
-            echo "## Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$TESTABLE_COVERAGE" ]; then
+            echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Line Coverage | ${COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Testable Code Coverage** | ${TESTABLE_COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Coverage (all files) | ${TOTAL_COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
             echo "| Required Threshold | ${THRESHOLD}% |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Included in testable coverage:** Models, Services, Utilities, ViewModels, Persistence, App" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Excluded from testable coverage:** Views, UI (require UI tests)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
             
-            PASS=$(python3 -c "print('true' if float('${COVERAGE}') >= float('${THRESHOLD}') else 'false')")
+            PASS=$(python3 -c "print('true' if float('${TESTABLE_COVERAGE}') >= float('${THRESHOLD}') else 'false')")
             if [ "$PASS" = "true" ]; then
-              echo "Coverage meets requirements" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Testable code coverage meets requirements**" >> $GITHUB_STEP_SUMMARY
             else
-              echo "Coverage below threshold - please add more tests" >> $GITHUB_STEP_SUMMARY
+              echo "❌ **Coverage below threshold** - please add more tests for Models/, Services/, Utilities/, ViewModels/" >> $GITHUB_STEP_SUMMARY
             fi
           fi
