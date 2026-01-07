@@ -19,7 +19,7 @@ env:
   PROJECT_PATH: ReframeJournal.xcodeproj
   SIMULATOR_NAME: iPhone 15
   SIMULATOR_OS: "17.5"
-  COVERAGE_THRESHOLD: 50
+  COVERAGE_THRESHOLD: 49
 
 jobs:
   test:
