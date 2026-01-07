@@ -45,7 +45,7 @@ struct NotesStyleEntryView: View {
     
     // MARK: - Focus Field Enum
     
-    private enum EntryField: Hashable {
+    enum EntryField: Hashable {
         case situation
         case sensations
         case emotions
@@ -64,130 +64,153 @@ struct NotesStyleEntryView: View {
     // MARK: - Body
     
     var body: some View {
+        mainContent
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationBarBackButtonHidden(true)
+            .toolbar { keyboardToolbar }
+            .task { await loadInitialState() }
+            .modifier(ChangeObserversModifier(viewModel: viewModel, focusedField: $focusedField))
+            .sheet(isPresented: $isDateSheetPresented) { dateSheet }
+            .sheet(isPresented: $showUnlockSheet) { unlockSheet }
+            .sheet(isPresented: $showPaywall) { PaywallView() }
+            .alert("", isPresented: $showAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(alertMessage)
+            }
+            .alert("Ad unavailable", isPresented: $showAdErrorAlert) {
+                Button("Retry") { Task { await handleWatchAd() } }
+                Button("Upgrade") { showPaywall = true }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Try again later or upgrade to Pro.")
+            }
+    }
+    
+    // MARK: - Extracted View Components
+    
+    @ViewBuilder
+    private var mainContent: some View {
         ZStack {
-            backgroundColor
-                .ignoresSafeArea()
-            
+            backgroundColor.ignoresSafeArea()
             VStack(spacing: 0) {
                 notesHeader
-                
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 0) {
-                            dateSection
-                            
-                            situationSection
-                                .id("situation")
-                            
-                            if shouldShowSection(.sensations) {
-                                sensationsSection
-                                    .id("sensations")
-                            }
-                            
-                            if shouldShowSection(.emotions) {
-                                emotionsSection
-                                    .id("emotions")
-                            }
-                            
-                            if shouldShowSection(.automaticThoughts) {
-                                thoughtSection
-                                    .id("thought")
-                            }
-                            
-                            if shouldShowSection(.adaptiveResponses) {
-                                adaptiveSection
-                                    .id("adaptive")
-                            }
-                            
-                            if shouldShowSection(.outcome) {
-                                outcomeSection
-                                    .id("outcome")
-                            }
-                            
-                            // Bottom padding for keyboard
-                            Color.clear.frame(height: 300)
-                        }
-                        .padding(.horizontal, 20)
-                    }
-                    .scrollDismissesKeyboard(.interactively)
-                    .onChange(of: focusedField) { newField in
-                        guard let newField else { return }
-                        withAnimation(.easeOut(duration: 0.25)) {
-                            proxy.scrollTo(scrollId(for: newField), anchor: .top)
-                        }
-                    }
-                }
+                scrollableContent
             }
-        }
-        .toolbar(.hidden, for: .navigationBar)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Next") {
-                    advanceToNextField()
-                }
-                .foregroundStyle(.primary)
-            }
-        }
-        .task {
-            await viewModel.loadIfNeeded()
-            restoreState()
-        }
-        // FIXED: Remove revealNextSectionIfNeeded() calls - sections only advance on Enter/Tab
-        .onChange(of: viewModel.situation) { _ in
-            viewModel.updateTitleFromSituation()
-            viewModel.scheduleAutosave()
-        }
-        .onChange(of: viewModel.sensations) { _ in
-            viewModel.scheduleAutosave()
-        }
-        .onChange(of: viewModel.emotions) { _ in
-            viewModel.scheduleAutosave()
-        }
-        .onChange(of: viewModel.automaticThoughts) { _ in
-            viewModel.scheduleAutosave()
-        }
-        .onChange(of: viewModel.adaptiveResponses) { _ in
-            viewModel.scheduleAutosave()
-        }
-        .onChange(of: viewModel.outcomesByThought) { _ in
-            viewModel.scheduleAutosave()
-        }
-        .sheet(isPresented: $isDateSheetPresented) {
-            NotesDateSheet(selectedDate: $viewModel.occurredAt) {
-                isDateSheetPresented = false
-            }
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showUnlockSheet) {
-            NotesUnlockSheet(
-                isLoading: isLoadingAd,
-                onWatchAd: { Task { await handleWatchAd() } },
-                onUpgrade: {
-                    showUnlockSheet = false
-                    showPaywall = true
-                }
-            )
-            .presentationDetents([.medium])
-        }
-        .sheet(isPresented: $showPaywall) {
-            PaywallView()
-        }
-        .alert("", isPresented: $showAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(alertMessage)
-        }
-        .alert("Ad unavailable", isPresented: $showAdErrorAlert) {
-            Button("Retry") { Task { await handleWatchAd() } }
-            Button("Upgrade") { showPaywall = true }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Try again later or upgrade to Pro.")
         }
     }
+    
+    @ViewBuilder
+    private var scrollableContent: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    dateSection
+                    situationSection.id("situation")
+                    conditionalSections
+                    Color.clear.frame(height: 300)
+                }
+                .padding(.horizontal, 20)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .onChange(of: focusedField) { _, newField in
+                guard let newField else { return }
+                withAnimation(.easeOut(duration: 0.25)) {
+                    proxy.scrollTo(scrollId(for: newField), anchor: .top)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var conditionalSections: some View {
+        if shouldShowSection(.sensations) {
+            sensationsSection.id("sensations")
+        }
+        if shouldShowSection(.emotions) {
+            emotionsSection.id("emotions")
+        }
+        if shouldShowSection(.automaticThoughts) {
+            thoughtSection.id("thought")
+        }
+        if shouldShowSection(.adaptiveResponses) {
+            adaptiveSection.id("adaptive")
+        }
+        if shouldShowSection(.outcome) {
+            outcomeSection.id("outcome")
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var keyboardToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button("Next") { advanceToNextField() }
+                .foregroundStyle(.primary)
+        }
+    }
+    
+    private func loadInitialState() async {
+        await viewModel.loadIfNeeded()
+        restoreState()
+    }
+    
+    @ViewBuilder
+    private var dateSheet: some View {
+        NotesDateSheet(selectedDate: $viewModel.occurredAt) {
+            isDateSheetPresented = false
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+    
+    @ViewBuilder
+    private var unlockSheet: some View {
+        NotesUnlockSheet(
+            isLoading: isLoadingAd,
+            onWatchAd: { Task { await handleWatchAd() } },
+            onUpgrade: {
+                showUnlockSheet = false
+                showPaywall = true
+            }
+        )
+        .presentationDetents([.medium])
+    }
+}
+
+// MARK: - Change Observers Modifier
+
+private struct ChangeObserversModifier: ViewModifier {
+    @ObservedObject var viewModel: ThoughtEntryViewModel
+    @Binding var focusedField: NotesStyleEntryView.EntryField?
+    
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: viewModel.situation) { _, _ in
+                viewModel.updateTitleFromSituation()
+                viewModel.scheduleAutosave()
+            }
+            .onChange(of: viewModel.sensations) { _, _ in
+                viewModel.scheduleAutosave()
+            }
+            .onChange(of: viewModel.emotions) { _, _ in
+                viewModel.scheduleAutosave()
+            }
+            .onChange(of: viewModel.automaticThoughts) { _, _ in
+                viewModel.scheduleAutosave()
+            }
+            .onChange(of: viewModel.adaptiveResponses) { _, _ in
+                viewModel.scheduleAutosave()
+            }
+            .onChange(of: viewModel.outcomesByThought) { _, _ in
+                viewModel.scheduleAutosave()
+            }
+    }
+}
+
+// MARK: - NotesStyleEntryView Extension (Computed Properties)
+
+extension NotesStyleEntryView {
     
     // MARK: - Background Color
     

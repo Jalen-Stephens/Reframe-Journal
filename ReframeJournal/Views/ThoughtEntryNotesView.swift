@@ -81,14 +81,14 @@ struct ThoughtEntryNotesView: View {
             restoreScrollPosition()
             wasEmotionsComplete = hasCompleteEmotions
         }
-        .onChange(of: viewModel.situation) { _ in
+        .onChange(of: viewModel.situation) { _, _ in
             viewModel.updateTitleFromSituation()
             viewModel.scheduleAutosave()
         }
-        .onChange(of: viewModel.sensations) { _ in
+        .onChange(of: viewModel.sensations) { _, _ in
             viewModel.scheduleAutosave()
         }
-        .onChange(of: viewModel.emotions) { _ in
+        .onChange(of: viewModel.emotions) { _, _ in
             viewModel.scheduleAutosave()
             let isComplete = hasCompleteEmotions
             if isComplete && !wasEmotionsComplete {
@@ -96,27 +96,27 @@ struct ThoughtEntryNotesView: View {
             }
             wasEmotionsComplete = isComplete
         }
-        .onChange(of: viewModel.automaticThoughts) { _ in
+        .onChange(of: viewModel.automaticThoughts) { _, _ in
             viewModel.scheduleAutosave()
             viewModel.reveal(.adaptiveResponses)
             viewModel.reveal(.outcome)
         }
-        .onChange(of: viewModel.adaptiveResponses) { _ in
+        .onChange(of: viewModel.adaptiveResponses) { _, _ in
             viewModel.scheduleAutosave()
             if hasAutomaticThoughts {
                 viewModel.reveal(.outcome)
             }
         }
-        .onChange(of: viewModel.outcomesByThought) { _ in
+        .onChange(of: viewModel.outcomesByThought) { _, _ in
             viewModel.scheduleAutosave()
         }
-        .onChange(of: viewModel.beliefAfterMainThought) { _ in
+        .onChange(of: viewModel.beliefAfterMainThought) { _, _ in
             viewModel.scheduleAutosave()
         }
-        .onChange(of: viewModel.occurredAt) { _ in
+        .onChange(of: viewModel.occurredAt) { _, _ in
             viewModel.scheduleAutosave()
         }
-        .onChange(of: viewModel.maxRevealedSection) { newValue in
+        .onChange(of: viewModel.maxRevealedSection) { _, newValue in
             NotesDraftStore.save(entryId: viewModel.currentRecordId, section: newValue)
         }
         .alert("Ad unavailable", isPresented: $showAdErrorAlert) {
@@ -163,7 +163,7 @@ struct ThoughtEntryNotesView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .background(GlassBackground())
-        .onChange(of: focusedField) { newValue in
+        .onChange(of: focusedField) { _, newValue in
             guard let newValue, newValue != .title else { return }
             let section = viewModel.section(for: newValue)
             NotesDraftStore.save(entryId: viewModel.currentRecordId, section: section)
@@ -171,7 +171,7 @@ struct ThoughtEntryNotesView: View {
                 proxy.scrollTo(section, anchor: .top)
             }
         }
-        .onChange(of: viewModel.scrollTarget) { newTarget in
+        .onChange(of: viewModel.scrollTarget) { _, newTarget in
             guard let newTarget else { return }
             withAnimation(.easeInOut(duration: 0.2)) {
                 proxy.scrollTo(newTarget, anchor: .top)

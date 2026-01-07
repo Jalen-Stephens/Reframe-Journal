@@ -160,7 +160,7 @@ struct EmotionsView: View {
                     pendingDeleteId = nil
                 }
             }
-            .onChange(of: isCustomEmotion) { newValue in
+            .onChange(of: isCustomEmotion) { _, newValue in
                 if newValue {
                     DispatchQueue.main.async {
                         focusedField = .customEmotion

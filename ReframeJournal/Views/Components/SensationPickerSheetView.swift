@@ -43,7 +43,7 @@ struct SensationPickerSheetView: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .toolbar(.hidden, for: .navigationBar)
-        .onChange(of: showCustomInput) { newValue in
+        .onChange(of: showCustomInput) { _, newValue in
             if newValue {
                 isCustomFocused = true
             }
