@@ -1,24 +1,29 @@
+// File: App/RootView.swift
+// Root navigation view - updated for SwiftData
+
 import SwiftUI
+import SwiftData
 
 struct RootView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         ZStack {
             notesPalette.background.ignoresSafeArea()
             NavigationStack(path: $router.path) {
-                HomeView(repository: appState.repository)
+                HomeView()
                     .navigationDestination(for: Route.self) { route in
                         switch route {
                         case .allEntries:
-                            AllEntriesView(repository: appState.repository)
+                            AllEntriesView()
                         case let .entryDetail(id):
                             EntryDetailView(entryId: id, repository: appState.repository)
                         case let .thoughtEntry(id):
-                            NotesStyleEntryView(entryId: id, repository: appState.repository, thoughtUsage: appState.thoughtUsage)
+                            NotesStyleEntryView(entryId: id, modelContext: modelContext, thoughtUsage: appState.thoughtUsage)
                         case let .thoughtResponseDetail(entryId, thoughtId):
                             ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId, repository: appState.repository)
                         case let .aiReframeResult(entryId, action, depth):

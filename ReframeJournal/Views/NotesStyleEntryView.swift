@@ -3,6 +3,7 @@
 // Design principles: minimal chrome, text-first, typography-driven hierarchy
 
 import SwiftUI
+import SwiftData
 
 // MARK: - Main Entry View
 
@@ -13,6 +14,7 @@ struct NotesStyleEntryView: View {
     @EnvironmentObject private var limitsManager: LimitsManager
     @EnvironmentObject private var rewardedAdManager: RewardedAdManager
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
     
     @StateObject private var viewModel: ThoughtEntryViewModel
     @State private var focusedField: EntryField?
@@ -55,9 +57,8 @@ struct NotesStyleEntryView: View {
         case reflection
     }
     
-    init(entryId: String?, repository: ThoughtRecordRepository, thoughtUsage: ThoughtUsageService) {
-        let store = ThoughtEntryStore(repository: repository)
-        _viewModel = StateObject(wrappedValue: ThoughtEntryViewModel(entryId: entryId, store: store, thoughtUsage: thoughtUsage))
+    init(entryId: String?, modelContext: ModelContext, thoughtUsage: ThoughtUsageService) {
+        _viewModel = StateObject(wrappedValue: ThoughtEntryViewModel(entryId: entryId, modelContext: modelContext, thoughtUsage: thoughtUsage))
     }
     
     // MARK: - Body

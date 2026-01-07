@@ -1,18 +1,27 @@
+// File: Views/AllEntriesView.swift
+// All entries list with SwiftData @Query for automatic updates
+
 import SwiftUI
+import SwiftData
 
 struct AllEntriesView: View {
     @EnvironmentObject private var router: AppRouter
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel: AllEntriesViewModel
-
-    init(repository: ThoughtRecordRepository) {
-        _viewModel = StateObject(wrappedValue: AllEntriesViewModel(repository: repository))
-    }
+    @Environment(\.modelContext) private var modelContext
+    
+    // MARK: - SwiftData Query
+    // Automatically updates when entries change
+    @Query(
+        filter: #Predicate<JournalEntry> { !$0.isDraft },
+        sort: \JournalEntry.updatedAt,
+        order: .reverse
+    )
+    private var allEntries: [JournalEntry]
 
     var body: some View {
         Group {
-            if viewModel.entries.isEmpty {
+            if allEntries.isEmpty {
                 VStack(spacing: 10) {
                     Text("No entries yet.")
                         .font(.system(size: 16, weight: .semibold))
@@ -35,24 +44,23 @@ struct AllEntriesView: View {
                 .padding(.horizontal, 24)
             } else {
                 List {
-                    ForEach(viewModel.sections()) { section in
+                    ForEach(sections()) { section in
                         Section {
                             ForEach(section.entries) { entry in
-                                EntryListItemView(entry: entry) {
-                                    router.push(.thoughtEntry(id: entry.id))
+                                let record = entry.toThoughtRecord()
+                                EntryListItemView(entry: record) {
+                                    router.push(.thoughtEntry(id: entry.recordId))
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button {
-                                        router.push(.thoughtEntry(id: entry.id))
+                                        router.push(.thoughtEntry(id: entry.recordId))
                                     } label: {
                                         Label("Edit", systemImage: "pencil")
                                     }
                                     .tint(notesPalette.accent)
 
                                     Button(role: .destructive) {
-                                        Task { @MainActor in
-                                            await viewModel.deleteEntry(id: entry.id)
-                                        }
+                                        deleteEntry(entry)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -82,12 +90,47 @@ struct AllEntriesView: View {
                 }
             }
         }
-        .task {
-            await viewModel.loadIfNeeded()
-        }
     }
 
     private var rowInsets: EdgeInsets {
         EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
     }
+    
+    private func deleteEntry(_ entry: JournalEntry) {
+        modelContext.delete(entry)
+        try? modelContext.save()
+    }
+    
+    // MARK: - Sections
+    
+    private func sections() -> [AllEntriesSection] {
+        var today: [JournalEntry] = []
+        var yesterday: [JournalEntry] = []
+        var older: [JournalEntry] = []
+
+        for entry in allEntries {
+            let label = DateUtils.formatRelativeDate(DateUtils.isoString(from: entry.createdAt))
+            if label == "Today" {
+                today.append(entry)
+            } else if label == "Yesterday" {
+                yesterday.append(entry)
+            } else {
+                older.append(entry)
+            }
+        }
+
+        var sections: [AllEntriesSection] = []
+        if !today.isEmpty { sections.append(AllEntriesSection(title: "Today", entries: today)) }
+        if !yesterday.isEmpty { sections.append(AllEntriesSection(title: "Yesterday", entries: yesterday)) }
+        if !older.isEmpty { sections.append(AllEntriesSection(title: "Older", entries: older)) }
+        return sections
+    }
+}
+
+// MARK: - Section Model
+
+private struct AllEntriesSection: Identifiable {
+    let id = UUID()
+    let title: String
+    let entries: [JournalEntry]
 }

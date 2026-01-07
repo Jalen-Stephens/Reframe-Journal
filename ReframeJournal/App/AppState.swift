@@ -1,5 +1,9 @@
+// File: App/AppState.swift
+// Central app state container - updated for SwiftData
+
 import Combine
 import Foundation
+import SwiftData
 
 @MainActor
 final class AppState: ObservableObject {
@@ -8,7 +12,8 @@ final class AppState: ObservableObject {
     let thoughtUsage: ThoughtUsageService
     private var cancellables: Set<AnyCancellable> = []
 
-    init(repository: ThoughtRecordRepository) {
+    init(modelContext: ModelContext) {
+        let repository = ThoughtRecordRepository(modelContext: modelContext)
         self.repository = repository
         self.wizard = WizardViewModel(repository: repository)
         self.thoughtUsage = ThoughtUsageService()

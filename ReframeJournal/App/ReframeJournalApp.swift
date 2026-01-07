@@ -1,11 +1,16 @@
 // File: App/ReframeJournalApp.swift
+// App entry point - now using SwiftData for persistence
+
 import SwiftUI
+import SwiftData
 
 @main
 struct ReframeJournalApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
-    @StateObject private var thoughtStore: ThoughtRecordStore
+    // SwiftData ModelContainer
+    private let modelContainer: ModelContainer
+    
     @StateObject private var appState: AppState
     @StateObject private var router = AppRouter()
     @StateObject private var entitlementsManager = EntitlementsManager()
@@ -16,11 +21,20 @@ struct ReframeJournalApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
-        let store = ThoughtRecordStore()
+        // Initialize SwiftData ModelContainer
+        do {
+            let container = try ModelContainerConfig.makeContainer()
+            self.modelContainer = container
+            
+            // Initialize AppState with the model context
+            let context = container.mainContext
+            _appState = StateObject(wrappedValue: AppState(modelContext: context))
+        } catch {
+            fatalError("Failed to initialize SwiftData ModelContainer: \(error)")
+        }
+        
         let limits = LimitsManager()
         let rewarded = RewardedAdManager(adUnitID: RewardedAdManager.loadAdUnitID())
-        _thoughtStore = StateObject(wrappedValue: store)
-        _appState = StateObject(wrappedValue: AppState(repository: ThoughtRecordRepository(store: store)))
         _limitsManager = StateObject(wrappedValue: limits)
         _rewardedAdManager = StateObject(wrappedValue: rewarded)
     }
@@ -35,20 +49,13 @@ struct ReframeJournalApp: App {
             RootView()
                 .environmentObject(appState)
                 .environmentObject(router)
-                .environmentObject(thoughtStore)
                 .environmentObject(entitlementsManager)
                 .environmentObject(limitsManager)
                 .environmentObject(rewardedAdManager)
                 .preferredColorScheme(overrideScheme)
                 .notesTheme()
-                .onChange(of: scenePhase) { phase in
-                    if phase == .inactive || phase == .background {
-                        Task { @MainActor in
-                            await thoughtStore.flushPendingWrites()
-                        }
-                    }
-                }
         }
+        .modelContainer(modelContainer)
     }
 
     private var overrideScheme: ColorScheme? {
