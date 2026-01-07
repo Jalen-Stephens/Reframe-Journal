@@ -33,7 +33,6 @@ jobs:
 
       - name: Select Xcode version
         run: |
-          # Use latest stable Xcode on the runner
           sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
           xcodebuild -version
           xcrun simctl list devices available
@@ -58,7 +57,6 @@ jobs:
       - name: Build for testing
         run: |
           set -o pipefail
-          
           xcodebuild build-for-testing \
             -project ${{ env.PROJECT_PATH }} \
             -scheme ${{ env.SCHEME }} \
@@ -71,7 +69,6 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           set -o pipefail
-          
           xcodebuild test-without-building \
             -project ${{ env.PROJECT_PATH }} \
             -scheme ${{ env.SCHEME }} \
@@ -86,7 +83,6 @@ jobs:
         run: |
           echo "=== Extracting Code Coverage ==="
           
-          # Find the coverage data file
           XCRESULT_PATH="TestResults.xcresult"
           
           if [ ! -d "$XCRESULT_PATH" ]; then
@@ -97,43 +93,25 @@ jobs:
           # Generate JSON coverage report
           xcrun xccov view --report --json "$XCRESULT_PATH" > coverage.json
           
-          # Extract coverage for the main target (ReframeJournal.app)
-          # Using python3 to parse the JSON and calculate line coverage
-          COVERAGE_PERCENT=$(cat coverage.json | python3 -c "
-import json
-import sys
-
-data = json.load(sys.stdin)
-
-# Find the ReframeJournal target
-total_lines = 0
-covered_lines = 0
-
-for target in data.get('targets', []):
-    # Only count the main app target, not test targets
-    if 'ReframeJournal.app' in target.get('name', ''):
-        for file in target.get('files', []):
-            total_lines += file.get('lineCoverage', {}).get('count', 0) if isinstance(file.get('lineCoverage'), dict) else 0
-            covered_lines += file.get('lineCoverage', {}).get('covered', 0) if isinstance(file.get('lineCoverage'), dict) else 0
-            
-            # Alternative structure (flat lineCoverage as percentage)
-            if 'lineCoverage' in file and isinstance(file['lineCoverage'], (int, float)):
-                # This is already a percentage, we need to handle differently
-                pass
-        
-        # Use target-level coverage if available
-        line_cov = target.get('lineCoverage', 0)
-        if isinstance(line_cov, (int, float)):
-            print(f'{line_cov * 100:.2f}')
-            sys.exit(0)
-
-# Fallback: calculate from totals if per-file data was found
-if total_lines > 0:
-    print(f'{(covered_lines / total_lines) * 100:.2f}')
-else:
-    # Try simpler approach - just get overall coverage
-    print('0.00')
-")
+          # Extract coverage using Python script
+          cat > extract_coverage.py << 'EOF'
+          import json
+          import sys
+          
+          with open('coverage.json', 'r') as f:
+              data = json.load(f)
+          
+          for target in data.get('targets', []):
+              if 'ReframeJournal.app' in target.get('name', ''):
+                  line_cov = target.get('lineCoverage', 0)
+                  if isinstance(line_cov, (int, float)):
+                      print(f'{line_cov * 100:.2f}')
+                      sys.exit(0)
+          
+          print('0.00')
+          EOF
+          
+          COVERAGE_PERCENT=$(python3 extract_coverage.py)
           
           echo "Line Coverage: ${COVERAGE_PERCENT}%"
           echo "coverage_percent=$COVERAGE_PERCENT" >> $GITHUB_OUTPUT
@@ -145,16 +123,17 @@ else:
           
           # Check threshold
           THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
-          PASS=$(python3 -c "print('true' if float('${COVERAGE_PERCENT}') >= float('${THRESHOLD}') else 'false')")
           
           echo ""
           echo "=== Coverage Threshold Check ==="
           echo "Current Coverage: ${COVERAGE_PERCENT}%"
           echo "Required Threshold: ${THRESHOLD}%"
           
+          PASS=$(python3 -c "print('true' if float('${COVERAGE_PERCENT}') >= float('${THRESHOLD}') else 'false')")
+          
           if [ "$PASS" = "false" ]; then
             echo ""
-            echo "::error::❌ Code coverage ${COVERAGE_PERCENT}% is below the required threshold of ${THRESHOLD}%"
+            echo "::error::Code coverage ${COVERAGE_PERCENT}% is below the required threshold of ${THRESHOLD}%"
             echo ""
             echo "To fix this:"
             echo "1. Add more unit tests for uncovered code paths"
@@ -163,7 +142,7 @@ else:
             exit 1
           else
             echo ""
-            echo "✅ Code coverage ${COVERAGE_PERCENT}% meets the required threshold of ${THRESHOLD}%"
+            echo "Code coverage ${COVERAGE_PERCENT}% meets the required threshold of ${THRESHOLD}%"
           fi
 
       - name: Upload test results
@@ -184,7 +163,7 @@ else:
           THRESHOLD="${{ env.COVERAGE_THRESHOLD }}"
           
           if [ -n "$COVERAGE" ]; then
-            echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+            echo "## Code Coverage Report" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -194,8 +173,8 @@ else:
             
             PASS=$(python3 -c "print('true' if float('${COVERAGE}') >= float('${THRESHOLD}') else 'false')")
             if [ "$PASS" = "true" ]; then
-              echo "✅ **Coverage meets requirements**" >> $GITHUB_STEP_SUMMARY
+              echo "Coverage meets requirements" >> $GITHUB_STEP_SUMMARY
             else
-              echo "❌ **Coverage below threshold - please add more tests**" >> $GITHUB_STEP_SUMMARY
+              echo "Coverage below threshold - please add more tests" >> $GITHUB_STEP_SUMMARY
             fi
           fi
