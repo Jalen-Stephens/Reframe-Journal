@@ -289,10 +289,9 @@ struct NotesStyleEntryView: View {
             NotesExpandingTextArea(
                 text: $viewModel.situation,
                 placeholder: "Describe the situation that triggered your feelings...",
-                isFocused: focusBinding(for: .situation)
-            ) {
-                advanceToNextField()
-            }
+                isFocused: focusBinding(for: .situation),
+                onSubmit: { advanceToNextField() }
+            )
             
             sectionDivider
         }
@@ -552,10 +551,9 @@ struct NotesStyleEntryView: View {
                 NotesExpandingTextArea(
                     text: binding.text,
                     placeholder: "The thought that came up...",
-                    isFocused: focusBinding(for: .thought)
-                ) {
-                    advanceToNextField()
-                }
+                    isFocused: focusBinding(for: .thought),
+                    onSubmit: { advanceToNextField() }
+                )
                 
                 // Belief slider
                 VStack(alignment: .leading, spacing: 8) {
@@ -655,10 +653,9 @@ struct NotesStyleEntryView: View {
             NotesExpandingTextArea(
                 text: text,
                 placeholder: "Your response...",
-                isFocused: focusBinding(for: field)
-            ) {
-                advanceToNextField()
-            }
+                isFocused: focusBinding(for: field),
+                onSubmit: { advanceToNextField() }
+            )
         }
     }
     
@@ -675,11 +672,9 @@ struct NotesStyleEntryView: View {
                         set: { viewModel.updateOutcomeReflection(thoughtId: thoughtId, value: $0) }
                     ),
                     placeholder: "What feels more balanced now?",
-                    isFocused: focusBinding(for: .reflection)
-                ) {
-                    // Last field - dismiss keyboard
-                    focusedField = nil
-                }
+                    isFocused: focusBinding(for: .reflection),
+                    onSubmit: { focusedField = nil }  // Last field - dismiss keyboard
+                )
                 
                 // Belief after
                 VStack(alignment: .leading, spacing: 8) {
