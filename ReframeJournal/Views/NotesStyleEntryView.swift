@@ -970,10 +970,20 @@ struct NotesStyleEntryView: View {
     }
     
     private func restoreState() {
-        // Auto-focus situation for new or existing entries
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if focusedField == nil {
-                focusedField = .situation
+        // Only auto-focus for new/incomplete entries, not completed ones
+        // An entry is considered "complete" if it has an AI reframe or outcome reflection
+        let hasAIReframe = viewModel.aiReframe != nil
+        let hasOutcomeReflection = viewModel.automaticThoughts.first.flatMap { thought in
+            viewModel.outcomesByThought[thought.id]?.reflection
+        }?.isEmpty == false
+        
+        let isCompleted = hasAIReframe || hasOutcomeReflection
+        
+        if !isCompleted {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                if focusedField == nil {
+                    focusedField = .situation
+                }
             }
         }
     }
