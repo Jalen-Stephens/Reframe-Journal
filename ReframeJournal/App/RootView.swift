@@ -3,12 +3,12 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
-            themeManager.theme.background.ignoresSafeArea()
+            notesPalette.background.ignoresSafeArea()
             NavigationStack(path: $router.path) {
                 HomeView(repository: appState.repository)
                     .navigationDestination(for: Route.self) { route in
@@ -18,11 +18,13 @@ struct RootView: View {
                         case let .entryDetail(id):
                             EntryDetailView(entryId: id, repository: appState.repository)
                         case let .thoughtEntry(id):
-                            ThoughtEntryNotesView(entryId: id, repository: appState.repository, thoughtUsage: appState.thoughtUsage)
+                            NotesStyleEntryView(entryId: id, repository: appState.repository, thoughtUsage: appState.thoughtUsage)
                         case let .thoughtResponseDetail(entryId, thoughtId):
                             ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId, repository: appState.repository)
                         case let .aiReframeResult(entryId, action, depth):
                             AIReframeResultView(entryId: entryId, repository: appState.repository, action: action, depth: depth)
+                        case let .aiReframeNotes(entryId):
+                            AIReframeNotesView(entryId: entryId, repository: appState.repository)
                         case .wizardStep1:
                             DateTimeView()
                         case .wizardStep2:
@@ -42,11 +44,8 @@ struct RootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .onAppear {
-            themeManager.resolvedScheme = colorScheme
-        }
-        .onChange(of: colorScheme) { newValue in
-            themeManager.resolvedScheme = newValue
-        }
+        .toolbarBackground(notesPalette.background, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(colorScheme, for: .navigationBar)
     }
 }

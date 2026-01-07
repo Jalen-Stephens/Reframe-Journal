@@ -3,7 +3,7 @@ import SwiftUI
 struct AutomaticThoughtsView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     @State private var thoughtText: String = ""
     @State private var beliefValue: Double = 50
@@ -13,26 +13,26 @@ struct AutomaticThoughtsView: View {
         StepContentContainer(title: "Automatic Thought", step: 3, total: 6) {
             Text("What thought or image went through your mind? How much did you believe the thought at the time (0-100%)?")
                 .font(.system(size: 13))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
 
             LabeledInput(label: "Automatic thought", placeholder: "e.g. \"I'm going to mess this up\"", text: $thoughtText)
 
             VStack(spacing: 10) {
                 Text("\(Metrics.clampPercent(beliefValue))%")
                     .font(.system(size: 32, weight: .semibold))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                 Text("How strongly did you believe this?")
                     .font(.system(size: 14))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                 Slider(value: $beliefValue, in: 0...100, step: 1)
-                    .accentColor(themeManager.theme.accent)
+                    .accentColor(notesPalette.accent)
                 Text("0 = not at all, 100 = completely")
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             }
 
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
             StepBottomNavBar(

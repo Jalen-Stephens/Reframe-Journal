@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct GlassCard<Content: View>: View {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.notesPalette) private var notesPalette
 
     let emphasized: Bool
     let padding: CGFloat
@@ -15,30 +15,29 @@ struct GlassCard<Content: View>: View {
     }
 
     var body: some View {
+        let shape = RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius, style: .continuous)
+        let fill = emphasized ? notesPalette.glassFillEmphasized : notesPalette.glassFill
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                .ultraThinMaterial,
-                in: RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius, style: .continuous)
+            .background(fill, in: shape)
+            .overlay(
+                shape
+                    .fill(notesPalette.glassHighlight)
+                    .opacity(emphasized ? 0.28 : 0.18)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius, style: .continuous)
-                    .fill(AppTheme.glassHighlightGradient(for: colorScheme))
-                    .opacity(emphasized ? 0.45 : 0.28)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius, style: .continuous)
+                shape
                     .stroke(
-                        AppTheme.glassBorderColor(for: colorScheme),
+                        notesPalette.glassBorder,
                         lineWidth: emphasized ? AppTheme.glassStrokeWidthStrong : AppTheme.glassStrokeWidth
                     )
             )
             .shadow(
-                color: AppTheme.glassShadowColor(for: colorScheme),
-                radius: emphasized ? AppTheme.glassShadowRadius : AppTheme.glassShadowRadius * 0.6,
+                color: notesPalette.glassShadow,
+                radius: emphasized ? AppTheme.glassShadowRadius * 0.7 : AppTheme.glassShadowRadius * 0.5,
                 x: 0,
-                y: emphasized ? AppTheme.glassShadowYOffset : AppTheme.glassShadowYOffset * 0.6
+                y: emphasized ? AppTheme.glassShadowYOffset * 0.6 : AppTheme.glassShadowYOffset * 0.4
             )
     }
 }

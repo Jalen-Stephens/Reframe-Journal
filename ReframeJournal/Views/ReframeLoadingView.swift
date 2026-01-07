@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ReframeLoadingView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.notesPalette) private var notesPalette
     @State private var isAnimating = false
 
     let message: String
@@ -18,7 +18,7 @@ struct ReframeLoadingView: View {
 
     var body: some View {
         ZStack {
-            backgroundColor
+            notesPalette.background
                 .ignoresSafeArea()
 
             GeometryReader { proxy in
@@ -60,18 +60,17 @@ struct ReframeLoadingView: View {
         }
     }
 
-    private var backgroundColor: Color {
-        Color(uiColor: colorScheme == .dark ? .systemBackground : .systemGroupedBackground)
-    }
 }
 
 struct ReframeLoadingView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             ReframeLoadingView()
+                .notesTheme()
                 .previewDisplayName("Light")
             ReframeLoadingView()
                 .preferredColorScheme(.dark)
+                .notesTheme()
                 .previewDisplayName("Dark")
         }
     }

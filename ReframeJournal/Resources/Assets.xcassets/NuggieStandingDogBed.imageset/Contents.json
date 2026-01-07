@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "NuggieStandingDogBed.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

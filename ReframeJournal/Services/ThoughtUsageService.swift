@@ -4,6 +4,8 @@ import Foundation
 final class ThoughtUsageService {
     private let usageDateKey = "thoughtUsageDate"
     private let usageCountKey = "thoughtUsageCount"
+    private let usageIdsKey = "thoughtUsageIds"
+    private let devDisableLimitKey = "devDisableThoughtLimit"
     private let userDefaults: UserDefaults
 
     init(userDefaults: UserDefaults = .standard) {
@@ -18,17 +20,35 @@ final class ThoughtUsageService {
 
     func getTodayCount() -> Int {
         resetIfNewDay()
+        if let ids = userDefaults.stringArray(forKey: usageIdsKey) {
+            return ids.count
+        }
         return userDefaults.integer(forKey: usageCountKey)
     }
 
-    func incrementTodayCount() {
+    @discardableResult
+    func incrementTodayCount(recordId: String, createdAt: String? = nil) -> Bool {
         resetIfNewDay()
-        let count = userDefaults.integer(forKey: usageCountKey)
-        userDefaults.set(count + 1, forKey: usageCountKey)
+        if let createdAt, let createdDate = DateUtils.parseIso(createdAt) {
+            let today = Self.localDayString(for: Date())
+            let createdDay = Self.localDayString(for: createdDate)
+            if createdDay != today {
+                return false
+            }
+        }
+        var ids = userDefaults.stringArray(forKey: usageIdsKey) ?? []
+        guard !ids.contains(recordId) else { return false }
+        ids.append(recordId)
+        userDefaults.set(ids, forKey: usageIdsKey)
+        userDefaults.set(ids.count, forKey: usageCountKey)
+        return true
     }
 
     func canCreateThought() -> Bool {
         if hasUnlimitedThoughts {
+            return true
+        }
+        if isDevLimitDisabled {
             return true
         }
         return getTodayCount() < 3
@@ -40,6 +60,7 @@ final class ThoughtUsageService {
         if storedDate != today {
             userDefaults.set(today, forKey: usageDateKey)
             userDefaults.set(0, forKey: usageCountKey)
+            userDefaults.set([], forKey: usageIdsKey)
         }
     }
 
@@ -50,5 +71,9 @@ final class ThoughtUsageService {
         formatter.timeZone = TimeZone.current
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
+    }
+
+    private var isDevLimitDisabled: Bool {
+        userDefaults.bool(forKey: devDisableLimitKey)
     }
 }

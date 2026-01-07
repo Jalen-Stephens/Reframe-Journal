@@ -4,6 +4,8 @@ import Foundation
 final class HomeViewModel: ObservableObject {
     @Published var entries: [ThoughtRecord] = []
     @Published var hasDraft: Bool = false
+    @Published var draftEntryId: String? = nil
+    @Published var hasWizardDraft: Bool = false
     @Published var isLoading: Bool = false
     @Published var hasLoaded: Bool = false
 
@@ -42,11 +44,24 @@ final class HomeViewModel: ObservableObject {
             entries = []
         }
         do {
-            let draft = try await repository.fetchDraft()
-            hasDraft = (draft != nil)
+            if let draft = NotesDraftStore.load() {
+                let record = try await repository.fetch(id: draft.entryId)
+                draftEntryId = record?.id
+                hasDraft = (record != nil)
+                if record == nil {
+                    NotesDraftStore.clear()
+                }
+            } else {
+                hasDraft = false
+                draftEntryId = nil
+            }
+            let wizardDraft = try await repository.fetchDraft()
+            hasWizardDraft = (wizardDraft != nil)
         } catch {
             print("Load draft flag failed", error)
             hasDraft = false
+            draftEntryId = nil
+            hasWizardDraft = false
         }
     }
 

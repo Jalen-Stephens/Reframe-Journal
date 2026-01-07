@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ExpandableTextView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let text: String
     var lineLimit: Int = 2
@@ -15,14 +15,14 @@ struct ExpandableTextView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(displayText.isEmpty ? (placeholder ?? "") : displayText)
                 .font(textStyle)
-                .foregroundColor(displayText.isEmpty ? themeManager.theme.textSecondary : themeManager.theme.textPrimary)
+                .foregroundColor(displayText.isEmpty ? notesPalette.textSecondary : notesPalette.textPrimary)
                 .lineLimit(isExpanded ? nil : lineLimit)
             if displayText.count > 120 {
                 Button(isExpanded ? "Show less" : "Read more") {
                     isExpanded.toggle()
                 }
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(themeManager.theme.accent)
+                .foregroundColor(notesPalette.accent)
             }
         }
     }

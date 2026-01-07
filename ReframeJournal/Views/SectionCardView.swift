@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SectionCardView<Content: View>: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let title: String
     var subtitle: String? = nil
@@ -29,18 +29,18 @@ struct SectionCardView<Content: View>: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(title)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textPrimary)
+                            .foregroundColor(notesPalette.textPrimary)
                         if let subtitle {
                             Text(subtitle)
                                 .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                         }
                     }
                     Spacer()
                     if collapsible {
                         Text(isExpanded ? "v" : ">")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                 }
             }

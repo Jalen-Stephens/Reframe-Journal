@@ -2,7 +2,7 @@ import SwiftUI
 
 struct EntryDetailView: View {
     @EnvironmentObject private var router: AppRouter
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @StateObject private var viewModel: EntryDetailViewModel
 
     let entryId: String
@@ -18,17 +18,17 @@ struct EntryDetailView: View {
         Group {
             if viewModel.isLoading {
                 Text("Loading...")
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                     .padding(16)
             } else if let record = viewModel.record {
                 content(for: record)
             } else {
                 Text("Entry not found")
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                     .padding(16)
             }
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             await viewModel.loadIfNeeded(id: entryId)
@@ -82,7 +82,7 @@ struct EntryDetailView: View {
                     HStack {
                         Text(timeLabel)
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                         Spacer()
                         ProgressPillView(status: status)
                     }
@@ -94,20 +94,20 @@ struct EntryDetailView: View {
                     HStack {
                         Text("Outcome")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textPrimary)
+                            .foregroundColor(notesPalette.textPrimary)
                         Spacer()
                         Text("Belief in main thought")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                     Text(beliefAfter != nil ? "\(Metrics.clampPercent(beliefAfter ?? 0))%" : "Not recorded")
                         .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
 
                     if emotionsAfter.isEmpty {
                         Text("No emotions recorded after.")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     } else {
                         VStack(spacing: 10) {
                             ForEach(emotionsAfter, id: \.id) { emotion in
@@ -130,16 +130,16 @@ struct EntryDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Before snapshot")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     if beforeSummaryItems.isEmpty {
                         Text("No before details saved.")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     } else {
                         ForEach(beforeSummaryItems, id: \.self) { item in
                             Text(item)
                                 .font(.system(size: 12))
-                                .foregroundColor(themeManager.theme.textSecondary)
+                                .foregroundColor(notesPalette.textSecondary)
                         }
                     }
                 }
@@ -150,7 +150,7 @@ struct EntryDetailView: View {
                     if thoughts.isEmpty {
                         Text("No automatic thought saved.")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     } else {
                         VStack(spacing: 10) {
                             ForEach(thoughts, id: \.id) { thought in
@@ -164,7 +164,7 @@ struct EntryDetailView: View {
                     if emotionsBefore.isEmpty {
                         Text("No emotions saved.")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     } else {
                         VStack(spacing: 10) {
                             ForEach(emotionsBefore, id: \.id) { emotion in
@@ -178,7 +178,7 @@ struct EntryDetailView: View {
                     if adaptiveSummaries.isEmpty {
                         Text("No adaptive responses saved.")
                             .font(.system(size: 12))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     } else {
                         VStack(spacing: 12) {
                             ForEach(adaptiveSummaries, id: \.thoughtId) { summary in
@@ -189,11 +189,11 @@ struct EntryDetailView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(summary.thoughtText)
                                                 .font(.system(size: 14, weight: .semibold))
-                                                .foregroundColor(themeManager.theme.textPrimary)
+                                                .foregroundColor(notesPalette.textPrimary)
                                                 .lineLimit(2)
                                             Text("Original \(summary.originalBelief)%")
                                                 .font(.system(size: 12))
-                                                .foregroundColor(themeManager.theme.textSecondary)
+                                                .foregroundColor(notesPalette.textSecondary)
                                         }
                                         Spacer()
                                         if summary.completedCount == summary.totalCount {
@@ -201,11 +201,11 @@ struct EntryDetailView: View {
                                         } else {
                                             Text("\(summary.completedCount)/\(summary.totalCount)")
                                                 .font(.system(size: 12, weight: .semibold))
-                                                .foregroundColor(themeManager.theme.textSecondary)
+                                                .foregroundColor(notesPalette.textSecondary)
                                         }
                                         Text(">")
                                             .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(themeManager.theme.textSecondary)
+                                            .foregroundColor(notesPalette.textSecondary)
                                     }
                                     .padding(12)
                                     .pillSurface(cornerRadius: 12)
@@ -239,14 +239,14 @@ struct EntryDetailView: View {
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
             .pillSurface(cornerRadius: 10)
-            .foregroundColor(themeManager.theme.textPrimary)
+            .foregroundColor(notesPalette.textPrimary)
             .buttonStyle(.plain)
 
             Spacer()
 
             Text("Entry")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
 
             Spacer()
 
@@ -257,7 +257,7 @@ struct EntryDetailView: View {
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
             .pillSurface(cornerRadius: 10)
-            .foregroundColor(themeManager.theme.textPrimary)
+            .foregroundColor(notesPalette.textPrimary)
             .buttonStyle(.plain)
         }
     }
@@ -389,29 +389,29 @@ struct EntryDetailView: View {
         return VStack(alignment: .leading, spacing: 10) {
             Text("AI Reframe")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
 
             if let result = record.aiReframe {
                 let fallback = result.validation ?? "AI Reframe saved."
                 Text(previewText.isEmpty ? fallback : previewText)
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                     .lineLimit(2)
                 Button("View") {
                     let depth = record.aiReframeDepth ?? .deep
                     router.push(.aiReframeResult(entryId: record.id, action: .view, depth: depth))
                 }
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(themeManager.theme.accent)
+                .foregroundColor(notesPalette.accent)
             } else {
                 Text("No AI Reframe yet.")
                     .font(.system(size: 12))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                 Button("Generate") {
                     router.push(.aiReframeResult(entryId: record.id, action: .generate, depth: .deep))
                 }
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(themeManager.theme.accent)
+                .foregroundColor(notesPalette.accent)
             }
         }
         .padding(16)
@@ -454,7 +454,7 @@ private struct OutcomeDeltas {
 
 private struct EditEntrySheet: View {
     @EnvironmentObject private var router: AppRouter
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let record: ThoughtRecord
     let onDismiss: () -> Void
@@ -463,7 +463,7 @@ private struct EditEntrySheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Edit entry")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             Button {
                 onDismiss()
                 router.push(.thoughtEntry(id: record.id))
@@ -471,11 +471,11 @@ private struct EditEntrySheet: View {
                 HStack {
                     Text("Edit in Notes view")
                         .font(.system(size: 14))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     Spacer()
                     Text(">")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
                 .padding(12)
                 .pillSurface(cornerRadius: 10)
@@ -485,12 +485,12 @@ private struct EditEntrySheet: View {
                 onDismiss()
             }
             .font(.system(size: 14, weight: .semibold))
-            .foregroundColor(themeManager.theme.textSecondary)
+            .foregroundColor(notesPalette.textSecondary)
             .frame(maxWidth: .infinity)
             .padding(.top, 8)
         }
         .padding(16)
-        .background(themeManager.theme.background)
+        .background(notesPalette.background)
         .presentationDetents([.medium])
     }
 }

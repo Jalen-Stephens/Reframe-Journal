@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SlimMeterRowView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let label: String
     let value: Int
@@ -12,16 +12,16 @@ struct SlimMeterRowView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.system(size: 13, weight: boldLabel ? .semibold : .regular))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
                 .lineLimit(labelLines)
             GeometryReader { proxy in
                 let width = proxy.size.width * CGFloat(Metrics.clampPercent(value)) / 100.0
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(themeManager.theme.muted)
+                        .fill(notesPalette.muted)
                         .frame(height: 6)
                     Capsule()
-                        .fill(themeManager.theme.accent)
+                        .fill(notesPalette.accent)
                         .frame(width: width, height: 6)
                 }
             }

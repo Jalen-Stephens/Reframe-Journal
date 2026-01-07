@@ -40,10 +40,25 @@ final class AllEntriesViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         do {
-            entries = try await repository.fetchAll()
+            let records = try await repository.fetchAll()
+            // Sort by insertion/last-updated time instead of the user-entered occurred date.
+            entries = records.sorted { lhs, rhs in
+                let left = DateUtils.parseIso(lhs.updatedAt) ?? DateUtils.parseIso(lhs.createdAt) ?? .distantPast
+                let right = DateUtils.parseIso(rhs.updatedAt) ?? DateUtils.parseIso(rhs.createdAt) ?? .distantPast
+                return left > right
+            }
         } catch {
             print("Load all entries failed", error)
             entries = []
+        }
+    }
+
+    func deleteEntry(id: String) async {
+        do {
+            try await repository.delete(id: id)
+            entries.removeAll { $0.id == id }
+        } catch {
+            print("Delete entry failed", error)
         }
     }
 

@@ -3,7 +3,7 @@ import SwiftUI
 struct SituationView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     private let commonSensations = [
         "Tight chest",
@@ -27,7 +27,7 @@ struct SituationView: View {
         StepContentContainer(title: "Situation", step: 2, total: 6) {
             Text("What led to the unpleasant emotion? What distressing physical sensations did you have?")
                 .font(.system(size: 13))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
 
             LabeledInput(
                 label: "Situation",
@@ -38,7 +38,7 @@ struct SituationView: View {
 
             Text("Physical sensations")
                 .font(.system(size: 14))
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
 
             Button {
                 isPickerPresented = true
@@ -46,11 +46,11 @@ struct SituationView: View {
                 HStack {
                     Text("Select common sensations")
                         .font(.system(size: 14))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     Spacer()
                     Text("▼")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
                 .padding(10)
                 .pillSurface(cornerRadius: 6)
@@ -67,7 +67,7 @@ struct SituationView: View {
             if selectedSensations.isEmpty {
                 Text("No sensations selected.")
                     .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
             } else {
                 LazyVGrid(columns: chipColumns, alignment: .leading, spacing: 8) {
                     ForEach(displayedSensations, id: \.self) { item in
@@ -78,7 +78,7 @@ struct SituationView: View {
                 }
             }
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) {
             StepBottomNavBar(

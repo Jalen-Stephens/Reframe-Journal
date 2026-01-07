@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ThoughtResponseDetailView: View {
     @EnvironmentObject private var router: AppRouter
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
     @StateObject private var viewModel: ThoughtResponseDetailViewModel
 
     let entryId: String
@@ -18,17 +18,17 @@ struct ThoughtResponseDetailView: View {
         Group {
             if viewModel.isLoading {
                 Text("Loading...")
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                     .padding(16)
             } else if let record = viewModel.record {
                 content(for: record)
             } else {
                 Text("Entry not found")
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
                     .padding(16)
             }
         }
-        .background(themeManager.theme.background.ignoresSafeArea())
+        .background(notesPalette.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             await viewModel.loadIfNeeded(entryId: entryId)
@@ -49,14 +49,14 @@ struct ThoughtResponseDetailView: View {
                     .padding(.vertical, 6)
                     .padding(.horizontal, 10)
                     .pillSurface(cornerRadius: 10)
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                     .buttonStyle(.plain)
 
                     Spacer()
 
                     Text("Adaptive responses")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
 
                     Spacer()
                     Color.clear.frame(width: 58)
@@ -65,11 +65,11 @@ struct ThoughtResponseDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Thought")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                     ExpandableTextView(text: thought?.text ?? "Untitled thought", lineLimit: 2, textStyle: .system(size: 16, weight: .semibold))
                     Text("Original belief: \(Metrics.clampPercent(thought?.beliefBefore ?? 0))%")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
                 .padding(16)
                 .cardSurface(cornerRadius: 16, shadow: false)
@@ -81,13 +81,13 @@ struct ThoughtResponseDetailView: View {
                         Text("\(index + 1)")
                             .font(.system(size: 12, weight: .semibold))
                             .frame(width: 28, height: 28)
-                            .background(themeManager.theme.muted)
+                            .background(notesPalette.muted)
                             .clipShape(Circle())
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                         VStack(alignment: .leading, spacing: 10) {
                             Text(prompt.label)
                                 .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(themeManager.theme.textPrimary)
+                                .foregroundColor(notesPalette.textPrimary)
                             VStack(alignment: .leading, spacing: 6) {
                                 ExpandableTextView(
                                     text: responseText,
@@ -97,25 +97,25 @@ struct ThoughtResponseDetailView: View {
                                 )
                             }
                             .padding(10)
-                            .background(themeManager.theme.background)
+                            .background(notesPalette.background)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(themeManager.theme.border, lineWidth: 1)
+                                    .stroke(notesPalette.border, lineWidth: 1)
                             )
 
                             HStack {
                                 Text("Belief in this response")
                                     .font(.system(size: 12))
-                                    .foregroundColor(themeManager.theme.textSecondary)
+                                    .foregroundColor(notesPalette.textSecondary)
                                 Spacer()
                                 Text("\(Metrics.clampPercent(beliefValue))%")
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(themeManager.theme.textSecondary)
+                                    .foregroundColor(notesPalette.textSecondary)
                             }
 
                             Slider(value: .constant(Double(Metrics.clampPercent(beliefValue))), in: 0...100, step: 1)
                                 .disabled(true)
-                                .accentColor(themeManager.theme.accent)
+                                .accentColor(notesPalette.accent)
                         }
                     }
                     .padding(14)

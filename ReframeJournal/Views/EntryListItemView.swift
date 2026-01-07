@@ -1,24 +1,37 @@
 import SwiftUI
 
 struct EntryListItemView: View {
+    @Environment(\.notesPalette) private var notesPalette
+
     let entry: ThoughtRecord
     let onTap: () -> Void
 
     var body: some View {
+        let status = entry.completionStatus
         Button(action: onTap) {
             GlassCard(padding: AppTheme.cardPaddingCompact) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(titleLabel(for: entry))
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                    Text(DateUtils.formatRelativeDateTime(entry.createdAt))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                HStack(alignment: .center, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(titleLabel(for: entry))
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                            .lineLimit(2)
+                        Text(DateUtils.formatRelativeDateTime(entry.createdAt))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    AppIconView(icon: status.icon, size: 20)
+                        .foregroundStyle(notesPalette.textTertiary)
+                        .frame(width: 22, height: 22)
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.easeInOut(duration: 0.2), value: status)
                 }
             }
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(titleLabel(for: entry)). \(status.accessibilityLabel).")
     }
 
     private func titleLabel(for record: ThoughtRecord) -> String {

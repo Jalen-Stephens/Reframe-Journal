@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SelectedChipView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let label: String
     let onRemove: () -> Void
@@ -14,10 +14,10 @@ struct SelectedChipView: View {
                     .font(.system(size: 10, weight: .bold))
             }
             .font(.system(size: 12, weight: .semibold))
-            .foregroundColor(themeManager.theme.textPrimary)
+            .foregroundColor(notesPalette.textPrimary)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(themeManager.theme.muted)
+            .background(notesPalette.muted)
             .clipShape(Capsule())
         }
         .buttonStyle(.plain)

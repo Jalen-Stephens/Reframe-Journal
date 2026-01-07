@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PrimaryButton: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let label: String
     let onPress: () -> Void
@@ -18,10 +18,10 @@ struct PrimaryButton: View {
         }) {
             Text(label)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(themeManager.theme.onAccent)
+                .foregroundColor(notesPalette.onAccent)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(themeManager.theme.accent)
+                .background(notesPalette.accent)
                 .clipShape(Capsule())
                 .opacity(disabled ? 0.5 : 1)
         }

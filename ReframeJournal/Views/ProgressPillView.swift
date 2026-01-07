@@ -6,15 +6,15 @@ enum ProgressStatus {
 }
 
 struct ProgressPillView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     let status: ProgressStatus
     var label: String? = nil
 
     var body: some View {
         let text = label ?? (status == .complete ? "Complete" : "In progress")
-        let background = status == .complete ? themeManager.theme.accent : themeManager.theme.muted
-        let foreground = status == .complete ? themeManager.theme.onAccent : themeManager.theme.textSecondary
+        let background = status == .complete ? notesPalette.accent : notesPalette.muted
+        let foreground = status == .complete ? notesPalette.onAccent : notesPalette.textSecondary
 
         Text(text)
             .font(.system(size: 11, weight: .semibold))

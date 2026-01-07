@@ -6,6 +6,7 @@ enum Route: Hashable {
     case thoughtEntry(id: String?)
     case thoughtResponseDetail(entryId: String, thoughtId: String)
     case aiReframeResult(entryId: String, action: AIReframeAction, depth: AIReframeDepth)
+    case aiReframeNotes(entryId: String)
     case wizardStep1
     case wizardStep2
     case wizardStep3

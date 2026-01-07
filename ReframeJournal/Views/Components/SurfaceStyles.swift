@@ -3,76 +3,38 @@ import SwiftUI
 // MARK: - Surface Styles
 
 struct CardSurface: ViewModifier {
-    @EnvironmentObject private var themeManager: ThemeManager
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.notesPalette) private var notesPalette
 
     let cornerRadius: CGFloat
     let shadow: Bool
 
     func body(content: Content) -> some View {
         content
-            .background(themeManager.theme.card)
+            .background(notesPalette.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor, lineWidth: 1)
+                    .stroke(notesPalette.separator.opacity(0.6), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .shadow(color: shadowColor, radius: shadow ? 10 : 0, x: 0, y: shadow ? 4 : 0)
-    }
-
-    private var borderColor: Color {
-        switch colorScheme {
-        case .dark:
-            return Color.white.opacity(0.08)
-        default:
-            return Color.black.opacity(0.06)
-        }
-    }
-
-    private var shadowColor: Color {
-        switch colorScheme {
-        case .dark:
-            return Color.black.opacity(0.35)
-        default:
-            return Color.black.opacity(0.08)
-        }
+            .shadow(color: notesPalette.glassShadow, radius: shadow ? 8 : 0, x: 0, y: shadow ? 3 : 0)
     }
 }
 
 struct PillSurface: ViewModifier {
-    @EnvironmentObject private var themeManager: ThemeManager
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.notesPalette) private var notesPalette
 
     let cornerRadius: CGFloat
     let shadow: Bool
 
     func body(content: Content) -> some View {
         content
-            .background(themeManager.theme.card)
+            .background(notesPalette.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor, lineWidth: 1)
+                    .stroke(notesPalette.separator.opacity(0.6), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .shadow(color: shadowColor, radius: shadow ? 6 : 0, x: 0, y: shadow ? 3 : 0)
-    }
-
-    private var borderColor: Color {
-        switch colorScheme {
-        case .dark:
-            return Color.white.opacity(0.08)
-        default:
-            return Color.black.opacity(0.06)
-        }
-    }
-
-    private var shadowColor: Color {
-        switch colorScheme {
-        case .dark:
-            return Color.black.opacity(0.3)
-        default:
-            return Color.black.opacity(0.06)
-        }
+            .shadow(color: notesPalette.glassShadow, radius: shadow ? 6 : 0, x: 0, y: shadow ? 2 : 0)
     }
 }
 

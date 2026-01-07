@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SensationPickerSheetView: View {
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     @Binding var selectedSensations: [String]
     @Binding var isPresented: Bool
@@ -28,7 +28,7 @@ struct SensationPickerSheetView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .padding(16)
-        .background(themeManager.theme.background)
+        .background(notesPalette.background)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {
                 if showCustomInput {
@@ -37,7 +37,7 @@ struct SensationPickerSheetView: View {
                 doneButton
             }
             .padding(16)
-            .background(themeManager.theme.background)
+            .background(notesPalette.background)
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
@@ -53,7 +53,7 @@ struct SensationPickerSheetView: View {
         HStack {
             Text("Physical sensations")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
             Spacer()
         }
     }
@@ -61,13 +61,13 @@ struct SensationPickerSheetView: View {
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(themeManager.theme.textSecondary)
+                .foregroundColor(notesPalette.textSecondary)
             TextField("Search sensations", text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
                 .onSubmit {
                     dismissKeyboard()
                 }
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
                 .submitLabel(.search)
         }
         .padding(10)
@@ -81,12 +81,12 @@ struct SensationPickerSheetView: View {
             HStack {
                 Text(sensation)
                     .font(.system(size: 14))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                 Spacer()
                 if isSelected(sensation) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(themeManager.theme.accent)
+                        .foregroundColor(notesPalette.accent)
                 }
             }
             .padding(12)
@@ -106,11 +106,11 @@ struct SensationPickerSheetView: View {
                 HStack {
                     Text("Custom...")
                         .font(.system(size: 14))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     Spacer()
                     Image(systemName: showCustomInput ? "chevron.up" : "chevron.down")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
                 .padding(12)
                 .pillSurface(cornerRadius: 10)
@@ -123,7 +123,7 @@ struct SensationPickerSheetView: View {
         HStack(spacing: 8) {
             TextField("Describe your sensation", text: $customText)
                 .textFieldStyle(PlainTextFieldStyle())
-                .foregroundColor(themeManager.theme.textPrimary)
+                .foregroundColor(notesPalette.textPrimary)
                 .submitLabel(.done)
                 .focused($isCustomFocused)
                 .onSubmit {
@@ -136,8 +136,8 @@ struct SensationPickerSheetView: View {
             .font(.system(size: 13, weight: .semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            .background(themeManager.theme.muted)
-            .foregroundColor(themeManager.theme.textPrimary)
+            .background(notesPalette.muted)
+            .foregroundColor(notesPalette.textPrimary)
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .padding(10)
@@ -152,8 +152,8 @@ struct SensationPickerSheetView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(themeManager.theme.accent)
-                .foregroundColor(themeManager.theme.onAccent)
+                .background(notesPalette.accent)
+                .foregroundColor(notesPalette.onAccent)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .contentShape(Rectangle())
         }

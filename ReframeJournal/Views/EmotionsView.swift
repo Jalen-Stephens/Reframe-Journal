@@ -3,7 +3,7 @@ import SwiftUI
 struct EmotionsView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.notesPalette) private var notesPalette
 
     @FocusState private var focusedField: FocusField?
 
@@ -39,11 +39,11 @@ struct EmotionsView: View {
             StepContentContainer(title: "Emotions", step: 4, total: 6) {
                 Text("What emotion/s did you feel at the time? How intense was the emotion (0-100%)?")
                     .font(.system(size: 13))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
 
                 Text("Emotion")
                     .font(.system(size: 14))
-                    .foregroundColor(themeManager.theme.textSecondary)
+                    .foregroundColor(notesPalette.textSecondary)
 
                 Button {
                     showPicker = true
@@ -51,11 +51,11 @@ struct EmotionsView: View {
                     HStack {
                         Text(displayLabel())
                             .font(.system(size: 15))
-                            .foregroundColor(emotionLabel.isEmpty ? themeManager.theme.placeholder : themeManager.theme.textPrimary)
+                            .foregroundColor(emotionLabel.isEmpty ? notesPalette.placeholder : notesPalette.textPrimary)
                         Spacer()
                         Text("▼")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                     }
                     .padding(10)
                     .pillSurface(cornerRadius: 6)
@@ -66,7 +66,7 @@ struct EmotionsView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Custom emotion")
                             .font(.system(size: 14))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                         TextField("Describe your emotion", text: $customEmotion)
                             .textFieldStyle(PlainTextFieldStyle())
                             .submitLabel(.done)
@@ -74,7 +74,7 @@ struct EmotionsView: View {
                                 dismissKeyboard()
                             }
                             .padding(10)
-                            .foregroundColor(themeManager.theme.textPrimary)
+                            .foregroundColor(notesPalette.textPrimary)
                             .cardSurface(cornerRadius: 8, shadow: false)
                             .focused($focusedField, equals: .customEmotion)
                     }
@@ -85,28 +85,28 @@ struct EmotionsView: View {
                     HStack {
                         Text("Editing emotion")
                             .font(.system(size: 13))
-                            .foregroundColor(themeManager.theme.textSecondary)
+                            .foregroundColor(notesPalette.textSecondary)
                         Spacer()
                         Button("Cancel edit") {
                             resetInputs()
                         }
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(themeManager.theme.accent)
+                        .foregroundColor(notesPalette.accent)
                     }
                 }
 
                 VStack(spacing: 10) {
                     Text("\(Metrics.clampPercent(intensityValue))%")
                         .font(.system(size: 32, weight: .semibold))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                     Text("How intense was this emotion?")
                         .font(.system(size: 14))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                     Slider(value: $intensityValue, in: 0...100, step: 1)
-                        .accentColor(themeManager.theme.accent)
+                        .accentColor(notesPalette.accent)
                     Text("0 = not at all, 100 = most intense")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                 }
 
                 PrimaryButton(
@@ -118,7 +118,7 @@ struct EmotionsView: View {
                 if appState.wizard.draft.emotions.isEmpty {
                     Text("Add at least one emotion to continue.")
                         .font(.system(size: 12))
-                        .foregroundColor(themeManager.theme.textSecondary)
+                        .foregroundColor(notesPalette.textSecondary)
                         .padding(.top, 4)
                 }
 
@@ -134,7 +134,7 @@ struct EmotionsView: View {
                     }
                 }
             }
-            .background(themeManager.theme.background.ignoresSafeArea())
+            .background(notesPalette.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .bottom) {
                 StepBottomNavBar(
@@ -261,7 +261,7 @@ struct EmotionsView: View {
                             showPicker = false
                         }
                         .font(.system(size: 15))
-                        .foregroundColor(themeManager.theme.textPrimary)
+                        .foregroundColor(notesPalette.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     Button("Custom...") {
@@ -270,7 +270,7 @@ struct EmotionsView: View {
                         showPicker = false
                     }
                     .font(.system(size: 15))
-                    .foregroundColor(themeManager.theme.textPrimary)
+                    .foregroundColor(notesPalette.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
