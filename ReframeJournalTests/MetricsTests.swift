@@ -38,9 +38,9 @@ final class MetricsTests: XCTestCase {
     
     func testClampPercentDoubleRounding() {
         XCTAssertEqual(Metrics.clampPercent(50.4), 50)
-        XCTAssertEqual(Metrics.clampPercent(50.5), 50) // Rounds to nearest even
+        XCTAssertEqual(Metrics.clampPercent(50.5), 51) // Standard rounding (away from zero)
         XCTAssertEqual(Metrics.clampPercent(50.6), 51)
-        XCTAssertEqual(Metrics.clampPercent(49.5), 50) // Rounds to nearest even
+        XCTAssertEqual(Metrics.clampPercent(49.5), 50) // Standard rounding (away from zero)
     }
     
     func testClampPercentDoubleNegativeValue() {

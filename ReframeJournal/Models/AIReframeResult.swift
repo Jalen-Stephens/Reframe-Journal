@@ -351,7 +351,9 @@ No placeholders like "(item)".
         if text.contains("\n") {
             return text
                 .components(separatedBy: .newlines)
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "-•")) }
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines)
+                        .trimmingCharacters(in: CharacterSet(charactersIn: "-•"))
+                        .trimmingCharacters(in: .whitespaces) }
                 .filter { !$0.isEmpty }
         }
         return [text]
