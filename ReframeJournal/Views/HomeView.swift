@@ -71,6 +71,17 @@ struct HomeView: View {
                         .listRowInsets(rowInsets)
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
+                    
+                    Image("NuggieStandingDogBed")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 220)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 24)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .accessibilityLabel("Nuggie standing by a dog bed")
                 } else {
                     // "Recent entries" collapsible section with max 2 entries
                     Button {
