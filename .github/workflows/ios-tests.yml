@@ -16,7 +16,7 @@ concurrency:
 
 env:
   SCHEME: ReframeJournal
-  PROJECT_PATH: Reframe-Journal/ReframeJournal.xcodeproj
+  PROJECT_PATH: ReframeJournal.xcodeproj
   SIMULATOR_NAME: iPhone 15
   SIMULATOR_OS: "17.2"
   COVERAGE_THRESHOLD: 80
@@ -49,20 +49,18 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Resolve Swift packages
-        working-directory: Reframe-Journal
         run: |
           xcodebuild -resolvePackageDependencies \
-            -project ReframeJournal.xcodeproj \
+            -project ${{ env.PROJECT_PATH }} \
             -scheme ${{ env.SCHEME }} \
             -clonedSourcePackagesDirPath SourcePackages
 
       - name: Build for testing
-        working-directory: Reframe-Journal
         run: |
           set -o pipefail
           
           xcodebuild build-for-testing \
-            -project ReframeJournal.xcodeproj \
+            -project ${{ env.PROJECT_PATH }} \
             -scheme ${{ env.SCHEME }} \
             -destination "platform=iOS Simulator,name=${{ env.SIMULATOR_NAME }},OS=${{ env.SIMULATOR_OS }}" \
             -derivedDataPath DerivedData \
@@ -71,12 +69,11 @@ jobs:
             | xcpretty --color
 
       - name: Run unit tests with coverage
-        working-directory: Reframe-Journal
         run: |
           set -o pipefail
           
           xcodebuild test-without-building \
-            -project ReframeJournal.xcodeproj \
+            -project ${{ env.PROJECT_PATH }} \
             -scheme ${{ env.SCHEME }} \
             -destination "platform=iOS Simulator,name=${{ env.SIMULATOR_NAME }},OS=${{ env.SIMULATOR_OS }}" \
             -derivedDataPath DerivedData \
@@ -86,7 +83,6 @@ jobs:
 
       - name: Extract and validate code coverage
         id: coverage
-        working-directory: Reframe-Journal
         run: |
           echo "=== Extracting Code Coverage ==="
           
@@ -102,42 +98,42 @@ jobs:
           xcrun xccov view --report --json "$XCRESULT_PATH" > coverage.json
           
           # Extract coverage for the main target (ReframeJournal.app)
-          # Using jq to parse the JSON and calculate line coverage
+          # Using python3 to parse the JSON and calculate line coverage
           COVERAGE_PERCENT=$(cat coverage.json | python3 -c "
-          import json
-          import sys
-          
-          data = json.load(sys.stdin)
-          
-          # Find the ReframeJournal target
-          total_lines = 0
-          covered_lines = 0
-          
-          for target in data.get('targets', []):
-              # Only count the main app target, not test targets
-              if 'ReframeJournal.app' in target.get('name', ''):
-                  for file in target.get('files', []):
-                      total_lines += file.get('lineCoverage', {}).get('count', 0) if isinstance(file.get('lineCoverage'), dict) else 0
-                      covered_lines += file.get('lineCoverage', {}).get('covered', 0) if isinstance(file.get('lineCoverage'), dict) else 0
-                      
-                      # Alternative structure (flat lineCoverage as percentage)
-                      if 'lineCoverage' in file and isinstance(file['lineCoverage'], (int, float)):
-                          # This is already a percentage, we need to handle differently
-                          pass
-                  
-                  # Use target-level coverage if available
-                  line_cov = target.get('lineCoverage', 0)
-                  if isinstance(line_cov, (int, float)):
-                      print(f'{line_cov * 100:.2f}')
-                      sys.exit(0)
-          
-          # Fallback: calculate from totals if per-file data was found
-          if total_lines > 0:
-              print(f'{(covered_lines / total_lines) * 100:.2f}')
-          else:
-              # Try simpler approach - just get overall coverage
-              print('0.00')
-          ")
+import json
+import sys
+
+data = json.load(sys.stdin)
+
+# Find the ReframeJournal target
+total_lines = 0
+covered_lines = 0
+
+for target in data.get('targets', []):
+    # Only count the main app target, not test targets
+    if 'ReframeJournal.app' in target.get('name', ''):
+        for file in target.get('files', []):
+            total_lines += file.get('lineCoverage', {}).get('count', 0) if isinstance(file.get('lineCoverage'), dict) else 0
+            covered_lines += file.get('lineCoverage', {}).get('covered', 0) if isinstance(file.get('lineCoverage'), dict) else 0
+            
+            # Alternative structure (flat lineCoverage as percentage)
+            if 'lineCoverage' in file and isinstance(file['lineCoverage'], (int, float)):
+                # This is already a percentage, we need to handle differently
+                pass
+        
+        # Use target-level coverage if available
+        line_cov = target.get('lineCoverage', 0)
+        if isinstance(line_cov, (int, float)):
+            print(f'{line_cov * 100:.2f}')
+            sys.exit(0)
+
+# Fallback: calculate from totals if per-file data was found
+if total_lines > 0:
+    print(f'{(covered_lines / total_lines) * 100:.2f}')
+else:
+    # Try simpler approach - just get overall coverage
+    print('0.00')
+")
           
           echo "Line Coverage: ${COVERAGE_PERCENT}%"
           echo "coverage_percent=$COVERAGE_PERCENT" >> $GITHUB_OUTPUT
@@ -176,9 +172,9 @@ jobs:
         with:
           name: test-results
           path: |
-            Reframe-Journal/TestResults.xcresult
-            Reframe-Journal/test-results.xml
-            Reframe-Journal/coverage.json
+            TestResults.xcresult
+            test-results.xml
+            coverage.json
           retention-days: 14
 
       - name: Post coverage summary
