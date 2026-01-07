@@ -1,67 +1,345 @@
 import SwiftUI
 
+// MARK: - Settings View
+
 struct SettingsView: View {
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
+    
+    // MARK: - State
+    
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
-    @AppStorage("aiReframeEnabled") private var aiReframeEnabled: Bool = false
-    @AppStorage("devDisableThoughtLimit") private var devDisableThoughtLimit: Bool = false
-
-    private var appAppearance: Binding<AppAppearance> {
-        Binding(
-            get: { AppAppearance(rawValue: appAppearanceRaw) ?? .system },
-            set: { appAppearanceRaw = $0.rawValue }
-        )
+    @State private var showAppearancePicker = false
+    
+    private var currentAppearance: AppAppearance {
+        AppAppearance(rawValue: appAppearanceRaw) ?? .system
     }
-
+    
+    // MARK: - Body
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Appearance")
-                .font(.system(size: 14))
-                .foregroundColor(notesPalette.textSecondary)
-
-            Picker("Appearance", selection: appAppearance) {
-                ForEach(AppAppearance.allCases) { option in
-                    Text(option.title)
-                        .tag(option)
-                }
+        ScrollView {
+            VStack(spacing: 0) {
+                
+                // MARK: - Account Section
+                
+                SettingsSectionHeader(title: "Account")
+                
+                SettingsRow(
+                    icon: "bell",
+                    title: "Notifications",
+                    action: { /* TODO: Navigate to notifications settings */ }
+                )
+                
+                SettingsDivider()
+                
+                SettingsRow(
+                    icon: "person.circle",
+                    title: "Manage account",
+                    action: { /* TODO: Navigate to account management */ }
+                )
+                
+                SettingsDivider()
+                
+                SettingsRow(
+                    icon: "creditcard",
+                    title: "Manage subscription",
+                    action: { /* TODO: Navigate to subscription management */ }
+                )
+                
+                SettingsDivider()
+                
+                SettingsRowWithValue(
+                    icon: "circle.lefthalf.filled",
+                    title: "Appearance",
+                    value: currentAppearance.title,
+                    action: { showAppearancePicker = true }
+                )
+                
+                // MARK: - Support Section
+                
+                SettingsSectionHeader(title: "Support")
+                
+                SettingsRow(
+                    icon: "lock.shield",
+                    title: "Privacy Policy",
+                    isExternal: true,
+                    action: { openPrivacyPolicy() }
+                )
+                
+                SettingsDivider()
+                
+                SettingsRow(
+                    icon: "envelope",
+                    title: "Contact us",
+                    isExternal: true,
+                    action: { openContactEmail() }
+                )
+                
+                SettingsDivider()
+                
+                SettingsRow(
+                    icon: "heart",
+                    title: "Write a review",
+                    isExternal: true,
+                    action: { openAppStoreReview() }
+                )
+                
+                // MARK: - Footer
+                
+                SettingsFooter()
+                
             }
-            .pickerStyle(.segmented)
-            .padding(12)
-            .cardSurface(cornerRadius: 12, shadow: false)
-
-            Text("AI")
-                .font(.system(size: 14))
-                .foregroundColor(notesPalette.textSecondary)
-
-            Toggle("AI Reframe (Send entries to OpenAI)", isOn: $aiReframeEnabled)
-                .font(.system(size: 14, weight: .semibold))
-                .padding(12)
-                .foregroundColor(notesPalette.textPrimary)
-                .cardSurface(cornerRadius: 12, shadow: false)
-
-            Text("Developer")
-                .font(.system(size: 14))
-                .foregroundColor(notesPalette.textSecondary)
-
-            Toggle("Disable thought limit", isOn: $devDisableThoughtLimit)
-                .font(.system(size: 14, weight: .semibold))
-                .padding(12)
-                .foregroundColor(notesPalette.textPrimary)
-                .cardSurface(cornerRadius: 12, shadow: false)
-
-            Spacer()
+            .padding(.horizontal, 20)
         }
-        .padding(16)
         .background(notesPalette.background.ignoresSafeArea())
         .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                GlassIconButton(icon: .chevronLeft, size: AppTheme.iconSizeMedium, accessibilityLabel: "Back") {
+                Button {
                     dismiss()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                        Text("Back")
+                            .font(.system(size: 17))
+                    }
+                    .foregroundStyle(notesPalette.textPrimary)
                 }
             }
         }
+        .sheet(isPresented: $showAppearancePicker) {
+            AppearancePickerSheet(selection: $appAppearanceRaw)
+                .presentationDetents([.height(280)])
+                .presentationDragIndicator(.visible)
+        }
+    }
+    
+    // MARK: - Actions
+    
+    private func openPrivacyPolicy() {
+        // TODO: Replace with actual privacy policy URL
+        if let url = URL(string: "https://reframejournal.app/privacy") {
+            openURL(url)
+        }
+    }
+    
+    private func openContactEmail() {
+        if let url = URL(string: "mailto:jalen.stephens2025+reframe@gmail.com") {
+            openURL(url)
+        }
+    }
+    
+    private func openAppStoreReview() {
+        // TODO: Replace with actual App Store ID
+        // Format: itms-apps://itunes.apple.com/app/idXXXXXXXXXX?action=write-review
+        if let url = URL(string: "itms-apps://itunes.apple.com/app/id000000000?action=write-review") {
+            openURL(url)
+        }
+    }
+}
+
+// MARK: - Appearance Picker Sheet
+
+private struct AppearancePickerSheet: View {
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.dismiss) private var dismiss
+    @Binding var selection: String
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                ForEach(AppAppearance.allCases) { option in
+                    Button {
+                        selection = option.rawValue
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Text(option.title)
+                                .font(.system(size: 17))
+                                .foregroundStyle(notesPalette.textPrimary)
+                            
+                            Spacer()
+                            
+                            if selection == option.rawValue {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundStyle(notesPalette.textPrimary)
+                            }
+                        }
+                        .padding(.vertical, 14)
+                        .padding(.horizontal, 20)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if option != AppAppearance.allCases.last {
+                        Rectangle()
+                            .fill(notesPalette.separator.opacity(0.5))
+                            .frame(height: 0.5)
+                            .padding(.leading, 20)
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding(.top, 8)
+            .background(notesPalette.background.ignoresSafeArea())
+            .navigationTitle("Appearance")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+// MARK: - Settings Row
+
+private struct SettingsRow: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    let icon: String
+    let title: String
+    var isExternal: Bool = false
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(notesPalette.textSecondary.opacity(0.8))
+                    .frame(width: 24, alignment: .center)
+                
+                Text(title)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(notesPalette.textPrimary)
+                
+                Spacer()
+                
+                if isExternal {
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(notesPalette.textTertiary)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(notesPalette.textTertiary)
+                }
+            }
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Settings Row With Value
+
+private struct SettingsRowWithValue: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    let icon: String
+    let title: String
+    let value: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(notesPalette.textSecondary.opacity(0.8))
+                    .frame(width: 24, alignment: .center)
+                
+                Text(title)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(notesPalette.textPrimary)
+                
+                Spacer()
+                
+                Text(value)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(notesPalette.textTertiary)
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(notesPalette.textTertiary)
+            }
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Settings Section Header
+
+private struct SettingsSectionHeader: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    let title: String
+    
+    var body: some View {
+        HStack {
+            Text(title.uppercased())
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(notesPalette.textTertiary)
+                .tracking(0.5)
+            Spacer()
+        }
+        .padding(.top, 28)
+        .padding(.bottom, 8)
+    }
+}
+
+// MARK: - Settings Divider
+
+private struct SettingsDivider: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    var body: some View {
+        Rectangle()
+            .fill(notesPalette.separator.opacity(0.5))
+            .frame(height: 0.5)
+            .padding(.leading, 38)
+    }
+}
+
+// MARK: - Settings Footer
+
+private struct SettingsFooter: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "Version \(version) (\(build))"
+    }
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("Reframe Journal")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(notesPalette.textTertiary)
+            
+            Text(appVersion)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(notesPalette.textTertiary.opacity(0.7))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 48)
+        .padding(.bottom, 32)
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    NavigationStack {
+        SettingsView()
+            .notesTheme()
     }
 }
