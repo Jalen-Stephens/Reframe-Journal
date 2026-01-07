@@ -109,6 +109,17 @@
 		B10000000000000000000008 /* AIReframeNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* AIReframeNotesView.swift */; };
 		B10000000000000000000009 /* SuggestionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* SuggestionEngineTests.swift */; };
 		B10000000000000000000012 /* NotesStyleEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* NotesStyleEntryView.swift */; };
+		C10000000000000000000001 /* ThoughtEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000001 /* ThoughtEntryTests.swift */; };
+		C10000000000000000000002 /* DateUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000002 /* DateUtilsTests.swift */; };
+		C10000000000000000000003 /* MetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000003 /* MetricsTests.swift */; };
+		C10000000000000000000004 /* IdentifiersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000004 /* IdentifiersTests.swift */; };
+		C10000000000000000000005 /* AIReframeResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000005 /* AIReframeResultTests.swift */; };
+		C10000000000000000000006 /* AIReframeDepthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000006 /* AIReframeDepthTests.swift */; };
+		C10000000000000000000007 /* ThoughtUsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000007 /* ThoughtUsageServiceTests.swift */; };
+		C10000000000000000000008 /* AdaptivePromptsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000008 /* AdaptivePromptsTests.swift */; };
+		C10000000000000000000009 /* ThoughtModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000009 /* ThoughtModelTests.swift */; };
+		C10000000000000000000010 /* ThoughtRecordExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */; };
+		C10000000000000000000011 /* JournalEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000011 /* JournalEntryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -227,6 +238,17 @@
 		A10000000000000000000008 /* AIReframeNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeNotesView.swift; sourceTree = "<group>"; };
 		A10000000000000000000009 /* SuggestionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionEngineTests.swift; sourceTree = "<group>"; };
 		A10000000000000000000012 /* NotesStyleEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesStyleEntryView.swift; sourceTree = "<group>"; };
+		C20000000000000000000001 /* ThoughtEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtEntryTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000002 /* DateUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtilsTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000003 /* MetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000004 /* IdentifiersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifiersTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000005 /* AIReframeResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeResultTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000006 /* AIReframeDepthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReframeDepthTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000007 /* ThoughtUsageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtUsageServiceTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000008 /* AdaptivePromptsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptivePromptsTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000009 /* ThoughtModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtModelTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordExtensionTests.swift; sourceTree = "<group>"; };
+		C20000000000000000000011 /* JournalEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -309,10 +331,21 @@
 			isa = PBXGroup;
 			children = (
 				A479E1E4C7D75E85D48AD3B8 /* Info.plist */,
+				C20000000000000000000008 /* AdaptivePromptsTests.swift */,
+				C20000000000000000000006 /* AIReframeDepthTests.swift */,
+				C20000000000000000000005 /* AIReframeResultTests.swift */,
 				E1F2A3B4C5061728394A5B6C /* AIReframeServiceTests.swift */,
+				C20000000000000000000002 /* DateUtilsTests.swift */,
+				C20000000000000000000004 /* IdentifiersTests.swift */,
+				C20000000000000000000011 /* JournalEntryTests.swift */,
 				F8A1B2C3D4E5061728394A66 /* LimitsManagerTests.swift */,
+				C20000000000000000000003 /* MetricsTests.swift */,
 				A10000000000000000000009 /* SuggestionEngineTests.swift */,
+				C20000000000000000000001 /* ThoughtEntryTests.swift */,
+				C20000000000000000000009 /* ThoughtModelTests.swift */,
+				C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */,
 				7CBBAF3FFE33047CA5DEA1DF /* ThoughtRecordTests.swift */,
+				C20000000000000000000007 /* ThoughtUsageServiceTests.swift */,
 			);
 			path = ReframeJournalTests;
 			sourceTree = "<group>";
@@ -680,10 +713,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C10000000000000000000008 /* AdaptivePromptsTests.swift in Sources */,
+				C10000000000000000000006 /* AIReframeDepthTests.swift in Sources */,
+				C10000000000000000000005 /* AIReframeResultTests.swift in Sources */,
 				E2F3A4B5061728394A5B6C7D /* AIReframeServiceTests.swift in Sources */,
+				C10000000000000000000002 /* DateUtilsTests.swift in Sources */,
+				C10000000000000000000004 /* IdentifiersTests.swift in Sources */,
+				C10000000000000000000011 /* JournalEntryTests.swift in Sources */,
 				F8B1C2D3E4F5061728394A66 /* LimitsManagerTests.swift in Sources */,
+				C10000000000000000000003 /* MetricsTests.swift in Sources */,
 				B10000000000000000000009 /* SuggestionEngineTests.swift in Sources */,
+				C10000000000000000000001 /* ThoughtEntryTests.swift in Sources */,
+				C10000000000000000000009 /* ThoughtModelTests.swift in Sources */,
+				C10000000000000000000010 /* ThoughtRecordExtensionTests.swift in Sources */,
 				4E025C008F95000CC39428E7 /* ThoughtRecordTests.swift in Sources */,
+				C10000000000000000000007 /* ThoughtUsageServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

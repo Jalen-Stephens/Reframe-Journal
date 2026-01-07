@@ -2,6 +2,30 @@ import XCTest
 @testable import ReframeJournal
 
 final class AIReframeServiceTests: XCTestCase {
+    
+    // MARK: - Service Configuration Tests
+    
+    func testServiceModelName() {
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        XCTAssertEqual(service.modelName, "gpt-4o-mini")
+    }
+    
+    func testServicePromptVersion() {
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        XCTAssertEqual(service.promptVersion, "v2")
+    }
+    
+    func testSystemPromptContent() {
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let prompt = service.systemPrompt
+        
+        XCTAssertTrue(prompt.contains("CBT"))
+        XCTAssertTrue(prompt.contains("diagnose"))
+        XCTAssertTrue(prompt.contains("JSON"))
+    }
+    
+    // MARK: - buildUserMessage Tests
+    
     func testBuildUserMessageIncludesCoreFields() {
         let thought = AutomaticThought(id: "t1", text: "I always mess up", beliefBefore: 80)
         let emotion = Emotion(id: "e1", label: "Anxious", intensityBefore: 70, intensityAfter: nil)
@@ -55,7 +79,229 @@ final class AIReframeServiceTests: XCTestCase {
         XCTAssertTrue(message.contains("Alternative responses / adaptive responses:"))
         XCTAssertTrue(message.contains("Outcome / reflection:"))
     }
+    
+    func testBuildUserMessageWithEmptyRecord() {
+        let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("Situation: (none provided)"))
+        XCTAssertTrue(message.contains("Emotions: (none provided)"))
+        XCTAssertTrue(message.contains("Physical sensations: (none provided)"))
+        XCTAssertTrue(message.contains("Automatic thoughts: (none provided)"))
+        XCTAssertTrue(message.contains("Depth: Quick"))
+    }
+    
+    func testBuildUserMessageWithQuickDepth() {
+        let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("Depth: Quick"))
+    }
+    
+    func testBuildUserMessageWithDeepDepth() {
+        let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .deep)
+        
+        XCTAssertTrue(message.contains("Depth: Deep"))
+    }
+    
+    func testBuildUserMessageWithMultipleEmotions() {
+        let record = ThoughtRecord(
+            id: "r1",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+            situationText: "Test",
+            sensations: [],
+            automaticThoughts: [],
+            emotions: [
+                Emotion(id: "e1", label: "Anxious", intensityBefore: 70, intensityAfter: nil),
+                Emotion(id: "e2", label: "Sad", intensityBefore: 50, intensityAfter: nil)
+            ],
+            thinkingStyles: nil,
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            notes: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
+        )
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("Anxious (70%)"))
+        XCTAssertTrue(message.contains("Sad (50%)"))
+    }
+    
+    func testBuildUserMessageWithMultipleSensations() {
+        let record = ThoughtRecord(
+            id: "r1",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+            situationText: "Test",
+            sensations: ["Tight chest", "Racing heart", "Sweaty palms"],
+            automaticThoughts: [],
+            emotions: [],
+            thinkingStyles: nil,
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            notes: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
+        )
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("Tight chest"))
+        XCTAssertTrue(message.contains("Racing heart"))
+        XCTAssertTrue(message.contains("Sweaty palms"))
+    }
+    
+    func testBuildUserMessageIncludesSchemaPrompt() {
+        let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("STRICT JSON"))
+    }
+    
+    // MARK: - Adaptive Responses Text Tests
+    
+    func testBuildUserMessageWithAdaptiveResponses() {
+        let thought = AutomaticThought(id: "t1", text: "Test thought", beliefBefore: 75)
+        let responses = AdaptiveResponsesForThought(
+            evidenceText: "Some evidence",
+            evidenceBelief: 40,
+            alternativeText: "An alternative",
+            alternativeBelief: 50,
+            outcomeText: "Possible outcome",
+            outcomeBelief: 60,
+            friendText: "Friend advice",
+            friendBelief: 70
+        )
+        
+        let record = ThoughtRecord(
+            id: "r1",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+            situationText: "Test",
+            sensations: [],
+            automaticThoughts: [thought],
+            emotions: [],
+            thinkingStyles: nil,
+            adaptiveResponses: [thought.id: responses],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            notes: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
+        )
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("Some evidence"))
+        XCTAssertTrue(message.contains("An alternative"))
+        XCTAssertTrue(message.contains("Friend advice"))
+    }
+    
+    func testBuildUserMessageWithEmptyAdaptiveResponseFields() {
+        let thought = AutomaticThought(id: "t1", text: "Test thought", beliefBefore: 75)
+        let responses = AdaptiveResponsesForThought(
+            evidenceText: "",
+            evidenceBelief: 0,
+            alternativeText: "",
+            alternativeBelief: 0,
+            outcomeText: "",
+            outcomeBelief: 0,
+            friendText: "",
+            friendBelief: 0
+        )
+        
+        let record = ThoughtRecord(
+            id: "r1",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+            situationText: "Test",
+            sensations: [],
+            automaticThoughts: [thought],
+            emotions: [],
+            thinkingStyles: nil,
+            adaptiveResponses: [thought.id: responses],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            notes: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
+        )
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("(none)"))
+    }
+    
+    // MARK: - Outcomes Text Tests
+    
+    func testBuildUserMessageWithOutcomes() {
+        let thought = AutomaticThought(id: "t1", text: "Negative thought", beliefBefore: 80)
+        let outcome = ThoughtOutcome(
+            beliefAfter: 40,
+            emotionsAfter: [:],
+            reflection: "I feel better now",
+            isComplete: true
+        )
+        
+        let record = ThoughtRecord(
+            id: "r1",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+            situationText: "Test",
+            sensations: [],
+            automaticThoughts: [thought],
+            emotions: [],
+            thinkingStyles: nil,
+            adaptiveResponses: [:],
+            outcomesByThought: [thought.id: outcome],
+            beliefAfterMainThought: nil,
+            notes: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
+        )
+        
+        let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
+        let message = service.buildUserMessage(for: record, depth: .quick)
+        
+        XCTAssertTrue(message.contains("belief after 40%"))
+        XCTAssertTrue(message.contains("I feel better now"))
+    }
 
+    // MARK: - AIReframeResult Decoding Tests
+    
     func testAIReframeResultDecodesJSON() throws {
         let json = """
         {
@@ -90,5 +336,22 @@ final class AIReframeServiceTests: XCTestCase {
         XCTAssertEqual(result.validation, "It makes sense to feel stressed.")
         XCTAssertEqual(result.whatMightBeHappening?.first, "There is a lot on your plate.")
         XCTAssertEqual(result.cognitiveDistortions?.first?.label, "mind reading")
+    }
+    
+    func testAIReframeResultDecodesPartialJSON() throws {
+        let json = """
+        {
+          "balanced_thought": "A simple thought",
+          "summary": "Brief summary"
+        }
+        """
+        
+        let data = Data(json.utf8)
+        let result = try JSONDecoder().decode(AIReframeResult.self, from: data)
+        
+        XCTAssertEqual(result.balancedThought, "A simple thought")
+        XCTAssertEqual(result.summary, "Brief summary")
+        XCTAssertNil(result.validation)
+        XCTAssertNil(result.cognitiveDistortions)
     }
 }
