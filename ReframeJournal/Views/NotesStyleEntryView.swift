@@ -69,7 +69,15 @@ struct NotesStyleEntryView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar { keyboardToolbar }
             .task { await loadInitialState() }
-            .modifier(ChangeObserversModifier(viewModel: viewModel, focusedField: $focusedField))
+            .onChange(of: viewModel.situation) { _, _ in
+                viewModel.updateTitleFromSituation()
+                viewModel.scheduleAutosave()
+            }
+            .onChange(of: viewModel.sensations) { _, _ in viewModel.scheduleAutosave() }
+            .onChange(of: viewModel.emotions) { _, _ in viewModel.scheduleAutosave() }
+            .onChange(of: viewModel.automaticThoughts) { _, _ in viewModel.scheduleAutosave() }
+            .onChange(of: viewModel.adaptiveResponses) { _, _ in viewModel.scheduleAutosave() }
+            .onChange(of: viewModel.outcomesByThought) { _, _ in viewModel.scheduleAutosave() }
             .sheet(isPresented: $isDateSheetPresented) { dateSheet }
             .sheet(isPresented: $showUnlockSheet) { unlockSheet }
             .sheet(isPresented: $showPaywall) { PaywallView() }
@@ -176,41 +184,6 @@ struct NotesStyleEntryView: View {
         )
         .presentationDetents([.medium])
     }
-}
-
-// MARK: - Change Observers Modifier
-
-private struct ChangeObserversModifier: ViewModifier {
-    @ObservedObject var viewModel: ThoughtEntryViewModel
-    @Binding var focusedField: NotesStyleEntryView.EntryField?
-    
-    func body(content: Content) -> some View {
-        content
-            .onChange(of: viewModel.situation) { _, _ in
-                viewModel.updateTitleFromSituation()
-                viewModel.scheduleAutosave()
-            }
-            .onChange(of: viewModel.sensations) { _, _ in
-                viewModel.scheduleAutosave()
-            }
-            .onChange(of: viewModel.emotions) { _, _ in
-                viewModel.scheduleAutosave()
-            }
-            .onChange(of: viewModel.automaticThoughts) { _, _ in
-                viewModel.scheduleAutosave()
-            }
-            .onChange(of: viewModel.adaptiveResponses) { _, _ in
-                viewModel.scheduleAutosave()
-            }
-            .onChange(of: viewModel.outcomesByThought) { _, _ in
-                viewModel.scheduleAutosave()
-            }
-    }
-}
-
-// MARK: - NotesStyleEntryView Extension (Computed Properties)
-
-extension NotesStyleEntryView {
     
     // MARK: - Background Color
     
