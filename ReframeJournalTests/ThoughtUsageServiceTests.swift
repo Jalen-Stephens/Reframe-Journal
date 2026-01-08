@@ -1,7 +1,6 @@
 import XCTest
 @testable import ReframeJournal
 
-@MainActor
 final class ThoughtUsageServiceTests: XCTestCase {
     
     private var service: ThoughtUsageService!

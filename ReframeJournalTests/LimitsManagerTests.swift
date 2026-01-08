@@ -2,7 +2,6 @@
 import XCTest
 @testable import ReframeJournal
 
-@MainActor
 final class LimitsManagerTests: XCTestCase {
     
     private func createManager(suiteName: String, nowProvider: @escaping () -> Date) -> (LimitsManager, UserDefaults, Calendar) {

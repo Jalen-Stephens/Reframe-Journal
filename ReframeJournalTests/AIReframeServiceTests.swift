@@ -26,7 +26,8 @@ final class AIReframeServiceTests: XCTestCase {
     
     // MARK: - buildUserMessage Tests
     
-    func testBuildUserMessageIncludesCoreFields() {
+    @MainActor
+    func testBuildUserMessageIncludesCoreFields() async {
         let thought = AutomaticThought(id: "t1", text: "I always mess up", beliefBefore: 80)
         let emotion = Emotion(id: "e1", label: "Anxious", intensityBefore: 70, intensityAfter: nil)
         let responses = AdaptiveResponsesForThought(
@@ -67,7 +68,7 @@ final class AIReframeServiceTests: XCTestCase {
         )
 
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .deep)
+        let message = await service.buildUserMessage(for: record, depth: .deep)
 
         XCTAssertTrue(message.contains("Date/time: 2024-01-01T12:00:00Z"))
         XCTAssertTrue(message.contains("Situation: Work presentation"))
@@ -80,11 +81,12 @@ final class AIReframeServiceTests: XCTestCase {
         XCTAssertTrue(message.contains("Outcome / reflection:"))
     }
     
-    func testBuildUserMessageWithEmptyRecord() {
+    @MainActor
+    func testBuildUserMessageWithEmptyRecord() async {
         let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("Situation: (none provided)"))
         XCTAssertTrue(message.contains("Emotions: (none provided)"))
@@ -93,25 +95,28 @@ final class AIReframeServiceTests: XCTestCase {
         XCTAssertTrue(message.contains("Depth: Quick"))
     }
     
-    func testBuildUserMessageWithQuickDepth() {
+    @MainActor
+    func testBuildUserMessageWithQuickDepth() async {
         let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("Depth: Quick"))
     }
     
-    func testBuildUserMessageWithDeepDepth() {
+    @MainActor
+    func testBuildUserMessageWithDeepDepth() async {
         let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .deep)
+        let message = await service.buildUserMessage(for: record, depth: .deep)
         
         XCTAssertTrue(message.contains("Depth: Deep"))
     }
     
-    func testBuildUserMessageWithMultipleEmotions() {
+    @MainActor
+    func testBuildUserMessageWithMultipleEmotions() async {
         let record = ThoughtRecord(
             id: "r1",
             createdAt: "2024-01-01T00:00:00Z",
@@ -136,13 +141,14 @@ final class AIReframeServiceTests: XCTestCase {
         )
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("Anxious (70%)"))
         XCTAssertTrue(message.contains("Sad (50%)"))
     }
     
-    func testBuildUserMessageWithMultipleSensations() {
+    @MainActor
+    func testBuildUserMessageWithMultipleSensations() async {
         let record = ThoughtRecord(
             id: "r1",
             createdAt: "2024-01-01T00:00:00Z",
@@ -164,25 +170,27 @@ final class AIReframeServiceTests: XCTestCase {
         )
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("Tight chest"))
         XCTAssertTrue(message.contains("Racing heart"))
         XCTAssertTrue(message.contains("Sweaty palms"))
     }
     
-    func testBuildUserMessageIncludesSchemaPrompt() {
+    @MainActor
+    func testBuildUserMessageIncludesSchemaPrompt() async {
         let record = ThoughtRecord.empty(nowIso: "2024-01-01T00:00:00Z", id: "id_test")
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("STRICT JSON"))
     }
     
     // MARK: - Adaptive Responses Text Tests
     
-    func testBuildUserMessageWithAdaptiveResponses() {
+    @MainActor
+    func testBuildUserMessageWithAdaptiveResponses() async {
         let thought = AutomaticThought(id: "t1", text: "Test thought", beliefBefore: 75)
         let responses = AdaptiveResponsesForThought(
             evidenceText: "Some evidence",
@@ -216,14 +224,15 @@ final class AIReframeServiceTests: XCTestCase {
         )
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("Some evidence"))
         XCTAssertTrue(message.contains("An alternative"))
         XCTAssertTrue(message.contains("Friend advice"))
     }
     
-    func testBuildUserMessageWithEmptyAdaptiveResponseFields() {
+    @MainActor
+    func testBuildUserMessageWithEmptyAdaptiveResponseFields() async {
         let thought = AutomaticThought(id: "t1", text: "Test thought", beliefBefore: 75)
         let responses = AdaptiveResponsesForThought(
             evidenceText: "",
@@ -257,14 +266,15 @@ final class AIReframeServiceTests: XCTestCase {
         )
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("(none)"))
     }
     
     // MARK: - Outcomes Text Tests
     
-    func testBuildUserMessageWithOutcomes() {
+    @MainActor
+    func testBuildUserMessageWithOutcomes() async {
         let thought = AutomaticThought(id: "t1", text: "Negative thought", beliefBefore: 80)
         let outcome = ThoughtOutcome(
             beliefAfter: 40,
@@ -294,7 +304,7 @@ final class AIReframeServiceTests: XCTestCase {
         )
         
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        let message = service.buildUserMessage(for: record, depth: .quick)
+        let message = await service.buildUserMessage(for: record, depth: .quick)
         
         XCTAssertTrue(message.contains("belief after 40%"))
         XCTAssertTrue(message.contains("I feel better now"))

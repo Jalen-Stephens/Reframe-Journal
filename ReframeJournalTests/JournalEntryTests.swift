@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class JournalEntryTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
