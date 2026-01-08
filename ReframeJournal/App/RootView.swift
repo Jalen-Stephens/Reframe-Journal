@@ -44,6 +44,8 @@ struct RootView: View {
                             OutcomeView()
                         case .settings:
                             SettingsView()
+                        case .termsPrivacy:
+                            TermsPrivacyView(requiresAcceptance: false)
                         }
                     }
             }

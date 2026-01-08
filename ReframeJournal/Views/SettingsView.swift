@@ -61,11 +61,10 @@ struct SettingsView: View {
                 
                 SettingsSectionHeader(title: "Support")
                 
-                SettingsRow(
+                SettingsNavigationRow(
                     icon: "lock.shield",
                     title: "Privacy Policy",
-                    isExternal: true,
-                    action: { openPrivacyPolicy() }
+                    destination: .termsPrivacy
                 )
                 
                 SettingsDivider()
@@ -120,13 +119,6 @@ struct SettingsView: View {
     }
     
     // MARK: - Actions
-    
-    private func openPrivacyPolicy() {
-        // TODO: Replace with actual privacy policy URL
-        if let url = URL(string: "https://reframejournal.app/privacy") {
-            openURL(url)
-        }
-    }
     
     private func openContactEmail() {
         if let url = URL(string: "mailto:jalen.stephens2025+reframe@gmail.com") {
@@ -228,6 +220,40 @@ private struct SettingsRow: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(notesPalette.textTertiary)
                 }
+            }
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Settings Navigation Row
+
+private struct SettingsNavigationRow: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    let icon: String
+    let title: String
+    let destination: Route
+    
+    var body: some View {
+        NavigationLink(value: destination) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(notesPalette.textSecondary.opacity(0.8))
+                    .frame(width: 24, alignment: .center)
+                
+                Text(title)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(notesPalette.textPrimary)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(notesPalette.textTertiary)
             }
             .padding(.vertical, 14)
             .contentShape(Rectangle())

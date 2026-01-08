@@ -119,6 +119,7 @@
 		C10000000000000000000009 /* ThoughtModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000009 /* ThoughtModelTests.swift */; };
 		C10000000000000000000010 /* ThoughtRecordExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */; };
 		C10000000000000000000011 /* JournalEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000011 /* JournalEntryTests.swift */; };
+		D10000000000000000000001 /* TermsPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000000000000000000001 /* TermsPrivacyView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -247,6 +248,7 @@
 		C20000000000000000000009 /* ThoughtModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtModelTests.swift; sourceTree = "<group>"; };
 		C20000000000000000000010 /* ThoughtRecordExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtRecordExtensionTests.swift; sourceTree = "<group>"; };
 		C20000000000000000000011 /* JournalEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntryTests.swift; sourceTree = "<group>"; };
+		D20000000000000000000001 /* TermsPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsPrivacyView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -313,6 +315,7 @@
 				546FB4220CEEF24D6A5B1D14 /* SectionCardView.swift */,
 				46308216C66CE393053779B5 /* SettingsView.swift */,
 				9F1DFD7F7F52522DE5279C2B /* SituationView.swift */,
+				D20000000000000000000001 /* TermsPrivacyView.swift */,
 				6A29FDF5CD76A8F7218286ED /* SlimMeterRowView.swift */,
 				7C1A2B3C4D5E6F708192A3B5 /* StepBottomNavBar.swift */,
 				8D2E3F405162738495A6B7C9 /* StepContentContainer.swift */,
@@ -702,6 +705,7 @@
 				DEB0AF120B68CFB7EAA0956C /* ThoughtResponseDetailViewModel.swift in Sources */,
 				F4385CB82BEF4417830A4B09 /* WizardProgressView.swift in Sources */,
 				D1B7AF8A3160F62E869DF9A8 /* WizardViewModel.swift in Sources */,
+				D10000000000000000000001 /* TermsPrivacyView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
