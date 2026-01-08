@@ -45,21 +45,59 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "0.99",
+          "displayPrice" : "4.99",
           "familyShareable" : false,
-          "groupNumber" : 1,
+          "groupNumber" : 2,
           "internalID" : "01E9CD34",
-          "introductoryOffer" : null,
+          "introductoryOffer" : {
+            "internalID" : "A1B2C3D4",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Unlimited thought records and AI reframes",
+              "displayName" : "Pro Monthly",
               "locale" : "en_US"
             }
           ],
           "productID" : "reframejournal.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Reframe Journal Pro Monthly",
+          "subscriptionGroupID" : "BF1506ED",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "02F8DE45",
+          "introductoryOffer" : {
+            "internalID" : "B2C3D4E5",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1M"
+          },
+          "localizations" : [
+            {
+              "description" : "Unlimited thought records and AI reframes — best value",
+              "displayName" : "Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "reframejournal.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Reframe Journal Pro Yearly",
           "subscriptionGroupID" : "BF1506ED",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

@@ -187,6 +187,27 @@ struct HomeView: View {
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(.primary)
             Spacer()
+            
+            // Upgrade button (only shown for non-Pro users)
+            if !entitlementsManager.isPro {
+                Button {
+                    showPaywall = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Pro")
+                            .font(.system(size: 13, weight: .semibold))
+                    }
+                    .foregroundStyle(upgradeButtonForeground)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(upgradeButtonBackground)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            
             GlassIconButton(icon: .settings, size: AppTheme.iconSizeMedium, accessibilityLabel: "Settings") {
                 router.push(.settings)
             }
@@ -197,6 +218,21 @@ struct HomeView: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
+    }
+    
+    private var upgradeButtonForeground: Color {
+        Color.white
+    }
+    
+    private var upgradeButtonBackground: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color(red: 0.35, green: 0.55, blue: 0.85),
+                Color(red: 0.25, green: 0.45, blue: 0.75)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     private func latestThoughtLabel(for entry: JournalEntry) -> String {
