@@ -152,9 +152,10 @@ final class HomeViewModel: ObservableObject {
         }
     }
     
-    /// Get dates that have entries
+    /// Get dates that have completed entries
     func datesWithEntries(from allEntries: [JournalEntry]) -> Set<Date> {
-        Set(allEntries.map { calendar.startOfDay(for: $0.createdAt) })
+        let completedEntries = allEntries.filter { $0.completionStatus == .complete }
+        return Set(completedEntries.map { calendar.startOfDay(for: $0.createdAt) })
     }
 }
 

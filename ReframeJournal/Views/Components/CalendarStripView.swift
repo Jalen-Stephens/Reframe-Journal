@@ -47,6 +47,20 @@ struct CalendarStripView: View {
             Text("\(day.dayNumber)")
                 .font(.system(size: 15, weight: isSelected ? .semibold : .regular))
                 .foregroundStyle(dayNumberColor(for: day))
+            
+            // Entry indicator pawprint (for completed entries)
+            if day.hasEntry {
+                Image(systemName: "pawprint.fill")
+                    .font(.system(size: 8, weight: .medium))
+                    .foregroundStyle(entryIndicatorColor(for: day))
+                    .padding(.top, 2)
+            } else {
+                // Spacer to keep alignment consistent
+                Image(systemName: "pawprint.fill")
+                    .font(.system(size: 8, weight: .medium))
+                    .foregroundStyle(Color.clear)
+                    .padding(.top, 2)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -83,6 +97,17 @@ struct CalendarStripView: View {
             return notesPalette.textPrimary
         }
         return notesPalette.textTertiary
+    }
+    
+    private func entryIndicatorColor(for day: WeekDay) -> Color {
+        if day.isSelected {
+            // When selected, use a more visible color
+            return notesPalette.colorScheme == .dark 
+                ? Color.white.opacity(0.9)
+                : Color.black.opacity(0.8)
+        }
+        // Use accent color or a subtle color for unselected days
+        return notesPalette.accent.opacity(0.7)
     }
 }
 

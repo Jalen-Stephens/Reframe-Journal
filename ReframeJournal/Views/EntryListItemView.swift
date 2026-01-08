@@ -15,7 +15,8 @@ struct EntryListItemView: View {
                         Text(titleLabel(for: entry))
                             .font(.headline)
                             .foregroundStyle(.primary)
-                            .lineLimit(2)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                         Text(DateUtils.formatRelativeDateTime(entry.createdAt))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -42,11 +43,8 @@ struct EntryListItemView: View {
         if situation.isEmpty {
             return "New Entry"
         }
+        // Get first line and remove any newlines/line breaks
         let firstLine = situation.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? situation
-        if firstLine.count > 40 {
-            let index = firstLine.index(firstLine.startIndex, offsetBy: 40)
-            return String(firstLine[..<index])
-        }
         return firstLine
     }
 }

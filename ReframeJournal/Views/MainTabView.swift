@@ -26,7 +26,7 @@ struct MainTabView: View {
                 Group {
                     switch selectedTab {
                     case .home:
-                        HomeContentView()
+                        HomeContentView(selectedTab: $selectedTab)
                     case .entries:
                         AllEntriesView()
                     case .insights:
@@ -34,7 +34,7 @@ struct MainTabView: View {
                     case .settings:
                         SettingsView()
                     case .newEntry:
-                        HomeContentView() // Fallback, button triggers action
+                        HomeContentView(selectedTab: $selectedTab) // Fallback, button triggers action
                     }
                 }
             }
@@ -71,6 +71,8 @@ struct MainTabView: View {
 // MARK: - Home Content View
 
 private struct HomeContentView: View {
+    @Binding var selectedTab: MainTab
+    
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AppRouter
     @Environment(\.notesPalette) private var notesPalette
@@ -299,7 +301,7 @@ private struct HomeContentView: View {
         if filteredEntries.isEmpty {
             emptyStateView
         } else {
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 // Section header
                 HStack {
                     Text("Entries")
@@ -307,9 +309,11 @@ private struct HomeContentView: View {
                         .foregroundStyle(notesPalette.textSecondary)
                     Spacer()
                     
-                    if viewModel.isSelectedToday && allEntries.count > filteredEntries.count {
+                    if viewModel.isSelectedToday && (filteredEntries.count > 3 || allEntries.count > filteredEntries.count) {
                         Button {
-                            router.push(.allEntries)
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                selectedTab = .entries
+                            }
                         } label: {
                             Text("View all")
                                 .font(.system(size: 13, weight: .medium))
@@ -319,20 +323,62 @@ private struct HomeContentView: View {
                     }
                 }
                 .padding(.horizontal, 4)
+                .padding(.bottom, 8)
                 
-                // Entry list (max 2 to save space)
-                ForEach(Array(filteredEntries.prefix(2))) { entry in
-                    let record = entry.toThoughtRecord()
-                    EntryListItemView(entry: record) {
-                        router.push(.thoughtEntry(id: entry.recordId))
+                // Entry list (max 3 entries) with swipe actions
+                List {
+                    ForEach(Array(filteredEntries.prefix(3))) { entry in
+                        let record = entry.toThoughtRecord()
+                        EntryListItemView(entry: record) {
+                            router.push(.thoughtEntry(id: entry.recordId))
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button {
+                                router.push(.thoughtEntry(id: entry.recordId))
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(notesPalette.accent)
+
+                            Button(role: .destructive) {
+                                deleteEntry(entry)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .listRowInsets(rowInsets)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .scrollDisabled(true)
+                .frame(height: calculateListHeight(for: filteredEntries))
                 
-                // Nuggie image based on time of day (raised higher)
+                // Nuggie image based on time of day (lowered slightly when 3 entries)
                 nuggieImage
-                    .padding(.top, 4)
+                    .padding(.top, filteredEntries.count >= 3 ? 0 : 4)
             }
         }
+    }
+    
+    // MARK: - Helpers
+    
+    private var rowInsets: EdgeInsets {
+        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+    }
+    
+    private func calculateListHeight(for entries: [JournalEntry]) -> CGFloat {
+        // Approximate height: ~80 per entry
+        let entryHeight: CGFloat = 80
+        let maxEntries = min(entries.count, 3)
+        return CGFloat(maxEntries) * entryHeight
+    }
+    
+    private func deleteEntry(_ entry: JournalEntry) {
+        modelContext.delete(entry)
+        try? modelContext.save()
     }
     
     // MARK: - Empty State
