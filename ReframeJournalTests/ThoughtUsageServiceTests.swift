@@ -8,10 +8,12 @@ final class ThoughtUsageServiceTests: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
-        let suiteName = "com.test.thoughtusage.\(UUID().uuidString)"
-        testDefaults = UserDefaults(suiteName: suiteName)!
-        testDefaults.removePersistentDomain(forName: suiteName)
-        service = ThoughtUsageService(userDefaults: testDefaults)
+        await MainActor.run {
+            let suiteName = "com.test.thoughtusage.\(UUID().uuidString)"
+            testDefaults = UserDefaults(suiteName: suiteName)!
+            testDefaults.removePersistentDomain(forName: suiteName)
+            service = ThoughtUsageService(userDefaults: testDefaults)
+        }
     }
     
     override func tearDown() async throws {
@@ -22,24 +24,28 @@ final class ThoughtUsageServiceTests: XCTestCase {
     
     // MARK: - Initial State Tests
     
-    func testInitialCountIsZero() {
+    @MainActor
+    func testInitialCountIsZero() async {
         XCTAssertEqual(service.getTodayCount(), 0)
     }
     
-    func testInitialCanCreateThought() {
+    @MainActor
+    func testInitialCanCreateThought() async {
         XCTAssertTrue(service.canCreateThought())
     }
     
     // MARK: - Increment Tests
     
-    func testIncrementTodayCount() {
+    @MainActor
+    func testIncrementTodayCount() async {
         let didIncrement = service.incrementTodayCount(recordId: "record_1")
         
         XCTAssertTrue(didIncrement)
         XCTAssertEqual(service.getTodayCount(), 1)
     }
     
-    func testIncrementMultipleTimes() {
+    @MainActor
+    func testIncrementMultipleTimes() async {
         service.incrementTodayCount(recordId: "record_1")
         service.incrementTodayCount(recordId: "record_2")
         service.incrementTodayCount(recordId: "record_3")
@@ -47,7 +53,8 @@ final class ThoughtUsageServiceTests: XCTestCase {
         XCTAssertEqual(service.getTodayCount(), 3)
     }
     
-    func testIncrementSameRecordIdOnlyCountsOnce() {
+    @MainActor
+    func testIncrementSameRecordIdOnlyCountsOnce() async {
         service.incrementTodayCount(recordId: "record_1")
         let second = service.incrementTodayCount(recordId: "record_1")
         
@@ -55,7 +62,8 @@ final class ThoughtUsageServiceTests: XCTestCase {
         XCTAssertEqual(service.getTodayCount(), 1)
     }
     
-    func testIncrementWithDifferentDayCreatedAtDoesNotCount() {
+    @MainActor
+    func testIncrementWithDifferentDayCreatedAtDoesNotCount() async {
         // Create an ISO string for yesterday
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
         let yesterdayIso = DateUtils.isoString(from: yesterday)
@@ -66,7 +74,8 @@ final class ThoughtUsageServiceTests: XCTestCase {
         XCTAssertEqual(service.getTodayCount(), 0)
     }
     
-    func testIncrementWithTodayCreatedAtCounts() {
+    @MainActor
+    func testIncrementWithTodayCreatedAtCounts() async {
         let todayIso = DateUtils.isoString(from: Date())
         
         let didIncrement = service.incrementTodayCount(recordId: "new_record", createdAt: todayIso)
@@ -75,7 +84,8 @@ final class ThoughtUsageServiceTests: XCTestCase {
         XCTAssertEqual(service.getTodayCount(), 1)
     }
     
-    func testIncrementWithNilCreatedAtCounts() {
+    @MainActor
+    func testIncrementWithNilCreatedAtCounts() async {
         let didIncrement = service.incrementTodayCount(recordId: "record", createdAt: nil)
         
         XCTAssertTrue(didIncrement)
@@ -84,22 +94,26 @@ final class ThoughtUsageServiceTests: XCTestCase {
     
     // MARK: - canCreateThought Tests
     
-    func testCanCreateThoughtWithZeroCount() {
+    @MainActor
+    func testCanCreateThoughtWithZeroCount() async {
         XCTAssertTrue(service.canCreateThought())
     }
     
-    func testCanCreateThoughtWithOneCount() {
+    @MainActor
+    func testCanCreateThoughtWithOneCount() async {
         service.incrementTodayCount(recordId: "r1")
         XCTAssertTrue(service.canCreateThought())
     }
     
-    func testCanCreateThoughtWithTwoCount() {
+    @MainActor
+    func testCanCreateThoughtWithTwoCount() async {
         service.incrementTodayCount(recordId: "r1")
         service.incrementTodayCount(recordId: "r2")
         XCTAssertTrue(service.canCreateThought())
     }
     
-    func testCannotCreateThoughtAfterThreeCount() {
+    @MainActor
+    func testCannotCreateThoughtAfterThreeCount() async {
         service.incrementTodayCount(recordId: "r1")
         service.incrementTodayCount(recordId: "r2")
         service.incrementTodayCount(recordId: "r3")
@@ -109,14 +123,16 @@ final class ThoughtUsageServiceTests: XCTestCase {
     
     // MARK: - hasUnlimitedThoughts Tests
     
-    func testHasUnlimitedThoughtsIsFalseByDefault() {
+    @MainActor
+    func testHasUnlimitedThoughtsIsFalseByDefault() async {
         // Currently always returns false (TODO in implementation)
         XCTAssertFalse(service.hasUnlimitedThoughts)
     }
     
     // MARK: - resetIfNewDay Tests
     
-    func testResetIfNewDayResetsOnNewDay() {
+    @MainActor
+    func testResetIfNewDayResetsOnNewDay() async {
         // Set usage for "yesterday"
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
         let formatter = DateFormatter()
@@ -137,7 +153,8 @@ final class ThoughtUsageServiceTests: XCTestCase {
         XCTAssertTrue(newService.canCreateThought())
     }
     
-    func testResetIfNewDayDoesNotResetSameDay() {
+    @MainActor
+    func testResetIfNewDayDoesNotResetSameDay() async {
         service.incrementTodayCount(recordId: "r1")
         service.incrementTodayCount(recordId: "r2")
         

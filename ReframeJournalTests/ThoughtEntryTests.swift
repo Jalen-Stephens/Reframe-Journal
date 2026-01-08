@@ -50,6 +50,7 @@ final class ThoughtEntryTests: XCTestCase {
             outcomesByThought: [:],
             beliefAfterMainThought: 50,
             notes: "Test notes",
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,
@@ -86,6 +87,7 @@ final class ThoughtEntryTests: XCTestCase {
             outcomesByThought: [:],
             beliefAfterMainThought: nil,
             notes: nil,
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,
@@ -124,7 +126,7 @@ final class ThoughtEntryTests: XCTestCase {
             updatedAt: Date()
         )
         
-        let record = entry.applying(to: nil)
+        let record = entry.applying(to: nil as ThoughtRecord?)
         
         XCTAssertEqual(record.id, "id_test123")
         XCTAssertEqual(record.title, "My Entry")
@@ -162,7 +164,7 @@ final class ThoughtEntryTests: XCTestCase {
             updatedAt: Date()
         )
         
-        let record = entry.applying(to: nil)
+        let record = entry.applying(to: nil as ThoughtRecord?)
         
         XCTAssertEqual(record.emotions.count, 1)
         XCTAssertEqual(record.emotions.first?.label, "Happy")
@@ -191,7 +193,7 @@ final class ThoughtEntryTests: XCTestCase {
             updatedAt: Date()
         )
         
-        let record = entry.applying(to: nil)
+        let record = entry.applying(to: nil as ThoughtRecord?)
         
         XCTAssertEqual(record.title, "Trimmed Title")
     }
@@ -219,7 +221,7 @@ final class ThoughtEntryTests: XCTestCase {
             updatedAt: Date()
         )
         
-        let record = entry.applying(to: nil)
+        let record = entry.applying(to: nil as ThoughtRecord?)
         
         XCTAssertNil(record.title)
     }
@@ -250,7 +252,7 @@ final class ThoughtEntryTests: XCTestCase {
             updatedAt: Date()
         )
         
-        let record = entry.applying(to: nil)
+        let record = entry.applying(to: nil as ThoughtRecord?)
         
         let high = record.emotions.first { $0.label == "TooHigh" }
         let low = record.emotions.first { $0.label == "TooLow" }
@@ -284,7 +286,7 @@ final class ThoughtEntryTests: XCTestCase {
             updatedAt: Date()
         )
         
-        let record = entry.applying(to: nil)
+        let record = entry.applying(to: nil as ThoughtRecord?)
         
         XCTAssertEqual(record.sensations.count, 3)
         XCTAssertTrue(record.sensations.contains("Tight chest"))
@@ -315,7 +317,7 @@ final class ThoughtEntryTests: XCTestCase {
             updatedAt: Date()
         )
         
-        let record = entry.applying(to: nil)
+        let record = entry.applying(to: nil as ThoughtRecord?)
         
         XCTAssertEqual(record.sensations.count, 2)
         XCTAssertEqual(record.sensations[0], "Valid")
@@ -338,6 +340,7 @@ final class ThoughtEntryTests: XCTestCase {
             adaptiveResponses: [:],
             outcomesByThought: [:],
             beliefAfterMainThought: 60,
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,

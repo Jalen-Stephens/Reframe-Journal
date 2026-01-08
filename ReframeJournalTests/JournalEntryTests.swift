@@ -10,6 +10,7 @@ final class JournalEntryTests: XCTestCase {
     override func setUpWithError() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         modelContainer = try ModelContainer(for: JournalEntry.self, configurations: config)
+        // mainContext access will be on MainActor in test methods
         modelContext = modelContainer.mainContext
     }
     
@@ -20,7 +21,8 @@ final class JournalEntryTests: XCTestCase {
     
     // MARK: - Initialization Tests
     
-    func testDefaultInitialization() {
+    @MainActor
+    func testDefaultInitialization() async {
         let entry = JournalEntry()
         
         XCTAssertFalse(entry.recordId.isEmpty)
@@ -43,7 +45,8 @@ final class JournalEntryTests: XCTestCase {
         XCTAssertFalse(entry.isDraft)
     }
     
-    func testFullInitialization() {
+    @MainActor
+    func testFullInitialization() async {
         let now = Date()
         let thoughts = [AutomaticThought(id: "t1", text: "Test thought", beliefBefore: 80)]
         let emotions = [Emotion(id: "e1", label: "Anxious", intensityBefore: 70, intensityAfter: nil)]
@@ -79,6 +82,7 @@ final class JournalEntryTests: XCTestCase {
     
     // MARK: - Empty Factory Test
     
+    @MainActor
     func testEmptyFactory() {
         let now = Date()
         let entry = JournalEntry.empty(now: now)
@@ -90,6 +94,7 @@ final class JournalEntryTests: XCTestCase {
         XCTAssertEqual(entry.situationText, "")
     }
     
+    @MainActor
     func testEmptyFactoryWithCustomId() {
         let customId = "id_custom_123"
         let entry = JournalEntry.empty(id: customId)
@@ -99,6 +104,7 @@ final class JournalEntryTests: XCTestCase {
     
     // MARK: - ThoughtRecord Conversion Tests
     
+    @MainActor
     func testInitFromThoughtRecord() {
         let record = ThoughtRecord(
             id: "id_test",
@@ -135,6 +141,7 @@ final class JournalEntryTests: XCTestCase {
         XCTAssertFalse(entry.isDraft)
     }
     
+    @MainActor
     func testToThoughtRecord() {
         let entry = JournalEntry(
             recordId: "id_test",
@@ -161,6 +168,7 @@ final class JournalEntryTests: XCTestCase {
         XCTAssertEqual(record.notes, "Notes")
     }
     
+    @MainActor
     func testUpdateFromThoughtRecord() {
         let entry = JournalEntry(recordId: "id_test", situationText: "Original")
         
@@ -196,12 +204,14 @@ final class JournalEntryTests: XCTestCase {
     
     // MARK: - Completion Status Tests
     
+    @MainActor
     func testCompletionStatusDraft() {
         let entry = JournalEntry()
         
         XCTAssertEqual(entry.completionStatus, .draft)
     }
     
+    @MainActor
     func testCompletionStatusCompleteWithAIReframe() {
         let aiReframe = AIReframeResult(
             validation: nil,
@@ -222,6 +232,7 @@ final class JournalEntryTests: XCTestCase {
         XCTAssertEqual(entry.completionStatus, .complete)
     }
     
+    @MainActor
     func testCompletionStatusCompleteWithCompletedOutcome() {
         let outcome = ThoughtOutcome(beliefAfter: 30, emotionsAfter: [:], reflection: "Done", isComplete: true)
         let entry = JournalEntry(outcomesByThought: ["t1": outcome])
@@ -229,6 +240,7 @@ final class JournalEntryTests: XCTestCase {
         XCTAssertEqual(entry.completionStatus, .complete)
     }
     
+    @MainActor
     func testCompletionStatusDraftWithIncompleteOutcome() {
         let outcome = ThoughtOutcome(beliefAfter: 30, emotionsAfter: [:], reflection: "", isComplete: false)
         let entry = JournalEntry(outcomesByThought: ["t1": outcome])
@@ -238,6 +250,7 @@ final class JournalEntryTests: XCTestCase {
     
     // MARK: - AI Reframe Depth Tests
     
+    @MainActor
     func testAIReframeDepthGetterSetter() {
         let entry = JournalEntry()
         
@@ -258,6 +271,7 @@ final class JournalEntryTests: XCTestCase {
     
     // MARK: - Adaptive Responses Tests
     
+    @MainActor
     func testAdaptiveResponsesGetterSetter() {
         let entry = JournalEntry()
         
@@ -282,6 +296,7 @@ final class JournalEntryTests: XCTestCase {
     
     // MARK: - Outcomes By Thought Tests
     
+    @MainActor
     func testOutcomesByThoughtGetterSetter() {
         let entry = JournalEntry()
         
