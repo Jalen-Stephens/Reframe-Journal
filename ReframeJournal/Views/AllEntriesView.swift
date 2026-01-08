@@ -30,15 +30,6 @@ struct AllEntriesView: View {
                         .font(.system(size: 13))
                         .foregroundColor(notesPalette.textSecondary)
                         .multilineTextAlignment(.center)
-                    Button("Back to Home") {
-                        router.popToRoot()
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .pillSurface(cornerRadius: 999)
-                    .foregroundColor(notesPalette.textSecondary)
-                    .buttonStyle(.plain)
                 }
                 .padding(.top, 48)
                 .padding(.horizontal, 24)
@@ -81,15 +72,9 @@ struct AllEntriesView: View {
             }
         }
         .background(notesPalette.background.ignoresSafeArea())
-        .navigationTitle("All Entries")
+        .navigationTitle("Entries")
+        .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                GlassIconButton(icon: .chevronLeft, size: AppTheme.iconSizeMedium, accessibilityLabel: "Back") {
-                    dismiss()
-                }
-            }
-        }
     }
 
     private var rowInsets: EdgeInsets {

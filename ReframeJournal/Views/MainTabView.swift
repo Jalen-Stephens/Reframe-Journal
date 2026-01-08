@@ -1,10 +1,11 @@
-// File: Views/HomeView.swift
-// Redesigned home screen with calendar strip, streak indicator, and bottom tab bar
+// File: Views/MainTabView.swift
+// Main tab view that manages all tab bar pages with persistent tab bar
 
 import SwiftUI
 import SwiftData
+import Foundation
 
-struct HomeView: View {
+struct MainTabView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AppRouter
     @Environment(\.notesPalette) private var notesPalette
@@ -12,16 +13,6 @@ struct HomeView: View {
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @Environment(\.modelContext) private var modelContext
     
-    // MARK: - SwiftData Query
-    @Query(
-        filter: #Predicate<JournalEntry> { !$0.isDraft },
-        sort: \JournalEntry.createdAt,
-        order: .reverse
-    )
-    private var allEntries: [JournalEntry]
-    
-    // MARK: - State
-    @StateObject private var viewModel = HomeViewModel()
     @State private var selectedTab: MainTab = .home
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
@@ -33,17 +24,19 @@ struct HomeView: View {
             
             VStack(spacing: 0) {
                 // Main content based on selected tab
-                switch selectedTab {
-                case .home:
-                    homeContent
-                case .entries:
-                    homeContent // Will navigate
-                case .insights:
-                    insightsPlaceholder
-                case .settings:
-                    homeContent // Will navigate
-                case .newEntry:
-                    homeContent // Fallback, button triggers action
+                Group {
+                    switch selectedTab {
+                    case .home:
+                        HomeContentView(selectedTab: $selectedTab)
+                    case .entries:
+                        AllEntriesView()
+                    case .insights:
+                        InsightsPlaceholderView()
+                    case .settings:
+                        SettingsView()
+                    case .newEntry:
+                        HomeContentView(selectedTab: $selectedTab) // Fallback, button triggers action
+                    }
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -51,15 +44,6 @@ struct HomeView: View {
                     startNewThoughtRecord()
                 }
             }
-        }
-        .onAppear {
-            viewModel.updateStreak(from: allEntries)
-        }
-        .onChange(of: allEntries) { _, newEntries in
-            viewModel.updateStreak(from: newEntries)
-        }
-        .onChange(of: selectedTab) { _, newTab in
-            handleTabChange(newTab)
         }
         .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
             Button("OK", role: .cancel) {}
@@ -74,9 +58,41 @@ struct HomeView: View {
         }
     }
     
-    // MARK: - Home Content
+    // MARK: - Actions
     
-    private var homeContent: some View {
+    private func startNewThoughtRecord() {
+        if appState.thoughtUsage.canCreateThought() {
+            router.push(.thoughtEntry(id: nil))
+        } else {
+            showDailyLimitAlert = true
+        }
+    }
+}
+
+// MARK: - Home Content View
+
+private struct HomeContentView: View {
+    @Binding var selectedTab: MainTab
+    
+    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var router: AppRouter
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var entitlementsManager: EntitlementsManager
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query(
+        filter: #Predicate<JournalEntry> { !$0.isDraft },
+        sort: \JournalEntry.createdAt,
+        order: .reverse
+    )
+    private var allEntries: [JournalEntry]
+    
+    @StateObject private var viewModel = HomeViewModel()
+    @State private var showDailyLimitAlert = false
+    @State private var showPaywall = false
+    
+    var body: some View {
         VStack(spacing: 0) {
             // Top header
             headerSection
@@ -110,6 +126,23 @@ struct HomeView: View {
                 // Spacer to push content up
                 Spacer(minLength: 0)
             }
+        }
+        .onAppear {
+            viewModel.updateStreak(from: allEntries)
+        }
+        .onChange(of: allEntries) { _, newEntries in
+            viewModel.updateStreak(from: newEntries)
+        }
+        .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
+            Button("OK", role: .cancel) {}
+            Button("Upgrade") {
+                showPaywall = true
+            }
+        } message: {
+            Text("You've used your 3 free thoughts for today.\nCome back tomorrow, or upgrade for unlimited thoughts.")
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
     
@@ -269,7 +302,7 @@ struct HomeView: View {
         if filteredEntries.isEmpty {
             emptyStateView
         } else {
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 // Section header
                 HStack {
                     Text("Entries")
@@ -277,9 +310,11 @@ struct HomeView: View {
                         .foregroundStyle(notesPalette.textSecondary)
                     Spacer()
                     
-                    if viewModel.isSelectedToday && allEntries.count > filteredEntries.count {
+                    if viewModel.isSelectedToday && (filteredEntries.count > 3 || allEntries.count > filteredEntries.count) {
                         Button {
-                            router.push(.allEntries)
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                selectedTab = .entries
+                            }
                         } label: {
                             Text("View all")
                                 .font(.system(size: 13, weight: .medium))
@@ -289,33 +324,62 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, 4)
+                .padding(.bottom, 8)
                 
-                // Entry list (max 2 to save space)
-                ForEach(Array(filteredEntries.prefix(2))) { entry in
-                    let record = entry.toThoughtRecord()
-                    EntryListItemView(entry: record) {
-                        router.push(.thoughtEntry(id: entry.recordId))
+                // Entry list (max 3 entries) with swipe actions
+                List {
+                    ForEach(Array(filteredEntries.prefix(3))) { entry in
+                        let record = entry.toThoughtRecord()
+                        EntryListItemView(entry: record) {
+                            router.push(.thoughtEntry(id: entry.recordId))
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button {
+                                router.push(.thoughtEntry(id: entry.recordId))
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(notesPalette.accent)
+
+                            Button(role: .destructive) {
+                                deleteEntry(entry)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .listRowInsets(rowInsets)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .scrollDisabled(true)
+                .frame(height: calculateListHeight(for: filteredEntries))
                 
-                // Nuggie image based on time of day (raised higher)
+                // Nuggie image based on time of day (lowered slightly when 3 entries)
                 nuggieImage
-                    .padding(.top, 4)
+                    .padding(.top, filteredEntries.count >= 3 ? 0 : 4)
             }
         }
     }
     
-    // MARK: - Nuggie Image
+    // MARK: - Helpers
     
-    private var nuggieImage: some View {
-        Image(viewModel.isNightTime ? "NuggieDogBedJournal" : "NuggieStandingDogBed")
-            .resizable()
-            .scaledToFit()
-            .frame(maxWidth: 220, maxHeight: 220)
-            .frame(maxWidth: .infinity)
-            .accessibilityLabel(viewModel.isNightTime 
-                ? "Nuggie sleeping in a dog bed" 
-                : "Nuggie standing by a dog bed")
+    private var rowInsets: EdgeInsets {
+        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+    }
+    
+    private func calculateListHeight(for entries: [JournalEntry]) -> CGFloat {
+        // Approximate height: ~80 per entry
+        let entryHeight: CGFloat = 80
+        let maxEntries = min(entries.count, 3)
+        return CGFloat(maxEntries) * entryHeight
+    }
+    
+    private func deleteEntry(_ entry: JournalEntry) {
+        modelContext.delete(entry)
+        try? modelContext.save()
     }
     
     // MARK: - Empty State
@@ -348,9 +412,36 @@ struct HomeView: View {
         .padding(.vertical, 16)
     }
     
-    // MARK: - Placeholder Views for Other Tabs
+    // MARK: - Nuggie Image
     
-    private var insightsPlaceholder: some View {
+    private var nuggieImage: some View {
+        Image(viewModel.isNightTime ? "NuggieDogBedJournal" : "NuggieStandingDogBed")
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: 220, maxHeight: 220)
+            .frame(maxWidth: .infinity)
+            .accessibilityLabel(viewModel.isNightTime 
+                ? "Nuggie sleeping in a dog bed" 
+                : "Nuggie standing by a dog bed")
+    }
+    
+    // MARK: - Actions
+    
+    private func startNewThoughtRecord() {
+        if appState.thoughtUsage.canCreateThought() {
+            router.push(.thoughtEntry(id: nil))
+        } else {
+            showDailyLimitAlert = true
+        }
+    }
+}
+
+// MARK: - Insights Placeholder View
+
+private struct InsightsPlaceholderView: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    var body: some View {
         VStack(spacing: 16) {
             Spacer()
             
@@ -372,55 +463,4 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
-    // MARK: - Tab Navigation
-    
-    private func handleTabChange(_ tab: MainTab) {
-        switch tab {
-        case .entries:
-            router.push(.allEntries)
-            // Reset to home after navigating
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                selectedTab = .home
-            }
-        case .settings:
-            router.push(.settings)
-            // Reset to home after navigating
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                selectedTab = .home
-            }
-        default:
-            break
-        }
-    }
-    
-    // MARK: - Actions
-    
-    private func startNewThoughtRecord() {
-        if appState.thoughtUsage.canCreateThought() {
-            router.push(.thoughtEntry(id: nil))
-        } else {
-            showDailyLimitAlert = true
-        }
-    }
-}
-
-// MARK: - Preview
-
-#Preview("Home - Light") {
-    HomeView()
-        .environmentObject(AppState(modelContext: try! ModelContainerConfig.makeContainer().mainContext))
-        .environmentObject(AppRouter())
-        .environmentObject(EntitlementsManager())
-        .notesTheme()
-        .preferredColorScheme(.light)
-}
-
-#Preview("Home - Dark") {
-    HomeView()
-        .environmentObject(AppState(modelContext: try! ModelContainerConfig.makeContainer().mainContext))
-        .environmentObject(AppRouter())
-        .environmentObject(EntitlementsManager())
-        .notesTheme()
-        .preferredColorScheme(.dark)
 }

@@ -184,7 +184,15 @@ struct ThoughtEntryNotesView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 GlassIconButton(icon: .chevronLeft, size: AppTheme.iconSizeMedium, accessibilityLabel: "Back") {
-                    dismiss()
+                    Task {
+                        // Cancel any pending autosave
+                        viewModel.cancelAutosave()
+                        // Delete entry if it's empty (new entry with no content)
+                        await viewModel.deleteIfEmpty()
+                        // Clear draft store
+                        NotesDraftStore.clear()
+                        dismiss()
+                    }
                 }
 
                 Spacer()

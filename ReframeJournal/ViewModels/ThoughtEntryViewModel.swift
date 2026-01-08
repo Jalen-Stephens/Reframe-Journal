@@ -115,6 +115,11 @@ final class ThoughtEntryViewModel: ObservableObject {
             await self?.saveNow()
         }
     }
+    
+    func cancelAutosave() {
+        autosaveTask?.cancel()
+        autosaveTask = nil
+    }
 
     func saveNow() async {
         let entry = buildEntry()
@@ -125,6 +130,11 @@ final class ThoughtEntryViewModel: ObservableObject {
                 existing.updatedAt = Date()
                 try store.save()
             } else {
+                // Only create new entry if it's not empty
+                guard !isEntryEmpty(entry) else {
+                    // If it's a new empty entry, don't save it
+                    return
+                }
                 // Create new entry
                 let record = entry.applying(to: nil)
                 let newEntry = JournalEntry(from: record)
@@ -142,6 +152,45 @@ final class ThoughtEntryViewModel: ObservableObject {
         } catch {
 #if DEBUG
             print("ThoughtEntryViewModel save failed", error)
+#endif
+        }
+    }
+    
+    /// Check if an entry is empty (has no meaningful content)
+    func isEntryEmpty(_ entry: ThoughtEntry? = nil) -> Bool {
+        let entryToCheck = entry ?? buildEntry()
+        
+        // Check if situation text is empty or just whitespace
+        let hasSituation = !entryToCheck.situation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        
+        // Check if there are any emotions with names
+        let hasEmotions = entryToCheck.emotions.contains { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        
+        // Check if there are any automatic thoughts with text
+        let hasThoughts = entryToCheck.automaticThoughts.contains { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        
+        // Check if there are sensations
+        let hasSensations = !entryToCheck.sensations.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        
+        // Entry is empty if it has no situation, no emotions, no thoughts, and no sensations
+        return !hasSituation && !hasEmotions && !hasThoughts && !hasSensations
+    }
+    
+    /// Delete the current entry if it exists and is empty (for new entries that were never filled)
+    func deleteIfEmpty() async {
+        // Check if the entry is empty
+        guard isEntryEmpty() else { return }
+        
+        // If it's a new entry that hasn't been saved yet, nothing to delete
+        guard let entry = journalEntry else { return }
+        
+        // Delete the entry if it's empty
+        do {
+            try store.delete(id: entry.recordId)
+            journalEntry = nil
+        } catch {
+#if DEBUG
+            print("ThoughtEntryViewModel delete failed", error)
 #endif
         }
     }
