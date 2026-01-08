@@ -3,6 +3,7 @@
 
 import SwiftUI
 import SwiftData
+import Foundation
 
 struct MainTabView: View {
     @EnvironmentObject private var appState: AppState
