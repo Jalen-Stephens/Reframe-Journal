@@ -132,7 +132,7 @@ struct CalendarStripView: View {
         )
     }
     
-    ZStack {
+    return ZStack {
         Color("NotesBackground")
             .ignoresSafeArea()
         CalendarStripView(weekDays: days) { _ in }
