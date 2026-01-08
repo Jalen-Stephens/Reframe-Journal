@@ -6,8 +6,15 @@ import SwiftUI
 struct ValuesProfileView: View {
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var router: AppRouter
-    @StateObject private var service = ValuesProfileService()
+    @StateObject private var service: ValuesProfileService
+    
+    init() {
+        // Initialize with a temporary context, will be updated in onAppear
+        let tempContainer = try! ModelContainerConfig.makeContainer()
+        _service = StateObject(wrappedValue: ValuesProfileService(modelContext: tempContainer.mainContext))
+    }
     
     var body: some View {
         ScrollView {
@@ -26,6 +33,10 @@ struct ValuesProfileView: View {
         .navigationTitle("My Values")
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            // Update service with the actual modelContext from environment
+            service.updateModelContext(modelContext)
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
@@ -175,6 +186,7 @@ private struct CategoryRowView: View {
     NavigationStack {
         ValuesProfileView()
             .environmentObject(AppRouter())
+            .modelContainer(try! ModelContainerConfig.makePreviewContainer())
             .notesTheme()
             .preferredColorScheme(.light)
     }
@@ -184,6 +196,7 @@ private struct CategoryRowView: View {
     NavigationStack {
         ValuesProfileView()
             .environmentObject(AppRouter())
+            .modelContainer(try! ModelContainerConfig.makePreviewContainer())
             .notesTheme()
             .preferredColorScheme(.dark)
     }

@@ -1,64 +1,142 @@
 // File: Services/ValuesProfileService.swift
-// JSON-based persistence for the user's values profile
-// Prepared for future migration to SwiftData/iCloud
+// SwiftData-based persistence for the user's values profile with iCloud sync
 
 import Foundation
+import SwiftData
 import Combine
 
 // MARK: - ValuesProfileService
 
 /// Service for persisting and loading the user's values profile.
-/// Uses FileManager + Codable JSON for local-first storage.
-/// Can be migrated to SwiftData/iCloud later without changing the API.
+/// Uses SwiftData with CloudKit for automatic iCloud sync across devices.
 @MainActor
 final class ValuesProfileService: ObservableObject {
     @Published private(set) var profile: ValuesProfile
     @Published private(set) var isLoaded: Bool = false
     
-    private let fileManager = FileManager.default
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
+    private var modelContext: ModelContext
+    private var profileData: ValuesProfileData?
+    private var hasMigratedFromJSON: Bool = false
     
-    private var saveTask: Task<Void, Never>?
-    
-    init() {
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
         // Start with empty profile, will load async
         self.profile = ValuesProfile.empty()
-        
-        // Configure encoder for readability
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        encoder.dateEncodingStrategy = .iso8601
-        decoder.dateDecodingStrategy = .iso8601
         
         // Load profile on init
         Task { await load() }
     }
     
+    /// Updates the model context (used when environment context becomes available)
+    func updateModelContext(_ newContext: ModelContext) {
+        // Only update if different (compare by object identity)
+        guard modelContext !== newContext else { return }
+        modelContext = newContext
+        // Reload if we already loaded with old context
+        if isLoaded {
+            isLoaded = false
+            Task { await load() }
+        }
+    }
+    
     // MARK: - Public API
     
-    /// Loads the profile from disk
+    /// Loads the profile from SwiftData (with JSON migration if needed)
     func load() async {
         guard !isLoaded else { return }
         
+        // First, try to migrate from JSON if it exists
+        await migrateFromJSONIfNeeded()
+        
+        // Load from SwiftData
         do {
-            if let data = try? Data(contentsOf: profileURL),
-               let loaded = try? decoder.decode(ValuesProfile.self, from: data) {
-                profile = loaded
+            let descriptor = FetchDescriptor<ValuesProfileData>(
+                sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+            )
+            let profiles = try modelContext.fetch(descriptor)
+            
+            if let existing = profiles.first {
+                profileData = existing
+                profile = existing.toValuesProfile()
+            } else {
+                // Create new profile
+                let newProfileData = ValuesProfileData()
+                modelContext.insert(newProfileData)
+                try modelContext.save()
+                profileData = newProfileData
+                profile = newProfileData.toValuesProfile()
             }
+        } catch {
+            #if DEBUG
+            print("ValuesProfileService: load failed - \(error)")
+            #endif
+            // Fallback to empty profile
+            profile = ValuesProfile.empty()
         }
+        
         isLoaded = true
     }
     
     /// Updates a category entry and persists
     func updateEntry(_ entry: ValuesCategoryEntry) {
         profile.updateEntry(entry)
-        scheduleSave()
+        
+        // Update SwiftData model
+        if let profileData = profileData {
+            // Check if entry already exists
+            if let existingEntryData = profileData.entries.first(where: { $0.categoryRaw == entry.category.rawValue }) {
+                // Update existing
+                existingEntryData.whatMatters = entry.whatMatters
+                existingEntryData.whyItMatters = entry.whyItMatters
+                existingEntryData.howToShowUp = entry.howToShowUp
+                existingEntryData.keywords = entry.keywords
+                existingEntryData.importance = entry.importance
+                existingEntryData.updatedAt = entry.updatedAt
+            } else {
+                // Create new entry
+                let entryData = ValuesCategoryEntryData.from(entry, profile: profileData)
+                modelContext.insert(entryData)
+                profileData.entries.append(entryData)
+            }
+            profileData.updatedAt = Date()
+        } else {
+            // Create profile if it doesn't exist
+            Task {
+                await ensureProfileExists()
+                if let profileData = profileData {
+                    let entryData = ValuesCategoryEntryData.from(entry, profile: profileData)
+                    modelContext.insert(entryData)
+                    profileData.entries.append(entryData)
+                    profileData.updatedAt = Date()
+                }
+            }
+        }
+        
+        save()
     }
     
     /// Updates the entire profile
     func updateProfile(_ newProfile: ValuesProfile) {
         profile = newProfile
-        scheduleSave()
+        
+        if let profileData = profileData {
+            // Update existing
+            profileData.updatedAt = newProfile.updatedAt
+            // Update entries
+            for (_, entry) in newProfile.entries {
+                let entryData = ValuesCategoryEntryData.from(entry, profile: profileData)
+                profileData.updateEntry(entryData)
+            }
+        } else {
+            // Create new
+            Task {
+                let newProfileData = ValuesProfileData.from(newProfile, context: modelContext)
+                profileData = newProfileData
+                try? modelContext.save()
+            }
+        }
+        
+        save()
     }
     
     /// Gets the entry for a category
@@ -74,35 +152,100 @@ final class ValuesProfileService: ObservableObject {
     /// Clears the profile (for testing or reset)
     func clear() async {
         profile = ValuesProfile.empty()
-        try? fileManager.removeItem(at: profileURL)
+        if let profileData = profileData {
+            modelContext.delete(profileData)
+            self.profileData = nil
+        }
+        try? modelContext.save()
     }
     
     // MARK: - Private
     
-    private var profileURL: URL {
-        let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documents.appendingPathComponent("values_profile.json")
-    }
-    
-    private func scheduleSave() {
-        saveTask?.cancel()
-        saveTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms debounce
-            guard !Task.isCancelled else { return }
-            await save()
+    private func ensureProfileExists() async {
+        guard profileData == nil else { return }
+        
+        do {
+            let descriptor = FetchDescriptor<ValuesProfileData>()
+            let profiles = try modelContext.fetch(descriptor)
+            
+            if let existing = profiles.first {
+                profileData = existing
+                profile = existing.toValuesProfile()
+            } else {
+                let newProfileData = ValuesProfileData()
+                modelContext.insert(newProfileData)
+                try modelContext.save()
+                profileData = newProfileData
+                profile = newProfileData.toValuesProfile()
+            }
+        } catch {
+            #if DEBUG
+            print("ValuesProfileService: ensureProfileExists failed - \(error)")
+            #endif
         }
     }
     
-    private func save() async {
+    private func save() {
         do {
-            let data = try encoder.encode(profile)
-            try data.write(to: profileURL, options: .atomic)
+            try modelContext.save()
             #if DEBUG
-            print("ValuesProfileService: saved profile to \(profileURL.lastPathComponent)")
+            print("ValuesProfileService: saved profile to SwiftData/CloudKit")
             #endif
         } catch {
             #if DEBUG
             print("ValuesProfileService: save failed - \(error)")
+            #endif
+        }
+    }
+    
+    // MARK: - JSON Migration
+    
+    /// Migrates existing JSON profile to SwiftData if it exists
+    private func migrateFromJSONIfNeeded() async {
+        guard !hasMigratedFromJSON else { return }
+        hasMigratedFromJSON = true
+        
+        let fileManager = FileManager.default
+        let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let profileURL = documents.appendingPathComponent("values_profile.json")
+        
+        guard fileManager.fileExists(atPath: profileURL.path) else {
+            return // No JSON file to migrate
+        }
+        
+        do {
+            let data = try Data(contentsOf: profileURL)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let jsonProfile = try decoder.decode(ValuesProfile.self, from: data)
+            
+            // Check if we already have a SwiftData profile
+            let descriptor = FetchDescriptor<ValuesProfileData>()
+            let existing = try modelContext.fetch(descriptor).first
+            
+            if existing == nil {
+                // Migrate to SwiftData
+                let profileData = ValuesProfileData.from(jsonProfile, context: modelContext)
+                modelContext.insert(profileData)
+                try modelContext.save()
+                self.profileData = profileData
+                profile = jsonProfile
+                
+                // Delete JSON file after successful migration
+                try? fileManager.removeItem(at: profileURL)
+                
+                #if DEBUG
+                print("ValuesProfileService: migrated JSON profile to SwiftData/CloudKit")
+                #endif
+            } else {
+                // We have both - keep SwiftData version (it's newer/synced)
+                #if DEBUG
+                print("ValuesProfileService: SwiftData profile exists, keeping it over JSON")
+                #endif
+            }
+        } catch {
+            #if DEBUG
+            print("ValuesProfileService: JSON migration failed - \(error)")
             #endif
         }
     }
@@ -115,7 +258,8 @@ import SwiftUI
 private struct ValuesProfileServiceKey: EnvironmentKey {
     @MainActor
     static var defaultValue: ValuesProfileService {
-        ValuesProfileService()
+        // This will be overridden by the app to provide the actual ModelContext
+        fatalError("ValuesProfileService must be provided via environment with ModelContext")
     }
 }
 

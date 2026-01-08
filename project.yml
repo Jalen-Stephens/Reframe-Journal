@@ -1,6 +1,6 @@
 name: ReframeJournal
 options:
-  bundleIdPrefix: com.yourname
+  bundleIdPrefix: com.JalenStephens
   deploymentTarget:
     iOS: "16.0"
 settings:
@@ -28,7 +28,7 @@ targets:
       path: ReframeJournal/Resources/Info.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.ReframeJournal
+        PRODUCT_BUNDLE_IDENTIFIER: com.JalenStephens.ReframeJournal
         INFOPLIST_KEY_CFBundleName: ReframeJournal
         TARGETED_DEVICE_FAMILY: "1"
     scheme:
@@ -46,6 +46,6 @@ targets:
       - target: ReframeJournal
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.ReframeJournalTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.JalenStephens.ReframeJournalTests
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ReframeJournal.app/ReframeJournal"
         BUNDLE_LOADER: "$(TEST_HOST)"

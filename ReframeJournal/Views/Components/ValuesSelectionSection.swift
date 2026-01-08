@@ -5,10 +5,17 @@ import SwiftUI
 
 struct ValuesSelectionSection: View {
     @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var router: AppRouter
     
     @Binding var selectedValues: SelectedValues
-    @StateObject private var valuesService = ValuesProfileService()
+    @StateObject private var valuesService: ValuesProfileService
+    
+    init(selectedValues: Binding<SelectedValues>) {
+        self._selectedValues = selectedValues
+        let tempContainer = try! ModelContainerConfig.makeContainer()
+        _valuesService = StateObject(wrappedValue: ValuesProfileService(modelContext: tempContainer.mainContext))
+    }
     
     @State private var showCategoryPicker = false
     @State private var howToShowUpText: String = ""
@@ -24,6 +31,9 @@ struct ValuesSelectionSection: View {
             } else {
                 setupPrompt
             }
+        }
+        .onAppear {
+            valuesService.updateModelContext(modelContext)
         }
     }
     
@@ -338,6 +348,7 @@ private struct CategoryPickerSheet: View {
             ))
         )
         .environmentObject(AppRouter())
+        .modelContainer(try! ModelContainerConfig.makePreviewContainer())
         .notesTheme()
     }
     .padding()
@@ -350,6 +361,7 @@ private struct CategoryPickerSheet: View {
             selectedValues: .constant(.empty)
         )
         .environmentObject(AppRouter())
+        .modelContainer(try! ModelContainerConfig.makePreviewContainer())
         .notesTheme()
     }
     .padding()

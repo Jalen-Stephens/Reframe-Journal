@@ -6,10 +6,17 @@ import SwiftUI
 struct ValuesCategoryDetailView: View {
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var router: AppRouter
     
     let category: ValuesCategory
-    @StateObject private var service = ValuesProfileService()
+    @StateObject private var service: ValuesProfileService
+    
+    init(category: ValuesCategory) {
+        self.category = category
+        let tempContainer = try! ModelContainerConfig.makeContainer()
+        _service = StateObject(wrappedValue: ValuesProfileService(modelContext: tempContainer.mainContext))
+    }
     
     @State private var whatMatters: String = ""
     @State private var whyItMatters: String = ""
@@ -85,6 +92,9 @@ struct ValuesCategoryDetailView: View {
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(notesPalette.textPrimary)
             }
+        }
+        .onAppear {
+            service.updateModelContext(modelContext)
         }
         .task {
             await loadEntry()
@@ -452,6 +462,7 @@ struct ValuesCategoryDetailView: View {
     NavigationStack {
         ValuesCategoryDetailView(category: .romanticRelationships)
             .environmentObject(AppRouter())
+            .modelContainer(try! ModelContainerConfig.makePreviewContainer())
             .notesTheme()
             .preferredColorScheme(.light)
     }
@@ -461,6 +472,7 @@ struct ValuesCategoryDetailView: View {
     NavigationStack {
         ValuesCategoryDetailView(category: .personalGrowth)
             .environmentObject(AppRouter())
+            .modelContainer(try! ModelContainerConfig.makePreviewContainer())
             .notesTheme()
             .preferredColorScheme(.dark)
     }

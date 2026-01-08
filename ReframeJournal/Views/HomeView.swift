@@ -25,6 +25,7 @@ struct HomeView: View {
     @State private var selectedTab: MainTab = .home
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
+    @State private var isRefreshing = false
     
     var body: some View {
         ZStack {
@@ -77,39 +78,44 @@ struct HomeView: View {
     // MARK: - Home Content
     
     private var homeContent: some View {
-        VStack(spacing: 0) {
-            // Top header
-            headerSection
-            
-            // Calendar strip
-            CalendarStripView(
-                weekDays: viewModel.weekDays(entriesWithDates: viewModel.datesWithEntries(from: allEntries)),
-                onSelectDate: { date in
-                    viewModel.selectDate(date)
+        ScrollView {
+            VStack(spacing: 0) {
+                // Top header
+                headerSection
+                
+                // Calendar strip
+                CalendarStripView(
+                    weekDays: viewModel.weekDays(entriesWithDates: viewModel.datesWithEntries(from: allEntries)),
+                    onSelectDate: { date in
+                        viewModel.selectDate(date)
+                    }
+                )
+                
+                // Non-scrollable content
+                VStack(alignment: .leading, spacing: 12) {
+                    // Day label
+                    Text(viewModel.selectedDayLabel)
+                        .font(.system(size: 12, weight: .semibold))
+                        .tracking(2)
+                        .foregroundStyle(notesPalette.textTertiary)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                    
+                    // Primary CTA card
+                    primaryActionCard
+                        .padding(.horizontal, 16)
+                    
+                    // Entries for selected day
+                    entriesSection
+                        .padding(.horizontal, 16)
+                    
+                    // Spacer to push content up
+                    Spacer(minLength: 0)
                 }
-            )
-            
-            // Non-scrollable content
-            VStack(alignment: .leading, spacing: 12) {
-                // Day label
-                Text(viewModel.selectedDayLabel)
-                    .font(.system(size: 12, weight: .semibold))
-                    .tracking(2)
-                    .foregroundStyle(notesPalette.textTertiary)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                
-                // Primary CTA card
-                primaryActionCard
-                    .padding(.horizontal, 16)
-                
-                // Entries for selected day
-                entriesSection
-                    .padding(.horizontal, 16)
-                
-                // Spacer to push content up
-                Spacer(minLength: 0)
             }
+        }
+        .refreshable {
+            await refreshEntries()
         }
     }
     
@@ -405,6 +411,36 @@ struct HomeView: View {
         } else {
             showDailyLimitAlert = true
         }
+    }
+    
+    /// Manually refresh entries from CloudKit
+    private func refreshEntries() async {
+        isRefreshing = true
+        defer { isRefreshing = false }
+        
+        // Force SwiftData to check for CloudKit updates
+        do {
+            // Trigger a fetch to pull latest from CloudKit
+            let descriptor = FetchDescriptor<JournalEntry>(
+                predicate: #Predicate<JournalEntry> { !$0.isDraft },
+                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+            )
+            _ = try modelContext.fetch(descriptor)
+            
+            // Save context to trigger CloudKit sync
+            try modelContext.save()
+            
+            #if DEBUG
+            print("HomeView: Refreshed entries from CloudKit")
+            #endif
+        } catch {
+            #if DEBUG
+            print("HomeView: Refresh failed - \(error)")
+            #endif
+        }
+        
+        // Give CloudKit a moment to sync
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
     }
 }
 

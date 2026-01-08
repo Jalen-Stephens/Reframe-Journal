@@ -10,7 +10,7 @@ struct ThoughtEntryNotesView: View {
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: ThoughtEntryViewModel
-    @StateObject private var valuesService = ValuesProfileService()
+    @StateObject private var valuesService: ValuesProfileService
     @FocusState private var focusedField: ThoughtEntryViewModel.Field?
     @State private var isDateSheetPresented = false
     @State private var showEmotionSuggestions = false
@@ -42,6 +42,8 @@ struct ThoughtEntryNotesView: View {
 
     init(entryId: String?, modelContext: ModelContext, thoughtUsage: ThoughtUsageService) {
         _viewModel = StateObject(wrappedValue: ThoughtEntryViewModel(entryId: entryId, modelContext: modelContext, thoughtUsage: thoughtUsage))
+        let tempContainer = try! ModelContainerConfig.makeContainer()
+        _valuesService = StateObject(wrappedValue: ValuesProfileService(modelContext: tempContainer.mainContext))
     }
 
     var body: some View {
@@ -76,6 +78,9 @@ struct ThoughtEntryNotesView: View {
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            valuesService.updateModelContext(modelContext)
         }
         .task {
             await viewModel.loadIfNeeded()
