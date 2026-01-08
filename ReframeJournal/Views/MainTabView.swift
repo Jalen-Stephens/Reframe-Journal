@@ -1,10 +1,10 @@
-// File: Views/HomeView.swift
-// Redesigned home screen with calendar strip, streak indicator, and bottom tab bar
+// File: Views/MainTabView.swift
+// Main tab view that manages all tab bar pages with persistent tab bar
 
 import SwiftUI
 import SwiftData
 
-struct HomeView: View {
+struct MainTabView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AppRouter
     @Environment(\.notesPalette) private var notesPalette
@@ -12,16 +12,6 @@ struct HomeView: View {
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @Environment(\.modelContext) private var modelContext
     
-    // MARK: - SwiftData Query
-    @Query(
-        filter: #Predicate<JournalEntry> { !$0.isDraft },
-        sort: \JournalEntry.createdAt,
-        order: .reverse
-    )
-    private var allEntries: [JournalEntry]
-    
-    // MARK: - State
-    @StateObject private var viewModel = HomeViewModel()
     @State private var selectedTab: MainTab = .home
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
@@ -33,17 +23,19 @@ struct HomeView: View {
             
             VStack(spacing: 0) {
                 // Main content based on selected tab
-                switch selectedTab {
-                case .home:
-                    homeContent
-                case .entries:
-                    homeContent // Will navigate
-                case .insights:
-                    insightsPlaceholder
-                case .settings:
-                    homeContent // Will navigate
-                case .newEntry:
-                    homeContent // Fallback, button triggers action
+                Group {
+                    switch selectedTab {
+                    case .home:
+                        HomeContentView()
+                    case .entries:
+                        AllEntriesView()
+                    case .insights:
+                        InsightsPlaceholderView()
+                    case .settings:
+                        SettingsView()
+                    case .newEntry:
+                        HomeContentView() // Fallback, button triggers action
+                    }
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -51,15 +43,6 @@ struct HomeView: View {
                     startNewThoughtRecord()
                 }
             }
-        }
-        .onAppear {
-            viewModel.updateStreak(from: allEntries)
-        }
-        .onChange(of: allEntries) { _, newEntries in
-            viewModel.updateStreak(from: newEntries)
-        }
-        .onChange(of: selectedTab) { _, newTab in
-            handleTabChange(newTab)
         }
         .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
             Button("OK", role: .cancel) {}
@@ -74,9 +57,39 @@ struct HomeView: View {
         }
     }
     
-    // MARK: - Home Content
+    // MARK: - Actions
     
-    private var homeContent: some View {
+    private func startNewThoughtRecord() {
+        if appState.thoughtUsage.canCreateThought() {
+            router.push(.thoughtEntry(id: nil))
+        } else {
+            showDailyLimitAlert = true
+        }
+    }
+}
+
+// MARK: - Home Content View
+
+private struct HomeContentView: View {
+    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var router: AppRouter
+    @Environment(\.notesPalette) private var notesPalette
+    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var entitlementsManager: EntitlementsManager
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query(
+        filter: #Predicate<JournalEntry> { !$0.isDraft },
+        sort: \JournalEntry.createdAt,
+        order: .reverse
+    )
+    private var allEntries: [JournalEntry]
+    
+    @StateObject private var viewModel = HomeViewModel()
+    @State private var showDailyLimitAlert = false
+    @State private var showPaywall = false
+    
+    var body: some View {
         VStack(spacing: 0) {
             // Top header
             headerSection
@@ -110,6 +123,23 @@ struct HomeView: View {
                 // Spacer to push content up
                 Spacer(minLength: 0)
             }
+        }
+        .onAppear {
+            viewModel.updateStreak(from: allEntries)
+        }
+        .onChange(of: allEntries) { _, newEntries in
+            viewModel.updateStreak(from: newEntries)
+        }
+        .alert("Daily limit reached", isPresented: $showDailyLimitAlert) {
+            Button("OK", role: .cancel) {}
+            Button("Upgrade") {
+                showPaywall = true
+            }
+        } message: {
+            Text("You've used your 3 free thoughts for today.\nCome back tomorrow, or upgrade for unlimited thoughts.")
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
     
@@ -305,19 +335,6 @@ struct HomeView: View {
         }
     }
     
-    // MARK: - Nuggie Image
-    
-    private var nuggieImage: some View {
-        Image(viewModel.isNightTime ? "NuggieDogBedJournal" : "NuggieStandingDogBed")
-            .resizable()
-            .scaledToFit()
-            .frame(maxWidth: 220, maxHeight: 220)
-            .frame(maxWidth: .infinity)
-            .accessibilityLabel(viewModel.isNightTime 
-                ? "Nuggie sleeping in a dog bed" 
-                : "Nuggie standing by a dog bed")
-    }
-    
     // MARK: - Empty State
     
     private var emptyStateView: some View {
@@ -348,9 +365,36 @@ struct HomeView: View {
         .padding(.vertical, 16)
     }
     
-    // MARK: - Placeholder Views for Other Tabs
+    // MARK: - Nuggie Image
     
-    private var insightsPlaceholder: some View {
+    private var nuggieImage: some View {
+        Image(viewModel.isNightTime ? "NuggieDogBedJournal" : "NuggieStandingDogBed")
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: 220, maxHeight: 220)
+            .frame(maxWidth: .infinity)
+            .accessibilityLabel(viewModel.isNightTime 
+                ? "Nuggie sleeping in a dog bed" 
+                : "Nuggie standing by a dog bed")
+    }
+    
+    // MARK: - Actions
+    
+    private func startNewThoughtRecord() {
+        if appState.thoughtUsage.canCreateThought() {
+            router.push(.thoughtEntry(id: nil))
+        } else {
+            showDailyLimitAlert = true
+        }
+    }
+}
+
+// MARK: - Insights Placeholder View
+
+private struct InsightsPlaceholderView: View {
+    @Environment(\.notesPalette) private var notesPalette
+    
+    var body: some View {
         VStack(spacing: 16) {
             Spacer()
             
@@ -372,55 +416,4 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
-    // MARK: - Tab Navigation
-    
-    private func handleTabChange(_ tab: MainTab) {
-        switch tab {
-        case .entries:
-            router.push(.allEntries)
-            // Reset to home after navigating
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                selectedTab = .home
-            }
-        case .settings:
-            router.push(.settings)
-            // Reset to home after navigating
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                selectedTab = .home
-            }
-        default:
-            break
-        }
-    }
-    
-    // MARK: - Actions
-    
-    private func startNewThoughtRecord() {
-        if appState.thoughtUsage.canCreateThought() {
-            router.push(.thoughtEntry(id: nil))
-        } else {
-            showDailyLimitAlert = true
-        }
-    }
-}
-
-// MARK: - Preview
-
-#Preview("Home - Light") {
-    HomeView()
-        .environmentObject(AppState(modelContext: try! ModelContainerConfig.makeContainer().mainContext))
-        .environmentObject(AppRouter())
-        .environmentObject(EntitlementsManager())
-        .notesTheme()
-        .preferredColorScheme(.light)
-}
-
-#Preview("Home - Dark") {
-    HomeView()
-        .environmentObject(AppState(modelContext: try! ModelContainerConfig.makeContainer().mainContext))
-        .environmentObject(AppRouter())
-        .environmentObject(EntitlementsManager())
-        .notesTheme()
-        .preferredColorScheme(.dark)
 }

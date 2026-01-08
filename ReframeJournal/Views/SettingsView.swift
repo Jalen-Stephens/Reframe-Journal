@@ -94,23 +94,8 @@ struct SettingsView: View {
         }
         .background(notesPalette.background.ignoresSafeArea())
         .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 17, weight: .semibold))
-                        Text("Back")
-                            .font(.system(size: 17))
-                    }
-                    .foregroundStyle(notesPalette.textPrimary)
-                }
-            }
-        }
         .sheet(isPresented: $showAppearancePicker) {
             AppearancePickerSheet(selection: $appAppearanceRaw)
                 .presentationDetents([.height(280)])

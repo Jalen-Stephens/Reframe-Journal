@@ -15,10 +15,11 @@ struct RootView: View {
         ZStack {
             notesPalette.background.ignoresSafeArea()
             NavigationStack(path: $router.path) {
-                HomeView()
+                MainTabView()
                     .navigationDestination(for: Route.self) { route in
                         switch route {
                         case .allEntries:
+                            // This route is handled by tab bar, but kept for navigation from within entries
                             AllEntriesView()
                         case let .entryDetail(id):
                             EntryDetailView(entryId: id, repository: appState.repository)
@@ -43,6 +44,7 @@ struct RootView: View {
                         case .wizardStep6:
                             OutcomeView()
                         case .settings:
+                            // This route is handled by tab bar, but kept for navigation from within settings
                             SettingsView()
                         case .termsPrivacy:
                             TermsPrivacyView(requiresAcceptance: false)

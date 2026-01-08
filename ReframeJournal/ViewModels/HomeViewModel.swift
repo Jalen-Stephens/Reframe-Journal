@@ -66,6 +66,13 @@ final class HomeViewModel: ObservableObject {
         }
     }
     
+    /// Check if it's nighttime (for Nuggie image selection)
+    var isNightTime: Bool {
+        let hour = calendar.component(.hour, from: Date())
+        // Night time: 9 PM (21:00) to 5 AM (05:00)
+        return hour >= 21 || hour < 5
+    }
+    
     /// Formatted day label for selected date (e.g., "FRIDAY")
     var selectedDayLabel: String {
         let formatter = DateFormatter()

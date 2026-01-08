@@ -123,6 +123,7 @@
 		B10000000000000000000030 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000030 /* HomeViewModel.swift */; };
 		B10000000000000000000031 /* CalendarStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000031 /* CalendarStripView.swift */; };
 		B10000000000000000000032 /* MainTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000032 /* MainTabBar.swift */; };
+		B10000000000000000000033 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000033 /* MainTabView.swift */; };
 		C10000000000000000000020 /* StreakCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000020 /* StreakCalculatorTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -256,6 +257,7 @@
 		A10000000000000000000030 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		A10000000000000000000031 /* CalendarStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarStripView.swift; sourceTree = "<group>"; };
 		A10000000000000000000032 /* MainTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBar.swift; sourceTree = "<group>"; };
+		A10000000000000000000033 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		C20000000000000000000020 /* StreakCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakCalculatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -312,6 +314,7 @@
 				CCF9D27FA3CF9C0938F10E96 /* EntryListItemView.swift */,
 				568C492A6F061A5081934CF2 /* ExpandableTextView.swift */,
 				372EFE6D8AD2C60DA0079CEC /* HomeView.swift */,
+				A10000000000000000000033 /* MainTabView.swift */,
 				C776E243CD9B32161BB92B86 /* LabeledInput.swift */,
 				A10000000000000000000012 /* NotesStyleEntryView.swift */,
 				1D5D5102BC1CBB4188BD250A /* OutcomeView.swift */,
@@ -656,6 +659,7 @@
 				3A4B5C6D7E8F901234567891 /* ReframeLoadingView.swift in Sources */,
 				510D8D7CC3B582128B31BEDE /* ExpandableTextView.swift in Sources */,
 				BA140D589F48239A7AB796DA /* HomeView.swift in Sources */,
+				B10000000000000000000033 /* MainTabView.swift in Sources */,
 				B10000000000000000000030 /* HomeViewModel.swift in Sources */,
 				B10000000000000000000031 /* CalendarStripView.swift in Sources */,
 				B10000000000000000000032 /* MainTabBar.swift in Sources */,
