@@ -22,6 +22,16 @@ struct SettingsView: View {
         ScrollView {
             VStack(spacing: 0) {
                 
+                // MARK: - Personal Section
+                
+                SettingsSectionHeader(title: "Personal")
+                
+                SettingsNavigationRow(
+                    icon: "heart.text.square",
+                    title: "My Values",
+                    destination: .valuesProfile
+                )
+                
                 // MARK: - Account Section
                 
                 SettingsSectionHeader(title: "Account")

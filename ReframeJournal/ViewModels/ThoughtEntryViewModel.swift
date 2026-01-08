@@ -12,6 +12,7 @@ final class ThoughtEntryViewModel: ObservableObject {
         case emotions
         case automaticThoughts
         case adaptiveResponses
+        case values
         case outcome
     }
 
@@ -35,6 +36,7 @@ final class ThoughtEntryViewModel: ObservableObject {
     @Published var adaptiveResponses: [String: AdaptiveResponsesForThought]
     @Published var outcomesByThought: [String: ThoughtOutcome]
     @Published var beliefAfterMainThought: Int?
+    @Published var selectedValues: SelectedValues?
     @Published var aiReframe: AIReframeResult?
     @Published var aiReframeCreatedAt: Date?
     @Published var aiReframeModel: String?
@@ -75,6 +77,7 @@ final class ThoughtEntryViewModel: ObservableObject {
         adaptiveResponses = empty.adaptiveResponses
         outcomesByThought = empty.outcomesByThought
         beliefAfterMainThought = empty.beliefAfterMainThought
+        selectedValues = empty.selectedValues
         aiReframe = empty.aiReframe
         aiReframeCreatedAt = empty.aiReframeCreatedAt
         aiReframeModel = empty.aiReframeModel
@@ -368,6 +371,7 @@ final class ThoughtEntryViewModel: ObservableObject {
         adaptiveResponses = entry.adaptiveResponses
         outcomesByThought = entry.outcomesByThought
         beliefAfterMainThought = entry.beliefAfterMainThought
+        selectedValues = entry.selectedValues
         aiReframe = entry.aiReframe
         aiReframeCreatedAt = entry.aiReframeCreatedAt
         aiReframeModel = entry.aiReframeModel
@@ -392,6 +396,7 @@ final class ThoughtEntryViewModel: ObservableObject {
             adaptiveResponses: adaptiveResponses,
             outcomesByThought: outcomesByThought,
             beliefAfterMainThought: beliefAfterMainThought,
+            selectedValues: selectedValues,
             aiReframe: aiReframe,
             aiReframeCreatedAt: aiReframeCreatedAt,
             aiReframeModel: aiReframeModel,
@@ -427,9 +432,13 @@ final class ThoughtEntryViewModel: ObservableObject {
         let hasEmotions = entry.emotions.contains { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         let hasThoughts = entry.automaticThoughts.contains { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         let hasAdaptive = !entry.adaptiveResponses.isEmpty
+        let hasValues = entry.selectedValues?.hasSelection ?? false
         let hasOutcome = !entry.outcomesByThought.isEmpty || entry.beliefAfterMainThought != nil
         if hasOutcome {
             return .outcome
+        }
+        if hasValues {
+            return .values
         }
         if hasAdaptive {
             return .adaptiveResponses

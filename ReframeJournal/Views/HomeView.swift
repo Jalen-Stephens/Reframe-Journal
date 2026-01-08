@@ -323,11 +323,14 @@ struct HomeView: View {
     private var emptyStateView: some View {
         VStack(spacing: 12) {
             if viewModel.isSelectedToday {
-                Image("NuggieStandingDogBed")
+                Image(viewModel.isNightTime ? "NuggieDogBedJournal" : "NuggieStandingDogBed")
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 180)
                     .padding(.top, 24)
+                    .accessibilityLabel(viewModel.isNightTime 
+                        ? "Nuggie sleeping in a dog bed" 
+                        : "Nuggie standing by a dog bed")
                 
                 Text("No entries yet today")
                     .font(.system(size: 15, weight: .medium))

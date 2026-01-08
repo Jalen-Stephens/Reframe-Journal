@@ -48,6 +48,10 @@ struct RootView: View {
                             SettingsView()
                         case .termsPrivacy:
                             TermsPrivacyView(requiresAcceptance: false)
+                        case .valuesProfile:
+                            ValuesProfileView()
+                        case let .valuesCategoryDetail(category):
+                            ValuesCategoryDetailView(category: category)
                         }
                     }
             }

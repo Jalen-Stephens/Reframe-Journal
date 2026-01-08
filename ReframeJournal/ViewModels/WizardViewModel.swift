@@ -51,6 +51,7 @@ final class WizardViewModel: ObservableObject {
             outcomesByThought: base.outcomesByThought,
             beliefAfterMainThought: base.beliefAfterMainThought,
             notes: base.notes,
+            selectedValues: base.selectedValues,
             aiReframe: base.aiReframe,
             aiReframeCreatedAt: base.aiReframeCreatedAt,
             aiReframeModel: base.aiReframeModel,
