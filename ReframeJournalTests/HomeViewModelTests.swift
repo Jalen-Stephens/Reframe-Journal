@@ -258,7 +258,6 @@ final class HomeViewModelTests: XCTestCase {
     }
     
     func testWeekDayAccessibilityLabel() {
-        let calendar = Calendar.current
         let date = Date()
         let day = WeekDay(
             id: date,
