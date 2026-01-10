@@ -7,6 +7,9 @@ final class EntryDetailViewModelTests: XCTestCase {
     private var modelContainer: ModelContainer!
     private var modelContext: ModelContext!
     
+    @MainActor
+
+    
     override func setUpWithError() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         modelContainer = try ModelContainer(for: JournalEntry.self, configurations: config)
