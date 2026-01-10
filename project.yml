@@ -58,3 +58,5 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.JalenStephens.ReframeJournalTests
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ReframeJournal.app/ReframeJournal"
         BUNDLE_LOADER: "$(TEST_HOST)"
+        # Prevent GoogleMobileAds from verifying initialization in tests
+        OTHER_LDFLAGS: -weak_framework GoogleMobileAds

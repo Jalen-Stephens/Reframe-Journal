@@ -55,7 +55,13 @@ final class RewardedAdManager: NSObject, ObservableObject {
     }
 
     func loadAd() async {
+        // Skip entirely in test environment
+        guard NSClassFromString("XCTestCase") == nil else {
+            return
+        }
         guard !isLoading else { return }
+        guard !adUnitID.isEmpty else { return }
+        
         isLoading = true
         defer { isLoading = false }
 
@@ -89,6 +95,11 @@ final class RewardedAdManager: NSObject, ObservableObject {
     }
 
     func presentAd() async throws -> Bool {
+        // Skip entirely in test environment
+        guard NSClassFromString("XCTestCase") == nil else {
+            throw RewardedAdError.noAdAvailable
+        }
+        
         if rewardedAd == nil {
             await loadAd()
         }
