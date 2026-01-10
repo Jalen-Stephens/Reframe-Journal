@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class ValuesProfileServiceTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
@@ -19,6 +18,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         modelContext = nil
     }
     
+    @MainActor
     func testInitialState() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -34,6 +34,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertEqual(service.profile.entries.count, 10)
     }
     
+    @MainActor
     func testLoadCreatesNewProfile() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -50,6 +51,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertEqual(profiles?.count, 1)
     }
     
+    @MainActor
     func testUpdateEntry() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -77,6 +79,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertEqual(retrievedEntry.importance, 5)
     }
     
+    @MainActor
     func testUpdateEntryPersists() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -99,6 +102,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertEqual(retrievedEntry.whatMatters, "Support")
     }
     
+    @MainActor
     func testEntryForCategory() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -111,6 +115,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertFalse(entry.hasContent)
     }
     
+    @MainActor
     func testUpdateProfile() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -131,6 +136,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertEqual(retrievedEntry.whatMatters, "Support")
     }
     
+    @MainActor
     func testCreateSnippet() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -156,6 +162,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertEqual(snippet.howToShowUp, "Be present")
     }
     
+    @MainActor
     func testClear() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -176,6 +183,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertFalse(clearedEntry.hasContent)
     }
     
+    @MainActor
     func testUpdateModelContext() async {
         let service1 = ValuesProfileService(modelContext: modelContext)
         
@@ -198,6 +206,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertTrue(service1.isLoaded)
     }
     
+    @MainActor
     func testUpdateModelContextSameContext() async {
         let service = ValuesProfileService(modelContext: modelContext)
         
@@ -217,6 +226,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         XCTAssertEqual(service.isLoaded, wasLoaded)
     }
     
+    @MainActor
     func testLoadIsIdempotent() async {
         let service = ValuesProfileService(modelContext: modelContext)
         

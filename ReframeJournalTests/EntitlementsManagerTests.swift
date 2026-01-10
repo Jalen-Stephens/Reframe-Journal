@@ -2,19 +2,21 @@ import XCTest
 import StoreKit
 @testable import ReframeJournal
 
-@MainActor
 final class EntitlementsManagerTests: XCTestCase {
     
+    @MainActor
     func testSubscriptionPlanRawValues() {
         XCTAssertEqual(SubscriptionPlan.monthly.rawValue, "reframejournal.pro.monthly")
         XCTAssertEqual(SubscriptionPlan.yearly.rawValue, "reframejournal.pro.yearly")
     }
     
+    @MainActor
     func testSubscriptionPlanDisplayNames() {
         XCTAssertEqual(SubscriptionPlan.monthly.displayName, "Monthly")
         XCTAssertEqual(SubscriptionPlan.yearly.displayName, "Yearly")
     }
     
+    @MainActor
     func testSubscriptionPlanAllCases() {
         let allCases = SubscriptionPlan.allCases
         XCTAssertEqual(allCases.count, 2)
@@ -22,12 +24,14 @@ final class EntitlementsManagerTests: XCTestCase {
         XCTAssertTrue(allCases.contains(.yearly))
     }
     
+    @MainActor
     func testSubscriptionPlanInitFromRawValue() {
         XCTAssertEqual(SubscriptionPlan(rawValue: "reframejournal.pro.monthly"), .monthly)
         XCTAssertEqual(SubscriptionPlan(rawValue: "reframejournal.pro.yearly"), .yearly)
         XCTAssertNil(SubscriptionPlan(rawValue: "invalid"))
     }
     
+    @MainActor
     func testEntitlementErrorDescriptions() {
         let productUnavailable = EntitlementsManager.EntitlementError.productUnavailable
         XCTAssertNotNil(productUnavailable.errorDescription)
@@ -38,6 +42,7 @@ final class EntitlementsManagerTests: XCTestCase {
         XCTAssertTrue(failedVerification.errorDescription?.contains("verified") ?? false)
     }
     
+    @MainActor
     func testEntitlementsManagerInitialState() {
         let manager = EntitlementsManager()
         
@@ -47,6 +52,7 @@ final class EntitlementsManagerTests: XCTestCase {
         XCTAssertFalse(manager.isLoading)
     }
     
+    @MainActor
     func testSelectPlan() {
         let manager = EntitlementsManager()
         
@@ -57,6 +63,7 @@ final class EntitlementsManagerTests: XCTestCase {
         XCTAssertEqual(manager.selectedPlan, .yearly)
     }
     
+    @MainActor
     func testSelectedProductIsNilInitially() {
         let manager = EntitlementsManager()
         XCTAssertNil(manager.selectedProduct)

@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class AppStateTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
@@ -19,6 +18,7 @@ final class AppStateTests: XCTestCase {
         modelContext = nil
     }
     
+    @MainActor
     func testAppStateInitialization() {
         let appState = AppState(modelContext: modelContext)
         
@@ -27,13 +27,16 @@ final class AppStateTests: XCTestCase {
         XCTAssertNotNil(appState.thoughtUsage)
     }
     
+    @MainActor
     func testAppStateRepositoryIsThoughtRecordRepository() {
         let appState = AppState(modelContext: modelContext)
         
-        // Repository should be initialized
-        XCTAssertTrue(appState.repository is ThoughtRecordRepository)
+        // Repository should be initialized (it's declared as ThoughtRecordRepository, so this is always true)
+        // But we can verify it's not nil
+        XCTAssertNotNil(appState.repository)
     }
     
+    @MainActor
     func testAppStateWizardIsWizardViewModel() {
         let appState = AppState(modelContext: modelContext)
         

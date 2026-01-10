@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class WizardViewModelTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
@@ -19,6 +18,7 @@ final class WizardViewModelTests: XCTestCase {
         modelContext = nil
     }
     
+    @MainActor
     func testInitialState() {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = WizardViewModel(repository: repository)
@@ -29,6 +29,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.draft.recordId.hasPrefix("id_"))
     }
     
+    @MainActor
     func testResetDraft() {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = WizardViewModel(repository: repository)
@@ -44,6 +45,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isEditing)
     }
     
+    @MainActor
     func testSetDraft() {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = WizardViewModel(repository: repository)
@@ -77,6 +79,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isEditing)
     }
     
+    @MainActor
     func testPersistDraft() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = WizardViewModel(repository: repository)
@@ -115,6 +118,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertEqual(savedDraft?.situationText, "Draft situation")
     }
     
+    @MainActor
     func testPersistDraftWithProvidedRecord() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = WizardViewModel(repository: repository)
@@ -151,6 +155,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.draft.id, "provided_id")
     }
     
+    @MainActor
     func testLoadDraft() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -189,6 +194,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.hasLoadedDraft)
     }
     
+    @MainActor
     func testClearDraft() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = WizardViewModel(repository: repository)
@@ -229,6 +235,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isEditing)
     }
     
+    @MainActor
     func testLoadDraftIsIdempotent() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = WizardViewModel(repository: repository)

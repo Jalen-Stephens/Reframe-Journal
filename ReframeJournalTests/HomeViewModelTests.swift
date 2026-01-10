@@ -1,9 +1,9 @@
 import XCTest
 @testable import ReframeJournal
 
-@MainActor
 final class HomeViewModelTests: XCTestCase {
     
+    @MainActor
     func testInitialState() {
         let viewModel = HomeViewModel()
         
@@ -11,6 +11,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.streak, 0)
     }
     
+    @MainActor
     func testInitialStateWithCustomDate() {
         let customDate = Date(timeIntervalSince1970: 1_700_000_000)
         let viewModel = HomeViewModel(initialDate: customDate)
@@ -19,6 +20,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertTrue(calendar.isDate(viewModel.selectedDate, inSameDayAs: customDate))
     }
     
+    @MainActor
     func testGreetingMorning() {
         let calendar = Calendar.current
         var components = DateComponents()
@@ -35,6 +37,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertFalse(greeting.isEmpty)
     }
     
+    @MainActor
     func testGreetingAfternoon() {
         let calendar = Calendar.current
         var components = DateComponents()
@@ -50,6 +53,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertFalse(greeting.isEmpty)
     }
     
+    @MainActor
     func testIsNightTime() {
         let calendar = Calendar.current
         var components = DateComponents()
@@ -66,6 +70,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertTrue(isNight || !isNight) // Just verify it doesn't crash
     }
     
+    @MainActor
     func testSelectedDayLabel() {
         let calendar = Calendar.current
         var components = DateComponents()
@@ -79,6 +84,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.selectedDayLabel, "THURSDAY")
     }
     
+    @MainActor
     func testIsSelectedToday() {
         let viewModel = HomeViewModel()
         
@@ -93,6 +99,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isSelectedToday)
     }
     
+    @MainActor
     func testSelectDate() {
         let viewModel = HomeViewModel()
         let calendar = Calendar.current
@@ -103,6 +110,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertTrue(calendar.isDate(viewModel.selectedDate, inSameDayAs: tomorrow))
     }
     
+    @MainActor
     func testSelectToday() {
         let viewModel = HomeViewModel()
         let calendar = Calendar.current
@@ -115,6 +123,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertTrue(calendar.isDateInToday(viewModel.selectedDate))
     }
     
+    @MainActor
     func testWeekDaysGeneration() {
         let viewModel = HomeViewModel()
         let weekDays = viewModel.weekDays(entriesWithDates: [])
@@ -130,6 +139,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertEqual(todayDays.count, 1)
     }
     
+    @MainActor
     func testWeekDaysWithEntries() {
         let viewModel = HomeViewModel()
         let calendar = Calendar.current
@@ -148,6 +158,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertTrue(yesterdayDay?.hasEntry ?? false)
     }
     
+    @MainActor
     func testUpdateStreak() {
         let viewModel = HomeViewModel()
         
@@ -185,6 +196,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertGreaterThan(viewModel.streak, 0)
     }
     
+    @MainActor
     func testUpdateStreakOnlyCompleteEntries() {
         let viewModel = HomeViewModel()
         let calendar = Calendar.current
@@ -217,6 +229,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(viewModel.streak, 0)
     }
     
+    @MainActor
     func testEntriesForSelectedDate() {
         let viewModel = HomeViewModel()
         let calendar = Calendar.current

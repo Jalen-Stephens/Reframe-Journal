@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class ThoughtRecordRepositoryTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
@@ -19,6 +18,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         modelContext = nil
     }
     
+    @MainActor
     func testRepositoryErrorDescriptions() {
         let entryNotFound = ThoughtRecordRepository.RepositoryError.entryNotFound
         XCTAssertNotNil(entryNotFound.errorDescription)
@@ -28,6 +28,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertNotNil(saveFailed.errorDescription)
     }
     
+    @MainActor
     func testFetchRecent() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -43,6 +44,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(records.count, 3)
     }
     
+    @MainActor
     func testFetchAll() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -55,6 +57,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(records.count, 1)
     }
     
+    @MainActor
     func testFetchById() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -68,12 +71,14 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(record?.id, id)
     }
     
+    @MainActor
     func testFetchByIdNotFound() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let record = try await repository.fetch(id: "nonexistent")
         XCTAssertNil(record)
     }
     
+    @MainActor
     func testFetchEntry() throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -87,6 +92,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(fetched?.recordId, id)
     }
     
+    @MainActor
     func testUpsert() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -119,6 +125,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(fetched?.situationText, "Situation")
     }
     
+    @MainActor
     func testDelete() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -133,6 +140,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertNil(fetched)
     }
     
+    @MainActor
     func testFetchDraft() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -146,6 +154,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertTrue(draft?.completionStatus == .draft)
     }
     
+    @MainActor
     func testSaveDraft() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -178,6 +187,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(draft?.situationText, "Draft")
     }
     
+    @MainActor
     func testDeleteDraft() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -192,6 +202,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertNil(draft)
     }
     
+    @MainActor
     func testUpsertAIReframe() async throws {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -229,6 +240,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(fetched?.aiReframeDepth, .deep)
     }
     
+    @MainActor
     func testUpsertAIReframeNotFound() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         
@@ -258,6 +270,7 @@ final class ThoughtRecordRepositoryTests: XCTestCase {
         }
     }
     
+    @MainActor
     func testFlushPendingWrites() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         

@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class JournalEntryStoreTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
@@ -19,12 +18,14 @@ final class JournalEntryStoreTests: XCTestCase {
         modelContext = nil
     }
     
+    @MainActor
     func testFetchAllWithNoEntries() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         let entries = try store.fetchAll()
         XCTAssertTrue(entries.isEmpty)
     }
     
+    @MainActor
     func testFetchAllExcludesDrafts() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -43,6 +44,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertFalse(entries.first?.isDraft ?? true)
     }
     
+    @MainActor
     func testFetchRecent() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -59,6 +61,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(recent.count, 3)
     }
     
+    @MainActor
     func testFetchById() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -72,12 +75,14 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(fetched?.recordId, id)
     }
     
+    @MainActor
     func testFetchByIdNotFound() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         let fetched = try store.fetch(id: "nonexistent")
         XCTAssertNil(fetched)
     }
     
+    @MainActor
     func testFetchDraft() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -91,12 +96,14 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertTrue(fetched?.isDraft ?? false)
     }
     
+    @MainActor
     func testFetchDraftWhenNoneExists() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         let fetched = try store.fetchDraft()
         XCTAssertNil(fetched)
     }
     
+    @MainActor
     func testUpsertNewEntry() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -111,6 +118,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(fetched?.situationText, "Test situation")
     }
     
+    @MainActor
     func testUpsertUpdatesExisting() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -126,6 +134,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(fetched?.situationText, "Updated")
     }
     
+    @MainActor
     func testUpsertThoughtRecord() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -159,6 +168,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertFalse(fetched?.isDraft ?? true)
     }
     
+    @MainActor
     func testDelete() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -173,6 +183,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertNil(fetched)
     }
     
+    @MainActor
     func testSaveDraft() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -187,6 +198,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(draft?.situationText, "Draft")
     }
     
+    @MainActor
     func testSaveDraftReplacesExisting() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -202,6 +214,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(draft?.situationText, "Second")
     }
     
+    @MainActor
     func testDeleteDraft() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -214,6 +227,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertNil(fetched)
     }
     
+    @MainActor
     func testFetchAllAsRecords() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -228,6 +242,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(records.first?.situationText, "Test")
     }
     
+    @MainActor
     func testFetchRecentAsRecords() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -243,6 +258,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(records.count, 2)
     }
     
+    @MainActor
     func testFetchAsRecord() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -257,6 +273,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(record?.situationText, "Test")
     }
     
+    @MainActor
     func testFetchDraftAsRecord() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         
@@ -269,6 +286,7 @@ final class JournalEntryStoreTests: XCTestCase {
         XCTAssertEqual(record?.situationText, "Draft")
     }
     
+    @MainActor
     func testSave() throws {
         let store = JournalEntryStore(modelContext: modelContext)
         

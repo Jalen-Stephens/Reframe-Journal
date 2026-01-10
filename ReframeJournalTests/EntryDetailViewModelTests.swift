@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class EntryDetailViewModelTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
@@ -19,6 +18,7 @@ final class EntryDetailViewModelTests: XCTestCase {
         modelContext = nil
     }
     
+    @MainActor
     func testInitialState() {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = EntryDetailViewModel(repository: repository)
@@ -28,6 +28,7 @@ final class EntryDetailViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.hasLoaded)
     }
     
+    @MainActor
     func testLoad() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = EntryDetailViewModel(repository: repository)
@@ -46,6 +47,7 @@ final class EntryDetailViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
     }
     
+    @MainActor
     func testLoadNotFound() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = EntryDetailViewModel(repository: repository)
@@ -57,6 +59,7 @@ final class EntryDetailViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
     }
     
+    @MainActor
     func testLoadIfNeeded() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = EntryDetailViewModel(repository: repository)
@@ -72,6 +75,7 @@ final class EntryDetailViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.hasLoaded)
     }
     
+    @MainActor
     func testLoadIfNeededSkipsIfAlreadyLoaded() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = EntryDetailViewModel(repository: repository)
@@ -91,6 +95,7 @@ final class EntryDetailViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.record?.id, firstLoad?.id)
     }
     
+    @MainActor
     func testLoadIfNeededReloadsIfDifferentId() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let viewModel = EntryDetailViewModel(repository: repository)

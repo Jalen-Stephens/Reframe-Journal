@@ -2,7 +2,6 @@ import XCTest
 import SwiftData
 @testable import ReframeJournal
 
-@MainActor
 final class AIReframeViewModelTests: XCTestCase {
     
     private var modelContainer: ModelContainer!
@@ -19,6 +18,7 @@ final class AIReframeViewModelTests: XCTestCase {
         modelContext = nil
     }
     
+    @MainActor
     func testInitialState() {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
@@ -35,6 +35,7 @@ final class AIReframeViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.error)
     }
     
+    @MainActor
     func testLoadExistingWithRecord() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
@@ -74,6 +75,7 @@ final class AIReframeViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.error)
     }
     
+    @MainActor
     func testLoadExistingWithDraft() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
@@ -111,6 +113,7 @@ final class AIReframeViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.result?.balancedThought, "Draft reframe")
     }
     
+    @MainActor
     func testLoadExistingNotFound() async {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
@@ -128,6 +131,7 @@ final class AIReframeViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
     }
     
+    @MainActor
     func testUpdateDepth() {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
@@ -144,6 +148,7 @@ final class AIReframeViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.currentDepth(), .deep)
     }
     
+    @MainActor
     func testCurrentDepth() {
         let repository = ThoughtRecordRepository(modelContext: modelContext)
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
