@@ -3,7 +3,6 @@ import XCTest
 
 final class AppRouterTests: XCTestCase {
     
-@MainActor
     @MainActor
     func testInitialState() {
         let router = AppRouter()
@@ -11,7 +10,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertTrue(router.path.isEmpty)
     }
     
-@MainActor
     @MainActor
     func testPush() {
         let router = AppRouter()
@@ -21,7 +19,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertEqual(router.path.first, .allEntries)
     }
     
-@MainActor
     @MainActor
     func testPushMultiple() {
         let router = AppRouter()
@@ -36,7 +33,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertEqual(router.path[2], .settings)
     }
     
-@MainActor
     @MainActor
     func testPop() {
         let router = AppRouter()
@@ -50,7 +46,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertEqual(router.path.first, .allEntries)
     }
     
-@MainActor
     @MainActor
     func testPopWhenEmpty() {
         let router = AppRouter()
@@ -60,7 +55,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertTrue(router.path.isEmpty)
     }
     
-@MainActor
     @MainActor
     func testPopToRoot() {
         let router = AppRouter()
@@ -74,7 +68,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertTrue(router.path.isEmpty)
     }
     
-@MainActor
     @MainActor
     func testPopToRootWhenEmpty() {
         let router = AppRouter()
@@ -84,8 +77,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertTrue(router.path.isEmpty)
     }
     
-@MainActor
-    @MainActor
     func testRouteEquality() {
         let route1 = Route.entryDetail(id: "test_id")
         let route2 = Route.entryDetail(id: "test_id")
@@ -95,8 +86,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertNotEqual(route1, route3)
     }
     
-@MainActor
-    @MainActor
     func testAIReframeActionEquality() {
         let action1 = AIReframeAction.view
         let action2 = AIReframeAction.view
@@ -106,8 +95,6 @@ final class AppRouterTests: XCTestCase {
         XCTAssertNotEqual(action1, action3)
     }
     
-@MainActor
-    @MainActor
     func testRouteHashable() {
         var set = Set<Route>()
         set.insert(.allEntries)
