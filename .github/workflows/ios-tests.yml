@@ -31,6 +31,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Fix Xcode project format for Xcode 15.4 compatibility
+        run: |
+          # XcodeGen may generate objectVersion 77, but Xcode 15.4 requires 54
+          sed -i '' 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj || \
+          sed -i 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj
+          sed -i '' 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj || \
+          sed -i 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj
+
       - name: Select Xcode version
         run: |
           # Use Xcode 15.4 for better iOS 17 compatibility
