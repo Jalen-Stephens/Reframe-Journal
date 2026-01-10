@@ -318,4 +318,350 @@ final class JournalEntryTests: XCTestCase {
         XCTAssertEqual(entry.outcomesByThought["t1"]?.beliefAfter, 25)
         XCTAssertTrue(entry.outcomesByThought["t1"]?.isComplete ?? false)
     }
+    
+    // MARK: - Codable Properties Tests
+    
+    @MainActor
+    func testAutomaticThoughtsCodable() {
+        let entry = JournalEntry()
+        
+        let thoughts = [
+            AutomaticThought(id: "t1", text: "First thought", beliefBefore: 80),
+            AutomaticThought(id: "t2", text: "Second thought", beliefBefore: 70)
+        ]
+        
+        entry.automaticThoughts = thoughts
+        
+        XCTAssertEqual(entry.automaticThoughts.count, 2)
+        XCTAssertEqual(entry.automaticThoughts.first?.id, "t1")
+        XCTAssertEqual(entry.automaticThoughts.first?.text, "First thought")
+        XCTAssertEqual(entry.automaticThoughts[1].id, "t2")
+    }
+    
+    @MainActor
+    func testEmotionsCodable() {
+        let entry = JournalEntry()
+        
+        let emotions = [
+            Emotion(id: "e1", label: "Anxious", intensityBefore: 80, intensityAfter: 50),
+            Emotion(id: "e2", label: "Sad", intensityBefore: 60, intensityAfter: nil)
+        ]
+        
+        entry.emotions = emotions
+        
+        XCTAssertEqual(entry.emotions.count, 2)
+        XCTAssertEqual(entry.emotions.first?.label, "Anxious")
+        XCTAssertEqual(entry.emotions.first?.intensityBefore, 80)
+        XCTAssertEqual(entry.emotions.first?.intensityAfter, 50)
+        XCTAssertEqual(entry.emotions[1].label, "Sad")
+        XCTAssertNil(entry.emotions[1].intensityAfter)
+    }
+    
+    @MainActor
+    func testAIReframeCodable() {
+        let entry = JournalEntry()
+        
+        let aiReframe = AIReframeResult(
+            validation: "Valid feeling",
+            whatMightBeHappening: ["Stress at work"],
+            cognitiveDistortions: nil,
+            balancedThought: "I can handle this",
+            microActionPlan: nil,
+            communicationScript: nil,
+            selfCompassion: nil,
+            realityCheckQuestions: nil,
+            oneSmallExperiment: nil,
+            summary: "Good reframe",
+            rawResponse: nil
+        )
+        
+        entry.aiReframe = aiReframe
+        
+        XCTAssertNotNil(entry.aiReframe)
+        XCTAssertEqual(entry.aiReframe?.validation, "Valid feeling")
+        XCTAssertEqual(entry.aiReframe?.balancedThought, "I can handle this")
+        XCTAssertEqual(entry.aiReframe?.whatMightBeHappening?.first, "Stress at work")
+        
+        entry.aiReframe = nil
+        XCTAssertNil(entry.aiReframe)
+    }
+    
+    @MainActor
+    func testSelectedValuesCodable() {
+        let entry = JournalEntry()
+        
+        let selectedValues = SelectedValues(
+            categories: [.friends, .romanticRelationships],
+            keywords: ["loyalty", "trust"],
+            howToShowUp: "Be present and supportive"
+        )
+        
+        entry.selectedValues = selectedValues
+        
+        XCTAssertNotNil(entry.selectedValues)
+        XCTAssertEqual(entry.selectedValues?.categories.count, 2)
+        XCTAssertEqual(entry.selectedValues?.keywords.count, 2)
+        XCTAssertEqual(entry.selectedValues?.howToShowUp, "Be present and supportive")
+        
+        entry.selectedValues = nil
+        XCTAssertNil(entry.selectedValues)
+    }
+    
+    @MainActor
+    func testUpdateFromThoughtRecordWithSelectedValues() {
+        let entry = JournalEntry(recordId: "id_test", situationText: "Original")
+        
+        let selectedValues = SelectedValues(categories: [.friends], keywords: ["loyalty"])
+        let record = ThoughtRecord(
+            id: "id_test",
+            title: "Updated",
+            createdAt: "2024-01-15T10:00:00.000Z",
+            updatedAt: "2024-01-15T12:00:00.000Z",
+            situationText: "Updated situation",
+            sensations: [],
+            automaticThoughts: [],
+            emotions: [],
+            thinkingStyles: nil,
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            notes: nil,
+            selectedValues: selectedValues,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
+        )
+        
+        entry.update(from: record)
+        
+        XCTAssertNotNil(entry.selectedValues)
+        XCTAssertEqual(entry.selectedValues?.categories.count, 1)
+    }
+    
+    @MainActor
+    func testToThoughtRecordWithAllFields() {
+        let aiReframe = AIReframeResult(
+            validation: nil,
+            whatMightBeHappening: nil,
+            cognitiveDistortions: nil,
+            balancedThought: "Balanced",
+            microActionPlan: nil,
+            communicationScript: nil,
+            selfCompassion: nil,
+            realityCheckQuestions: nil,
+            oneSmallExperiment: nil,
+            summary: nil,
+            rawResponse: nil
+        )
+        
+        let selectedValues = SelectedValues(categories: [.friends])
+        let entry = JournalEntry(
+            recordId: "id_test",
+            title: "Title",
+            situationText: "Situation",
+            automaticThoughts: [AutomaticThought(id: "t1", text: "Thought", beliefBefore: 70)],
+            emotions: [Emotion(id: "e1", label: "Happy", intensityBefore: 80, intensityAfter: nil)],
+            thinkingStyles: ["Style"],
+            adaptiveResponses: ["t1": AdaptiveResponsesForThought(
+                evidenceText: "Evidence",
+                evidenceBelief: 40,
+                alternativeText: "Alt",
+                alternativeBelief: 50,
+                outcomeText: "Outcome",
+                outcomeBelief: 60,
+                friendText: "Friend",
+                friendBelief: 70
+            )],
+            outcomesByThought: ["t1": ThoughtOutcome(beliefAfter: 30, emotionsAfter: [:], reflection: "Reflection", isComplete: true)],
+            beliefAfterMainThought: 50,
+            notes: "Notes",
+            selectedValues: selectedValues,
+            aiReframe: aiReframe,
+            aiReframeCreatedAt: Date(),
+            aiReframeModel: "gpt-4",
+            aiReframePromptVersion: "v3",
+            aiReframeDepth: .deep
+        )
+        
+        let record = entry.toThoughtRecord()
+        
+        XCTAssertEqual(record.id, "id_test")
+        XCTAssertEqual(record.title, "Title")
+        XCTAssertEqual(record.adaptiveResponses.count, 1)
+        XCTAssertEqual(record.outcomesByThought.count, 1)
+        XCTAssertNotNil(record.selectedValues)
+        XCTAssertNotNil(record.aiReframe)
+        XCTAssertEqual(record.aiReframeModel, "gpt-4")
+        XCTAssertEqual(record.aiReframePromptVersion, "v3")
+        XCTAssertEqual(record.aiReframeDepth, .deep)
+    }
+    
+    @MainActor
+    func testInitFromThoughtRecordWithAllFields() {
+        let aiReframe = AIReframeResult(
+            validation: "Valid",
+            whatMightBeHappening: nil,
+            cognitiveDistortions: nil,
+            balancedThought: "Balanced",
+            microActionPlan: nil,
+            communicationScript: nil,
+            selfCompassion: nil,
+            realityCheckQuestions: nil,
+            oneSmallExperiment: nil,
+            summary: nil,
+            rawResponse: nil
+        )
+        
+        let selectedValues = SelectedValues(categories: [.friends], keywords: ["loyalty"])
+        let record = ThoughtRecord(
+            id: "id_test",
+            title: "Title",
+            createdAt: "2024-01-15T10:00:00.000Z",
+            updatedAt: "2024-01-15T11:00:00.000Z",
+            situationText: "Situation",
+            sensations: ["Sensation"],
+            automaticThoughts: [AutomaticThought(id: "t1", text: "Thought", beliefBefore: 80)],
+            emotions: [Emotion(id: "e1", label: "Anxious", intensityBefore: 70, intensityAfter: nil)],
+            thinkingStyles: ["Style"],
+            adaptiveResponses: ["t1": AdaptiveResponsesForThought(
+                evidenceText: "Evidence",
+                evidenceBelief: 40,
+                alternativeText: "Alt",
+                alternativeBelief: 50,
+                outcomeText: "Outcome",
+                outcomeBelief: 60,
+                friendText: "Friend",
+                friendBelief: 70
+            )],
+            outcomesByThought: ["t1": ThoughtOutcome(beliefAfter: 30, emotionsAfter: [:], reflection: "Reflection", isComplete: true)],
+            beliefAfterMainThought: 50,
+            notes: "Notes",
+            selectedValues: selectedValues,
+            aiReframe: aiReframe,
+            aiReframeCreatedAt: Date(),
+            aiReframeModel: "gpt-4",
+            aiReframePromptVersion: "v3",
+            aiReframeDepth: .deep
+        )
+        
+        let entry = JournalEntry(from: record)
+        
+        XCTAssertEqual(entry.recordId, "id_test")
+        XCTAssertEqual(entry.title, "Title")
+        XCTAssertEqual(entry.adaptiveResponses.count, 1)
+        XCTAssertEqual(entry.outcomesByThought.count, 1)
+        XCTAssertNotNil(entry.selectedValues)
+        XCTAssertNotNil(entry.aiReframe)
+        XCTAssertEqual(entry.aiReframeModel, "gpt-4")
+        XCTAssertEqual(entry.aiReframePromptVersion, "v3")
+        XCTAssertEqual(entry.aiReframeDepth, .deep)
+    }
+    
+    @MainActor
+    func testEmptyFactoryWithNow() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let entry = JournalEntry.empty(now: now)
+        
+        XCTAssertEqual(entry.createdAt, now)
+        XCTAssertEqual(entry.updatedAt, now)
+        XCTAssertFalse(entry.isDraft)
+    }
+    
+    @MainActor
+    func testThinkingStylesGetterSetter() {
+        let entry = JournalEntry()
+        
+        XCTAssertNil(entry.thinkingStyles)
+        
+        entry.thinkingStyles = ["Catastrophizing", "Mind reading"]
+        XCTAssertEqual(entry.thinkingStyles?.count, 2)
+        XCTAssertTrue(entry.thinkingStyles?.contains("Catastrophizing") ?? false)
+        
+        entry.thinkingStyles = nil
+        XCTAssertNil(entry.thinkingStyles)
+    }
+    
+    @MainActor
+    func testSensationsGetterSetter() {
+        let entry = JournalEntry()
+        
+        XCTAssertTrue(entry.sensations.isEmpty)
+        
+        entry.sensations = ["Tight chest", "Racing heart"]
+        XCTAssertEqual(entry.sensations.count, 2)
+        XCTAssertEqual(entry.sensations.first, "Tight chest")
+        
+        entry.sensations = []
+        XCTAssertTrue(entry.sensations.isEmpty)
+    }
+    
+    @MainActor
+    func testTitleGetterSetter() {
+        let entry = JournalEntry()
+        
+        XCTAssertNil(entry.title)
+        
+        entry.title = "My Title"
+        XCTAssertEqual(entry.title, "My Title")
+        
+        entry.title = nil
+        XCTAssertNil(entry.title)
+    }
+    
+    @MainActor
+    func testBeliefAfterMainThoughtGetterSetter() {
+        let entry = JournalEntry()
+        
+        XCTAssertNil(entry.beliefAfterMainThought)
+        
+        entry.beliefAfterMainThought = 50
+        XCTAssertEqual(entry.beliefAfterMainThought, 50)
+        
+        entry.beliefAfterMainThought = nil
+        XCTAssertNil(entry.beliefAfterMainThought)
+    }
+    
+    @MainActor
+    func testNotesGetterSetter() {
+        let entry = JournalEntry()
+        
+        XCTAssertNil(entry.notes)
+        
+        entry.notes = "Some notes"
+        XCTAssertEqual(entry.notes, "Some notes")
+        
+        entry.notes = nil
+        XCTAssertNil(entry.notes)
+    }
+    
+    @MainActor
+    func testIsDraftGetterSetter() {
+        let entry = JournalEntry()
+        
+        XCTAssertFalse(entry.isDraft)
+        
+        entry.isDraft = true
+        XCTAssertTrue(entry.isDraft)
+        
+        entry.isDraft = false
+        XCTAssertFalse(entry.isDraft)
+    }
+    
+    @MainActor
+    func testRecordIdGetter() {
+        let entry = JournalEntry(recordId: "custom_id")
+        XCTAssertEqual(entry.recordId, "custom_id")
+    }
+    
+    @MainActor
+    func testCreatedAtUpdatedAt() {
+        let createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let updatedAt = Date(timeIntervalSince1970: 1_700_000_100)
+        let entry = JournalEntry(createdAt: createdAt, updatedAt: updatedAt)
+        
+        XCTAssertEqual(entry.createdAt, createdAt)
+        XCTAssertEqual(entry.updatedAt, updatedAt)
+    }
 }

@@ -368,4 +368,220 @@ final class ThoughtEntryTests: XCTestCase {
         XCTAssertEqual(decoded.situation, entry.situation)
         XCTAssertEqual(decoded.beliefAfterMainThought, 60)
     }
+    
+    func testApplyingToExistingRecord() {
+        let existingRecord = ThoughtRecord(
+            id: "id_existing",
+            title: "Existing Title",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+            situationText: "Existing situation",
+            sensations: [],
+            automaticThoughts: [],
+            emotions: [],
+            thinkingStyles: nil,
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            notes: "Original notes",
+            selectedValues: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil
+        )
+        
+        let entry = ThoughtEntry(
+            id: UUID(),
+            recordId: "id_existing",
+            occurredAt: Date(),
+            title: "Updated Title",
+            situation: "Updated situation",
+            sensations: "New sensation",
+            emotions: [EmotionItem(id: UUID(), name: "Happy", intensity: 90)],
+            automaticThoughts: [],
+            thinkingStyles: [],
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: 50,
+            selectedValues: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        
+        let record = entry.applying(to: existingRecord)
+        
+        XCTAssertEqual(record.id, "id_existing") // ID preserved
+        XCTAssertEqual(record.title, "Updated Title")
+        XCTAssertEqual(record.situationText, "Updated situation")
+        XCTAssertEqual(record.sensations, ["New sensation"])
+        XCTAssertEqual(record.notes, "Original notes") // Notes preserved from existing
+        XCTAssertEqual(record.beliefAfterMainThought, 50)
+    }
+    
+    func testApplyingPreservesSelectedValues() {
+        let selectedValues = SelectedValues(categories: [.friends], keywords: ["loyalty"])
+        
+        let entry = ThoughtEntry(
+            id: UUID(),
+            recordId: "id_test",
+            occurredAt: Date(),
+            title: "Test",
+            situation: "Situation",
+            sensations: "",
+            emotions: [],
+            automaticThoughts: [],
+            thinkingStyles: [],
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            selectedValues: selectedValues,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        
+        let record = entry.applying(to: nil as ThoughtRecord?)
+        
+        XCTAssertNotNil(record.selectedValues)
+        XCTAssertEqual(record.selectedValues?.categories.count, 1)
+        XCTAssertEqual(record.selectedValues?.keywords, ["loyalty"])
+    }
+    
+    func testApplyingPreservesAIReframe() {
+        let aiReframe = AIReframeResult(
+            validation: nil,
+            whatMightBeHappening: nil,
+            cognitiveDistortions: nil,
+            balancedThought: "Balanced",
+            microActionPlan: nil,
+            communicationScript: nil,
+            selfCompassion: nil,
+            realityCheckQuestions: nil,
+            oneSmallExperiment: nil,
+            summary: nil,
+            rawResponse: nil
+        )
+        
+        let entry = ThoughtEntry(
+            id: UUID(),
+            recordId: "id_test",
+            occurredAt: Date(),
+            title: "Test",
+            situation: "Situation",
+            sensations: "",
+            emotions: [],
+            automaticThoughts: [],
+            thinkingStyles: [],
+            adaptiveResponses: [:],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            selectedValues: nil,
+            aiReframe: aiReframe,
+            aiReframeCreatedAt: Date(),
+            aiReframeModel: "gpt-4",
+            aiReframePromptVersion: "v3",
+            aiReframeDepth: .deep,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        
+        let record = entry.applying(to: nil as ThoughtRecord?)
+        
+        XCTAssertNotNil(record.aiReframe)
+        XCTAssertEqual(record.aiReframe?.balancedThought, "Balanced")
+        XCTAssertEqual(record.aiReframeModel, "gpt-4")
+        XCTAssertEqual(record.aiReframePromptVersion, "v3")
+        XCTAssertEqual(record.aiReframeDepth, .deep)
+    }
+    
+    func testApplyingWithAdaptiveResponses() {
+        let adaptiveResponse = AdaptiveResponsesForThought(
+            evidenceText: "Evidence",
+            evidenceBelief: 40,
+            alternativeText: "Alternative",
+            alternativeBelief: 50,
+            outcomeText: "Outcome",
+            outcomeBelief: 60,
+            friendText: "Friend",
+            friendBelief: 70
+        )
+        
+        let entry = ThoughtEntry(
+            id: UUID(),
+            recordId: "id_test",
+            occurredAt: Date(),
+            title: "",
+            situation: "",
+            sensations: "",
+            emotions: [],
+            automaticThoughts: [AutomaticThought(id: "t1", text: "Thought", beliefBefore: 80)],
+            thinkingStyles: [],
+            adaptiveResponses: ["t1": adaptiveResponse],
+            outcomesByThought: [:],
+            beliefAfterMainThought: nil,
+            selectedValues: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        
+        let record = entry.applying(to: nil as ThoughtRecord?)
+        
+        XCTAssertEqual(record.adaptiveResponses.count, 1)
+        XCTAssertEqual(record.adaptiveResponses["t1"]?.evidenceText, "Evidence")
+        XCTAssertEqual(record.adaptiveResponses["t1"]?.friendBelief, 70)
+    }
+    
+    func testApplyingWithOutcomesByThought() {
+        let outcome = ThoughtOutcome(
+            beliefAfter: 30,
+            emotionsAfter: ["e1": 40],
+            reflection: "Reflection",
+            isComplete: true
+        )
+        
+        let entry = ThoughtEntry(
+            id: UUID(),
+            recordId: "id_test",
+            occurredAt: Date(),
+            title: "",
+            situation: "",
+            sensations: "",
+            emotions: [],
+            automaticThoughts: [AutomaticThought(id: "t1", text: "Thought", beliefBefore: 80)],
+            thinkingStyles: [],
+            adaptiveResponses: [:],
+            outcomesByThought: ["t1": outcome],
+            beliefAfterMainThought: nil,
+            selectedValues: nil,
+            aiReframe: nil,
+            aiReframeCreatedAt: nil,
+            aiReframeModel: nil,
+            aiReframePromptVersion: nil,
+            aiReframeDepth: nil,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        
+        let record = entry.applying(to: nil as ThoughtRecord?)
+        
+        XCTAssertEqual(record.outcomesByThought.count, 1)
+        XCTAssertEqual(record.outcomesByThought["t1"]?.beliefAfter, 30)
+        XCTAssertTrue(record.outcomesByThought["t1"]?.isComplete ?? false)
+    }
 }
