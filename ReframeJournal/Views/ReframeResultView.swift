@@ -227,7 +227,7 @@ final class ReframeResultViewModel: ObservableObject {
             if requiresAd {
                 let rewarded = try await adManager.presentAd()
                 guard rewarded else {
-                    throw RewardedAdManager.RewardedAdError.noAdAvailable
+                    throw RewardedAdError.noAdAvailable
                 }
             }
 
