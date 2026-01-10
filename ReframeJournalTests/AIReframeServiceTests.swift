@@ -12,7 +12,7 @@ final class AIReframeServiceTests: XCTestCase {
     
     func testServicePromptVersion() {
         let service = AIReframeService(clientProvider: { throw LegacyOpenAIClient.OpenAIError.missingAPIKey })
-        XCTAssertEqual(service.promptVersion, "v2")
+        XCTAssertEqual(service.promptVersion, "v3")
     }
     
     func testSystemPromptContent() {
