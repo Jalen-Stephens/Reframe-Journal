@@ -25,44 +25,40 @@ struct ReframeJournalApp: App {
         let isTestEnvironment = NSClassFromString("XCTestCase") != nil
         
         // Initialize SwiftData ModelContainer
-        do {
-            let container = try ModelContainerConfig.makeContainer()
-            self.modelContainer = container
-            
-            // Initialize AppState with the model context
-            let context = container.mainContext
-            _appState = StateObject(wrappedValue: AppState(modelContext: context))
-        } catch {
-            // In test environment, use a minimal in-memory container
-            if isTestEnvironment {
-                print("⚠️ Test environment detected, using in-memory container")
-                do {
-                    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-                    let container = try ModelContainer(
-                        for: JournalEntry.self, ValuesProfileData.self,
-                        configurations: config
-                    )
-                    self.modelContainer = container
-                    let context = container.mainContext
-                    _appState = StateObject(wrappedValue: AppState(modelContext: context))
-                } catch {
-                    fatalError("Failed to initialize fallback ModelContainer: \(error)")
-                }
-            } else {
-                fatalError("Failed to initialize SwiftData ModelContainer: \(error)")
-            }
-        }
-        
-        let limits = LimitsManager()
-        // Use mock RewardedAdManager in test environment to avoid GoogleMobileAds crash
         if isTestEnvironment {
+            // Always use in-memory container for tests
+            do {
+                let config = ModelConfiguration(isStoredInMemoryOnly: true)
+                let container = try ModelContainer(
+                    for: JournalEntry.self, ValuesProfileData.self, ValuesCategoryEntryData.self,
+                    configurations: config
+                )
+                self.modelContainer = container
+                let context = container.mainContext
+                _appState = StateObject(wrappedValue: AppState(modelContext: context))
+            } catch {
+                fatalError("Failed to initialize test ModelContainer: \(error)")
+            }
+            
+            // Use mock RewardedAdManager to avoid GoogleMobileAds issues
             let mock = MockRewardedAdManager()
             _rewardedAdManager = StateObject(wrappedValue: AnyRewardedAdManager(mock))
         } else {
+            // Production initialization
+            do {
+                let container = try ModelContainerConfig.makeContainer()
+                self.modelContainer = container
+                let context = container.mainContext
+                _appState = StateObject(wrappedValue: AppState(modelContext: context))
+            } catch {
+                fatalError("Failed to initialize SwiftData ModelContainer: \(error)")
+            }
+            
             let rewarded = RewardedAdManager(adUnitID: RewardedAdManager.loadAdUnitID())
             _rewardedAdManager = StateObject(wrappedValue: AnyRewardedAdManager(rewarded))
         }
-        _limitsManager = StateObject(wrappedValue: limits)
+        
+        _limitsManager = StateObject(wrappedValue: LimitsManager())
     }
 
     private var appAppearance: AppAppearance {
