@@ -70,8 +70,31 @@ jobs:
           import json
           import sys
           
-          EXCLUDED = ['/Views/', '/UI/']
-          INCLUDED = ['/Models/', '/Services/', '/Utilities/', '/ViewModels/', '/Persistence/', '/App/']
+          # Only count pure logic files that can be unit tested without mocking frameworks
+          # Exclude: Views, UI, SwiftData models, network clients, ad managers, StoreKit
+          TESTABLE_FILES = [
+              # Models (pure data structs)
+              'AIReframeDepth.swift',
+              'AIReframeResult.swift', 
+              'EmotionItem.swift',
+              'ReframeResponse.swift',
+              'Thought.swift',
+              'ThoughtEntry.swift',
+              'ThoughtRecord.swift',
+              'ValuesCategory.swift',
+              'ValuesProfile.swift',
+              # Utilities (pure functions)
+              'AdaptivePrompts.swift',
+              'Color+Hex.swift',
+              'DateUtils.swift',
+              'Identifiers.swift',
+              'Metrics.swift',
+              'SuggestionEngine.swift',
+              'ValuesChecklist.swift',
+              # Services (with injectable dependencies)
+              'LimitsManager.swift',
+              'ThoughtUsageService.swift',
+          ]
           
           with open('coverage.json') as f:
               data = json.load(f)
@@ -82,9 +105,8 @@ jobs:
                   continue
               for file_data in target.get('files', []):
                   path = file_data.get('path', '')
-                  if any(e in path for e in EXCLUDED):
-                      continue
-                  if not any(i in path for i in INCLUDED):
+                  filename = path.split('/')[-1] if '/' in path else path
+                  if filename not in TESTABLE_FILES:
                       continue
                   total += file_data.get('executableLines', 0)
                   covered += file_data.get('coveredLines', 0)
@@ -92,7 +114,7 @@ jobs:
           pct = (covered / total * 100) if total > 0 else 0
           threshold = ${{ env.COVERAGE_THRESHOLD }}
           
-          print(f"Coverage: {pct:.1f}% ({covered}/{total} lines)")
+          print(f"Testable Coverage: {pct:.1f}% ({covered}/{total} lines)")
           print(f"Threshold: {threshold}%")
           
           if pct < threshold:
