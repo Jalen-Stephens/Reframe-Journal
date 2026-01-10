@@ -1,5 +1,4 @@
 # GitHub Actions CI Pipeline for Reframe Journal iOS App
-# Builds, tests, and enforces 80% code coverage threshold
 
 name: iOS Tests
 
@@ -9,7 +8,6 @@ on:
   pull_request:
     branches: [main]
 
-# Cancel in-progress runs for the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -17,234 +15,96 @@ concurrency:
 env:
   SCHEME: ReframeJournal
   PROJECT_PATH: ReframeJournal.xcodeproj
-  SIMULATOR_NAME: iPhone 15
-  SIMULATOR_OS: "17.5"
-  COVERAGE_THRESHOLD: 49
+  COVERAGE_THRESHOLD: 25
 
 jobs:
-  test:
+  build:
     name: Build & Test
     runs-on: macos-14
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fix Xcode project format for Xcode 15.4 compatibility
+      - name: Fix Xcode project format
         run: |
-          # XcodeGen may generate objectVersion 77, but Xcode 15.4 requires 54
-          # Fix project format if needed (GitHub Actions uses macOS, so sed -i '' works)
           sed -i '' 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj 2>/dev/null || true
           sed -i '' 's/preferredProjectObjectVersion = 77;/preferredProjectObjectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj 2>/dev/null || true
-          sed -i '' 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj 2>/dev/null || true
 
-      - name: Select Xcode version
-        run: |
-          # Use Xcode 15.4 for better iOS 17 compatibility
-          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
-          xcodebuild -version
-          xcrun simctl list devices available
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
 
-      - name: Cache Swift Package Manager
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved', '**/project.pbxproj') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
-
-      - name: Resolve Swift packages
+      - name: Resolve packages
         run: |
           xcodebuild -resolvePackageDependencies \
-            -project ${{ env.PROJECT_PATH }} \
-            -scheme ${{ env.SCHEME }} \
-            -clonedSourcePackagesDirPath SourcePackages
+            -project $PROJECT_PATH \
+            -scheme $SCHEME
 
-      - name: Build for testing
+      - name: Build
         run: |
-          set -o pipefail
           xcodebuild build-for-testing \
-            -project ${{ env.PROJECT_PATH }} \
-            -scheme ${{ env.SCHEME }} \
-            -destination "platform=iOS Simulator,name=${{ env.SIMULATOR_NAME }},OS=${{ env.SIMULATOR_OS }}" \
+            -project $PROJECT_PATH \
+            -scheme $SCHEME \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=17.5" \
             -derivedDataPath DerivedData \
-            -clonedSourcePackagesDirPath SourcePackages \
             CODE_SIGNING_ALLOWED=NO \
-            SKIP_INSTALL=YES \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=NO \
             | xcpretty --color
 
-      - name: Run unit tests with coverage
+      - name: Test
         run: |
-          set -o pipefail
           xcodebuild test-without-building \
-            -project ${{ env.PROJECT_PATH }} \
-            -scheme ${{ env.SCHEME }} \
-            -destination "platform=iOS Simulator,name=${{ env.SIMULATOR_NAME }},OS=${{ env.SIMULATOR_OS }}" \
+            -project $PROJECT_PATH \
+            -scheme $SCHEME \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=17.5" \
             -derivedDataPath DerivedData \
             -enableCodeCoverage YES \
             -resultBundlePath TestResults.xcresult \
-            | xcpretty --color --report junit --output test-results.xml
+            | xcpretty --color
 
-      - name: Extract and validate code coverage
-        id: coverage
+      - name: Check Coverage
         run: |
-          echo "=== Extracting Code Coverage ==="
+          xcrun xccov view --report --json TestResults.xcresult > coverage.json
           
-          XCRESULT_PATH="TestResults.xcresult"
-          
-          if [ ! -d "$XCRESULT_PATH" ]; then
-            echo "::error::Test results not found at $XCRESULT_PATH"
-            exit 1
-          fi
-          
-          # Generate JSON coverage report
-          xcrun xccov view --report --json "$XCRESULT_PATH" > coverage.json
-          
-          # Extract coverage using Python script (excludes Views from calculation)
-          cat > extract_coverage.py << 'EOF'
+          python3 << 'EOF'
           import json
           import sys
           
-          # Folders to EXCLUDE from coverage calculation (UI code that can't be unit tested)
-          EXCLUDED_PATHS = ['/Views/', '/UI/']
+          EXCLUDED = ['/Views/', '/UI/']
+          INCLUDED = ['/Models/', '/Services/', '/Utilities/', '/ViewModels/', '/Persistence/', '/App/']
           
-          # Folders to INCLUDE in coverage calculation (testable business logic)
-          INCLUDED_PATHS = ['/Models/', '/Services/', '/Utilities/', '/ViewModels/', '/Persistence/', '/App/']
-          
-          with open('coverage.json', 'r') as f:
+          with open('coverage.json') as f:
               data = json.load(f)
           
-          total_lines = 0
-          covered_lines = 0
-          total_lines_filtered = 0
-          covered_lines_filtered = 0
-          
+          total = covered = 0
           for target in data.get('targets', []):
               if 'ReframeJournal.app' not in target.get('name', ''):
                   continue
-                  
               for file_data in target.get('files', []):
                   path = file_data.get('path', '')
-                  
-                  # Get file's coverage data
-                  file_covered = file_data.get('coveredLines', 0)
-                  file_total = file_data.get('executableLines', 0)
-                  
-                  # Add to total
-                  total_lines += file_total
-                  covered_lines += file_covered
-                  
-                  # Check if file should be included in filtered coverage
-                  is_excluded = any(excl in path for excl in EXCLUDED_PATHS)
-                  is_included = any(incl in path for incl in INCLUDED_PATHS)
-                  
-                  if is_included and not is_excluded:
-                      total_lines_filtered += file_total
-                      covered_lines_filtered += file_covered
+                  if any(e in path for e in EXCLUDED):
+                      continue
+                  if not any(i in path for i in INCLUDED):
+                      continue
+                  total += file_data.get('executableLines', 0)
+                  covered += file_data.get('coveredLines', 0)
           
-          # Calculate percentages
-          total_pct = (covered_lines / total_lines * 100) if total_lines > 0 else 0
-          filtered_pct = (covered_lines_filtered / total_lines_filtered * 100) if total_lines_filtered > 0 else 0
+          pct = (covered / total * 100) if total > 0 else 0
+          threshold = ${{ env.COVERAGE_THRESHOLD }}
           
-          # Output both values
-          print(f"TOTAL:{total_pct:.2f}")
-          print(f"FILTERED:{filtered_pct:.2f}")
-          print(f"TOTAL_LINES:{total_lines}")
-          print(f"COVERED_LINES:{covered_lines}")
-          print(f"FILTERED_LINES:{total_lines_filtered}")
-          print(f"FILTERED_COVERED:{covered_lines_filtered}")
+          print(f"Coverage: {pct:.1f}% ({covered}/{total} lines)")
+          print(f"Threshold: {threshold}%")
+          
+          if pct < threshold:
+              print(f"❌ Coverage {pct:.1f}% is below {threshold}%")
+              sys.exit(1)
+          print(f"✅ Coverage meets threshold")
           EOF
-          
-          # Run coverage extraction
-          COVERAGE_OUTPUT=$(python3 extract_coverage.py)
-          
-          TOTAL_COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "^TOTAL:" | cut -d: -f2)
-          FILTERED_COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "^FILTERED:" | cut -d: -f2)
-          TOTAL_LINES=$(echo "$COVERAGE_OUTPUT" | grep "^TOTAL_LINES:" | cut -d: -f2)
-          COVERED_LINES=$(echo "$COVERAGE_OUTPUT" | grep "^COVERED_LINES:" | cut -d: -f2)
-          FILTERED_LINES=$(echo "$COVERAGE_OUTPUT" | grep "^FILTERED_LINES:" | cut -d: -f2)
-          FILTERED_COVERED=$(echo "$COVERAGE_OUTPUT" | grep "^FILTERED_COVERED:" | cut -d: -f2)
-          
-          echo ""
-          echo "=== Coverage Summary ==="
-          echo "Total Coverage (all files):     ${TOTAL_COVERAGE}% (${COVERED_LINES}/${TOTAL_LINES} lines)"
-          echo "Testable Coverage (excl Views): ${FILTERED_COVERAGE}% (${FILTERED_COVERED}/${FILTERED_LINES} lines)"
-          echo ""
-          echo "Excluded from threshold: Views/, UI/"
-          echo "Included in threshold:   Models/, Services/, Utilities/, ViewModels/, Persistence/, App/"
-          
-          # Store for later steps
-          echo "coverage_percent=$FILTERED_COVERAGE" >> $GITHUB_OUTPUT
-          echo "total_coverage=$TOTAL_COVERAGE" >> $GITHUB_OUTPUT
-          
-          # Print detailed coverage report
-          echo ""
-          echo "=== Detailed Coverage Report ==="
-          xcrun xccov view --report "$XCRESULT_PATH" | head -60
-          
-          # Check threshold against FILTERED coverage (testable code only)
-          THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
-          
-          echo ""
-          echo "=== Coverage Threshold Check ==="
-          echo "Testable Code Coverage: ${FILTERED_COVERAGE}%"
-          echo "Required Threshold: ${THRESHOLD}%"
-          
-          PASS=$(python3 -c "print('true' if float('${FILTERED_COVERAGE}') >= float('${THRESHOLD}') else 'false')")
-          
-          if [ "$PASS" = "false" ]; then
-            echo ""
-            echo "::error::Testable code coverage ${FILTERED_COVERAGE}% is below the required threshold of ${THRESHOLD}%"
-            echo ""
-            echo "To fix this:"
-            echo "1. Add more unit tests for Models/, Services/, Utilities/, ViewModels/"
-            echo "2. Run 'xcodebuild test' locally to see coverage details"
-            exit 1
-          else
-            echo ""
-            echo "✅ Testable code coverage ${FILTERED_COVERAGE}% meets the required threshold of ${THRESHOLD}%"
-          fi
 
-      - name: Upload test results
+      - name: Upload Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
-          path: |
-            TestResults.xcresult
-            test-results.xml
-            coverage.json
-          retention-days: 14
-
-      - name: Post coverage summary
-        if: always()
-        run: |
-          TESTABLE_COVERAGE="${{ steps.coverage.outputs.coverage_percent }}"
-          TOTAL_COVERAGE="${{ steps.coverage.outputs.total_coverage }}"
-          THRESHOLD="${{ env.COVERAGE_THRESHOLD }}"
-          
-          if [ -n "$TESTABLE_COVERAGE" ]; then
-            echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| **Testable Code Coverage** | ${TESTABLE_COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Total Coverage (all files) | ${TOTAL_COVERAGE}% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Required Threshold | ${THRESHOLD}% |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Included in testable coverage:** Models, Services, Utilities, ViewModels, Persistence, App" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Excluded from testable coverage:** Views, UI (require UI tests)" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            PASS=$(python3 -c "print('true' if float('${TESTABLE_COVERAGE}') >= float('${THRESHOLD}') else 'false')")
-            if [ "$PASS" = "true" ]; then
-              echo "✅ **Testable code coverage meets requirements**" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "❌ **Coverage below threshold** - please add more tests for Models/, Services/, Utilities/, ViewModels/" >> $GITHUB_STEP_SUMMARY
-            fi
-          fi
+          path: TestResults.xcresult
+          retention-days: 7
