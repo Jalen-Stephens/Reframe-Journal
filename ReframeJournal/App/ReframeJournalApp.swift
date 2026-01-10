@@ -30,7 +30,25 @@ struct ReframeJournalApp: App {
             let context = container.mainContext
             _appState = StateObject(wrappedValue: AppState(modelContext: context))
         } catch {
+            // In test environment, use a minimal in-memory container
+            #if DEBUG
+            print("⚠️ Failed to initialize primary ModelContainer: \(error)")
+            print("⚠️ Falling back to in-memory container for testing")
+            do {
+                let config = ModelConfiguration(isStoredInMemoryOnly: true)
+                let container = try ModelContainer(
+                    for: JournalEntry.self, ValuesProfileData.self,
+                    configurations: config
+                )
+                self.modelContainer = container
+                let context = container.mainContext
+                _appState = StateObject(wrappedValue: AppState(modelContext: context))
+            } catch {
+                fatalError("Failed to initialize fallback ModelContainer: \(error)")
+            }
+            #else
             fatalError("Failed to initialize SwiftData ModelContainer: \(error)")
+            #endif
         }
         
         let limits = LimitsManager()

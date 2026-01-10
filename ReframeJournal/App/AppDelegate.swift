@@ -8,7 +8,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
+        // Skip GoogleMobileAds initialization in test environment
+        #if !DEBUG || !targetEnvironment(simulator)
         GADMobileAds.sharedInstance().start(completionHandler: nil)
+        #endif
         return true
     }
 }
