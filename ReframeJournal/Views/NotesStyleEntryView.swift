@@ -12,7 +12,7 @@ struct NotesStyleEntryView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @EnvironmentObject private var limitsManager: LimitsManager
-    @EnvironmentObject private var rewardedAdManager: RewardedAdManager
+    @EnvironmentObject private var rewardedAdManager: AnyRewardedAdManager
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
     

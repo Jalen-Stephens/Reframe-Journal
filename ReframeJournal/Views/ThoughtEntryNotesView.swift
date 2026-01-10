@@ -6,7 +6,7 @@ struct ThoughtEntryNotesView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @EnvironmentObject private var limitsManager: LimitsManager
-    @EnvironmentObject private var rewardedAdManager: RewardedAdManager
+    @EnvironmentObject private var rewardedAdManager: AnyRewardedAdManager
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: ThoughtEntryViewModel

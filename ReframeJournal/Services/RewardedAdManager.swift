@@ -4,26 +4,9 @@ import GoogleMobileAds
 import UIKit
 
 @MainActor
-final class RewardedAdManager: NSObject, ObservableObject {
+final class RewardedAdManager: NSObject, ObservableObject, RewardedAdManagerProtocol {
     static let testAdUnitID = "ca-app-pub-3940256099942544/1712485313"
     private static let adUnitInfoKey = "ADMOB_REWARDED_AD_UNIT_ID"
-
-    enum RewardedAdError: LocalizedError {
-        case noAdAvailable
-        case noViewController
-        case presentationFailed
-
-        var errorDescription: String? {
-            switch self {
-            case .noAdAvailable:
-                return "Ad unavailable. Try again later or upgrade to Pro."
-            case .noViewController:
-                return "Ad unavailable. Try again later or upgrade to Pro."
-            case .presentationFailed:
-                return "Ad unavailable. Try again later or upgrade to Pro."
-            }
-        }
-    }
 
     private let adUnitID: String
     private var rewardedAd: GADRewardedAd?

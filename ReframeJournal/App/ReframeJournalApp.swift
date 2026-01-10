@@ -15,7 +15,7 @@ struct ReframeJournalApp: App {
     @StateObject private var router = AppRouter()
     @StateObject private var entitlementsManager = EntitlementsManager()
     @StateObject private var limitsManager: LimitsManager
-    @StateObject private var rewardedAdManager: RewardedAdManager
+    @StateObject private var rewardedAdManager: AnyRewardedAdManager
 
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
     @Environment(\.scenePhase) private var scenePhase
@@ -54,10 +54,15 @@ struct ReframeJournalApp: App {
         }
         
         let limits = LimitsManager()
-        // Skip RewardedAdManager initialization in test environment to avoid GoogleMobileAds crash
-        let rewarded = RewardedAdManager(adUnitID: isTestEnvironment ? "" : RewardedAdManager.loadAdUnitID())
+        // Use mock RewardedAdManager in test environment to avoid GoogleMobileAds crash
+        if isTestEnvironment {
+            let mock = MockRewardedAdManager()
+            _rewardedAdManager = StateObject(wrappedValue: AnyRewardedAdManager(mock))
+        } else {
+            let rewarded = RewardedAdManager(adUnitID: RewardedAdManager.loadAdUnitID())
+            _rewardedAdManager = StateObject(wrappedValue: AnyRewardedAdManager(rewarded))
+        }
         _limitsManager = StateObject(wrappedValue: limits)
-        _rewardedAdManager = StateObject(wrappedValue: rewarded)
     }
 
     private var appAppearance: AppAppearance {

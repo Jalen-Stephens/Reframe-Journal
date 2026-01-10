@@ -7,7 +7,7 @@ struct OutcomeView: View {
     @Environment(\.notesPalette) private var notesPalette
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @EnvironmentObject private var limitsManager: LimitsManager
-    @EnvironmentObject private var rewardedAdManager: RewardedAdManager
+    @EnvironmentObject private var rewardedAdManager: AnyRewardedAdManager
 
     @AppStorage("aiReframeEnabled") private var isAIReframeEnabled = false
 
