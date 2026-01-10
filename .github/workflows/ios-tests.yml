@@ -36,6 +36,7 @@ jobs:
           # XcodeGen may generate objectVersion 77, but Xcode 15.4 requires 54
           # Fix project format if needed (GitHub Actions uses macOS, so sed -i '' works)
           sed -i '' 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj 2>/dev/null || true
+          sed -i '' 's/preferredProjectObjectVersion = 77;/preferredProjectObjectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj 2>/dev/null || true
           sed -i '' 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj 2>/dev/null || true
 
       - name: Select Xcode version
