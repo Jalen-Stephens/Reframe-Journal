@@ -67,7 +67,7 @@ final class ValuesProfileTests: XCTestCase {
         var profile = ValuesProfile.empty()
         let now = Date()
         
-        var entry = ValuesCategoryEntry(
+        let entry = ValuesCategoryEntry(
             category: .friends,
             whatMatters: "Loyalty",
             whyItMatters: "Trust is important",
@@ -94,13 +94,13 @@ final class ValuesProfileTests: XCTestCase {
         
         XCTAssertTrue(profile.categoriesWithContent.isEmpty)
         
-        var entry1 = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
+        let entry1 = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
         profile.updateEntry(entry1)
         
-        var entry2 = ValuesCategoryEntry(category: .romanticRelationships, whatMatters: "Love", importance: 5)
+        let entry2 = ValuesCategoryEntry(category: .romanticRelationships, whatMatters: "Love", importance: 5)
         profile.updateEntry(entry2)
         
-        var entry3 = ValuesCategoryEntry(category: .jobCareer, whatMatters: "Growth", importance: 3)
+        let entry3 = ValuesCategoryEntry(category: .jobCareer, whatMatters: "Growth", importance: 3)
         profile.updateEntry(entry3)
         
         let categoriesWithContent = profile.categoriesWithContent
@@ -117,16 +117,16 @@ final class ValuesProfileTests: XCTestCase {
         XCTAssertTrue(profile.topCategories.isEmpty)
         
         // Add more than 3 categories with content
-        var entry1 = ValuesCategoryEntry(category: .friends, whatMatters: "Support", importance: 5)
+        let entry1 = ValuesCategoryEntry(category: .friends, whatMatters: "Support", importance: 5)
         profile.updateEntry(entry1)
         
-        var entry2 = ValuesCategoryEntry(category: .romanticRelationships, whatMatters: "Love", importance: 4)
+        let entry2 = ValuesCategoryEntry(category: .romanticRelationships, whatMatters: "Love", importance: 4)
         profile.updateEntry(entry2)
         
-        var entry3 = ValuesCategoryEntry(category: .jobCareer, whatMatters: "Growth", importance: 3)
+        let entry3 = ValuesCategoryEntry(category: .jobCareer, whatMatters: "Growth", importance: 3)
         profile.updateEntry(entry3)
         
-        var entry4 = ValuesCategoryEntry(category: .healthAndWellness, whatMatters: "Fitness", importance: 2)
+        let entry4 = ValuesCategoryEntry(category: .healthAndWellness, whatMatters: "Fitness", importance: 2)
         profile.updateEntry(entry4)
         
         let topCategories = profile.topCategories
@@ -140,7 +140,7 @@ final class ValuesProfileTests: XCTestCase {
         var profile = ValuesProfile.empty()
         XCTAssertFalse(profile.hasContent)
         
-        var entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
+        let entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
         profile.updateEntry(entry)
         XCTAssertTrue(profile.hasContent)
     }
@@ -149,10 +149,10 @@ final class ValuesProfileTests: XCTestCase {
         var profile = ValuesProfile.empty()
         XCTAssertTrue(profile.allKeywords.isEmpty)
         
-        var entry1 = ValuesCategoryEntry(category: .friends, keywords: ["loyalty", "trust"])
+        let entry1 = ValuesCategoryEntry(category: .friends, keywords: ["loyalty", "trust"])
         profile.updateEntry(entry1)
         
-        var entry2 = ValuesCategoryEntry(category: .romanticRelationships, keywords: ["love", "connection"])
+        let entry2 = ValuesCategoryEntry(category: .romanticRelationships, keywords: ["love", "connection"])
         profile.updateEntry(entry2)
         
         let allKeywords = profile.allKeywords
@@ -167,17 +167,17 @@ final class ValuesProfileTests: XCTestCase {
         var profile = ValuesProfile.empty()
         XCTAssertEqual(profile.completionProgress, 0.0, accuracy: 0.01)
         
-        var entry1 = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
+        let entry1 = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
         profile.updateEntry(entry1)
         XCTAssertEqual(profile.completionProgress, 0.1, accuracy: 0.01) // 1/10
         
-        var entry2 = ValuesCategoryEntry(category: .romanticRelationships, whatMatters: "Love")
+        let entry2 = ValuesCategoryEntry(category: .romanticRelationships, whatMatters: "Love")
         profile.updateEntry(entry2)
         XCTAssertEqual(profile.completionProgress, 0.2, accuracy: 0.01) // 2/10
         
         // All 10 categories filled
         for category in ValuesCategory.allCases {
-            var entry = ValuesCategoryEntry(category: category, whatMatters: "Content")
+            let entry = ValuesCategoryEntry(category: category, whatMatters: "Content")
             profile.updateEntry(entry)
         }
         XCTAssertEqual(profile.completionProgress, 1.0, accuracy: 0.01) // 10/10
@@ -185,7 +185,7 @@ final class ValuesProfileTests: XCTestCase {
     
     func testValuesProfileCodable() throws {
         var profile = ValuesProfile.empty()
-        var entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support", keywords: ["loyalty"])
+        let entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support", keywords: ["loyalty"])
         profile.updateEntry(entry)
         
         let encoder = JSONEncoder()
@@ -292,7 +292,7 @@ final class ValuesProfileTests: XCTestCase {
     
     func testValuesProfileSnippetCreation() {
         var profile = ValuesProfile.empty()
-        var entry = ValuesCategoryEntry(
+        let entry = ValuesCategoryEntry(
             category: .friends,
             whatMatters: "What matters text",
             howToShowUp: "How to show up text"
@@ -340,7 +340,7 @@ final class ValuesProfileTests: XCTestCase {
     func testValuesProfileSnippetTruncation() {
         var profile = ValuesProfile.empty()
         let longText = String(repeating: "a", count: 300)
-        var entry = ValuesCategoryEntry(category: .friends, whatMatters: longText)
+        let entry = ValuesCategoryEntry(category: .friends, whatMatters: longText)
         profile.updateEntry(entry)
         
         let selection = SelectedValues(categories: [.friends])

@@ -7,6 +7,7 @@ final class ValuesProfileServiceTests: XCTestCase {
     private var modelContainer: ModelContainer!
     private var modelContext: ModelContext!
     
+    @MainActor
     override func setUpWithError() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         modelContainer = try ModelContainer(for: ValuesProfileData.self, configurations: config)
@@ -59,7 +60,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 200_000_000)
         await service.load()
         
-        var entry = ValuesCategoryEntry(
+        let entry = ValuesCategoryEntry(
             category: .friends,
             whatMatters: "Support",
             whyItMatters: "Important",
@@ -87,7 +88,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 200_000_000)
         await service.load()
         
-        var entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
+        let entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
         service.updateEntry(entry)
         
         // Wait for persistence
@@ -124,7 +125,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         await service.load()
         
         var profile = ValuesProfile.empty()
-        var entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
+        let entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
         profile.updateEntry(entry)
         
         service.updateProfile(profile)
@@ -145,7 +146,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         await service.load()
         
         // Add content to profile
-        var entry = ValuesCategoryEntry(
+        let entry = ValuesCategoryEntry(
             category: .friends,
             whatMatters: "Support matters",
             howToShowUp: "Be there"
@@ -171,7 +172,7 @@ final class ValuesProfileServiceTests: XCTestCase {
         await service.load()
         
         // Add content
-        var entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
+        let entry = ValuesCategoryEntry(category: .friends, whatMatters: "Support")
         service.updateEntry(entry)
         try? await Task.sleep(nanoseconds: 100_000_000)
         

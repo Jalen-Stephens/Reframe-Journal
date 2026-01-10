@@ -118,7 +118,7 @@ final class ValuesCategoryTests: XCTestCase {
         XCTAssertEqual(entry.howToShowUp, "Be present")
         XCTAssertEqual(entry.keywords, ["love", "trust"])
         XCTAssertEqual(entry.importance, 5)
-        XCTAssertTrue(entry.recordId.hasPrefix("id_"))
+        XCTAssertTrue(entry.id.hasPrefix("id_"))
     }
     
     func testValuesCategoryEntryEmpty() {

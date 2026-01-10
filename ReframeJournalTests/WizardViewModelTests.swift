@@ -7,6 +7,7 @@ final class WizardViewModelTests: XCTestCase {
     private var modelContainer: ModelContainer!
     private var modelContext: ModelContext!
     
+    @MainActor
     override func setUpWithError() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         modelContainer = try ModelContainer(for: JournalEntry.self, configurations: config)
@@ -26,7 +27,7 @@ final class WizardViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isEditing)
         XCTAssertFalse(viewModel.hasLoadedDraft)
         XCTAssertNotNil(viewModel.draft)
-        XCTAssertTrue(viewModel.draft.recordId.hasPrefix("id_"))
+        XCTAssertTrue(viewModel.draft.id.hasPrefix("id_"))
     }
     
     @MainActor

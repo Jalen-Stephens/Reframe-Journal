@@ -99,7 +99,7 @@ final class ValuesProfileDataTests: XCTestCase {
         entry1.whatMatters = "Original"
         entry1.importance = 3
         
-        var updatedEntry = ValuesCategoryEntryData(
+        let updatedEntry = ValuesCategoryEntryData(
             id: entry1.id,
             category: .friends,
             whatMatters: "Updated",
@@ -141,7 +141,7 @@ final class ValuesProfileDataTests: XCTestCase {
     @MainActor
     func testFromValuesProfile() {
         var profile = ValuesProfile.empty()
-        var entry = ValuesCategoryEntry(
+        let entry = ValuesCategoryEntry(
             category: .friends,
             whatMatters: "Support",
             keywords: ["loyalty"],
@@ -168,7 +168,7 @@ final class ValuesProfileDataTests: XCTestCase {
         existingEntry.whatMatters = "Old"
         
         var profile = ValuesProfile(id: "existing_id", entries: [:])
-        var entry = ValuesCategoryEntry(category: .friends, whatMatters: "New")
+        let entry = ValuesCategoryEntry(category: .friends, whatMatters: "New")
         profile.updateEntry(entry)
         
         let profileData = ValuesProfileData.from(profile, context: modelContext)
