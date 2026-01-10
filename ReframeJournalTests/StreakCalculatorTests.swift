@@ -204,7 +204,7 @@ final class HomeViewModelTests: XCTestCase {
     @MainActor
     func testGreetingMorning() {
         // Create a date at 9 AM
-        var calendar = Calendar.current
+        let calendar = Calendar.current
         var components = DateComponents()
         components.year = 2026
         components.month = 1

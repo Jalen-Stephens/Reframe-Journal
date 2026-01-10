@@ -7,6 +7,7 @@ final class JournalEntryTests: XCTestCase {
     private var modelContainer: ModelContainer!
     private var modelContext: ModelContext!
     
+    @MainActor
     override func setUpWithError() throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         modelContainer = try ModelContainer(for: JournalEntry.self, configurations: config)
@@ -120,6 +121,7 @@ final class JournalEntryTests: XCTestCase {
             outcomesByThought: [:],
             beliefAfterMainThought: 40,
             notes: "Notes",
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,
@@ -186,6 +188,7 @@ final class JournalEntryTests: XCTestCase {
             outcomesByThought: [:],
             beliefAfterMainThought: 45,
             notes: "Updated notes",
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,

@@ -35,6 +35,7 @@ final class ThoughtRecordTests: XCTestCase {
             ],
             beliefAfterMainThought: 30,
             notes: "",
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,

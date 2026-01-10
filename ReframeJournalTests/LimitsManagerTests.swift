@@ -9,7 +9,7 @@ final class LimitsManagerTests: XCTestCase {
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
         
-        let calendar = Calendar(identifier: .gregorian)
+        var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         
         let manager = LimitsManager(storage: defaults, calendar: calendar, nowProvider: nowProvider)
@@ -87,7 +87,7 @@ final class LimitsManagerTests: XCTestCase {
         defaults.removePersistentDomain(forName: suiteName)
 
         var now = Date(timeIntervalSince1970: 1_700_000_000)
-        let calendar = Calendar(identifier: .gregorian)
+        var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
 
         let manager = LimitsManager(storage: defaults, calendar: calendar, nowProvider: { now })
@@ -121,7 +121,7 @@ final class LimitsManagerTests: XCTestCase {
     
     @MainActor
     func testAssertCanCreateThoughtProUserNoLimit() async {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.pro.user.\(UUID().uuidString)") { now }
         
         // Record 10 thoughts (way over free limit)
@@ -177,7 +177,7 @@ final class LimitsManagerTests: XCTestCase {
         defaults.removePersistentDomain(forName: suiteName)
 
         var now = Date(timeIntervalSince1970: 1_700_000_000)
-        let calendar = Calendar(identifier: .gregorian)
+        var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         let manager = LimitsManager(storage: defaults, calendar: calendar, nowProvider: { now })
 
@@ -234,7 +234,7 @@ final class LimitsManagerTests: XCTestCase {
         // Create first instance and record
         let defaults1 = UserDefaults(suiteName: suiteName)!
         defaults1.removePersistentDomain(forName: suiteName)
-        let calendar = Calendar(identifier: .gregorian)
+        var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         
         let manager1 = LimitsManager(storage: defaults1, calendar: calendar, nowProvider: { now })
@@ -259,7 +259,7 @@ final class LimitsManagerTests: XCTestCase {
         defaults.removePersistentDomain(forName: suiteName)
         
         var now = Date(timeIntervalSince1970: 1_700_000_000)
-        let calendar = Calendar(identifier: .gregorian)
+        var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         
         let manager = LimitsManager(storage: defaults, calendar: calendar, nowProvider: { now })
