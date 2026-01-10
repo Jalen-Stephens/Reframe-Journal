@@ -34,10 +34,14 @@ jobs:
       - name: Fix Xcode project format for Xcode 15.4 compatibility
         run: |
           # XcodeGen may generate objectVersion 77, but Xcode 15.4 requires 54
-          sed -i '' 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj || \
-          sed -i 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj
-          sed -i '' 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj || \
-          sed -i 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj
+          # Use platform-agnostic sed command (works on both macOS and Linux)
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj
+            sed -i '' 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj
+          else
+            sed -i 's/objectVersion = 77;/objectVersion = 54;/' ReframeJournal.xcodeproj/project.pbxproj
+            sed -i 's/LastUpgradeCheck = 1430;/LastUpgradeCheck = 1500;/' ReframeJournal.xcodeproj/project.pbxproj
+          fi
 
       - name: Select Xcode version
         run: |
