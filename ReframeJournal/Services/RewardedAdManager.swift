@@ -34,7 +34,10 @@ final class RewardedAdManager: NSObject, ObservableObject {
     init(adUnitID: String) {
         self.adUnitID = adUnitID
         super.init()
-        Task { await loadAd() }
+        // Skip ad loading in test environment or if adUnitID is empty
+        if !adUnitID.isEmpty && NSClassFromString("XCTestCase") == nil {
+            Task { await loadAd() }
+        }
     }
 
     static func loadAdUnitID() -> String {

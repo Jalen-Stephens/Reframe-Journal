@@ -21,6 +21,9 @@ struct ReframeJournalApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        // Detect test environment
+        let isTestEnvironment = NSClassFromString("XCTestCase") != nil
+        
         // Initialize SwiftData ModelContainer
         do {
             let container = try ModelContainerConfig.makeContainer()
@@ -31,7 +34,7 @@ struct ReframeJournalApp: App {
             _appState = StateObject(wrappedValue: AppState(modelContext: context))
         } catch {
             // In test environment, use a minimal in-memory container
-            if NSClassFromString("XCTestCase") != nil {
+            if isTestEnvironment {
                 print("⚠️ Test environment detected, using in-memory container")
                 do {
                     let config = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -51,7 +54,8 @@ struct ReframeJournalApp: App {
         }
         
         let limits = LimitsManager()
-        let rewarded = RewardedAdManager(adUnitID: RewardedAdManager.loadAdUnitID())
+        // Skip RewardedAdManager initialization in test environment to avoid GoogleMobileAds crash
+        let rewarded = RewardedAdManager(adUnitID: isTestEnvironment ? "" : RewardedAdManager.loadAdUnitID())
         _limitsManager = StateObject(wrappedValue: limits)
         _rewardedAdManager = StateObject(wrappedValue: rewarded)
     }
