@@ -3,6 +3,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct ReframeJournalApp: App {
@@ -18,9 +19,10 @@ struct ReframeJournalApp: App {
     @StateObject private var rewardedAdManager: RewardedAdManager
 
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
-    @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        // Initialize PostHog analytics (skips in test environment)
+        AnalyticsService.shared.initialize()
         // Initialize SwiftData ModelContainer
         do {
             let container = try ModelContainerConfig.makeContainer()
@@ -54,6 +56,17 @@ struct ReframeJournalApp: App {
                 .environmentObject(rewardedAdManager)
                 .preferredColorScheme(overrideScheme)
                 .notesTheme()
+                .onAppear {
+                    Task { @MainActor in
+                        // Set initial user properties
+                        let deviceType = UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone"
+                        AnalyticsService.shared.setUserProperties([
+                            "device_type": deviceType,
+                            "is_pro_user": entitlementsManager.isPro
+                        ])
+                        AnalyticsService.shared.trackEvent("app_opened")
+                    }
+                }
         }
         .modelContainer(modelContainer)
     }
