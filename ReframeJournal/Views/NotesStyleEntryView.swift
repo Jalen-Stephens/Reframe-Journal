@@ -239,6 +239,7 @@ struct NotesStyleEntryView: View {
             Button {
                 Task {
                     await viewModel.saveNow()
+                    AnalyticsService.shared.trackEvent("thought_completed")
                     NotesDraftStore.clear()
                     dismiss()
                 }
@@ -1066,9 +1067,11 @@ struct NotesStyleEntryView: View {
         
         let service = AIReframeService()
         let record = viewModel.currentRecordSnapshot()
-        
+        let depth = viewModel.aiReframeDepth ?? .deep
+        AnalyticsService.shared.trackEvent("ai_reframe_requested", properties: [
+            "depth": depth.rawValue
+        ])
         do {
-            let depth = viewModel.aiReframeDepth ?? .deep
             let generated = try await service.generateReframe(for: record, depth: depth)
             viewModel.aiReframe = generated
             viewModel.aiReframeCreatedAt = Date()
@@ -1077,6 +1080,9 @@ struct NotesStyleEntryView: View {
             viewModel.aiReframeDepth = depth
             await viewModel.saveNow()
             limitsManager.recordReframe()
+            AnalyticsService.shared.trackEvent("ai_reframe_generated", properties: [
+                "depth": depth.rawValue
+            ])
             router.push(.aiReframeNotes(entryId: viewModel.currentRecordId))
         } catch {
             if let openAIError = error as? LegacyOpenAIClient.OpenAIError {

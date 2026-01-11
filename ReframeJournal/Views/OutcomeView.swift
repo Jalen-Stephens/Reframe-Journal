@@ -329,6 +329,9 @@ struct OutcomeView: View {
         defer { isGenerating = false }
 
         let depth = appState.wizard.draft.aiReframeDepth ?? selectedDepth
+        AnalyticsService.shared.trackEvent("ai_reframe_requested", properties: [
+            "depth": depth.rawValue
+        ])
         let service = AIReframeService()
 
         do {
@@ -344,6 +347,9 @@ struct OutcomeView: View {
             appState.wizard.draft = updated
             await appState.wizard.persistDraft(updated)
             limitsManager.recordReframe()
+            AnalyticsService.shared.trackEvent("ai_reframe_generated", properties: [
+                "depth": depth.rawValue
+            ])
             router.push(.aiReframeResult(entryId: updated.id, action: .view, depth: depth))
         } catch let err {
             if let openAIError = err as? LegacyOpenAIClient.OpenAIError {
@@ -512,6 +518,9 @@ struct OutcomeView: View {
                 if !wasEditing {
                     appState.thoughtUsage.incrementTodayCount(recordId: record.id, createdAt: record.createdAt)
                 }
+                AnalyticsService.shared.trackEvent("thought_completed", properties: [
+                    "is_editing": wasEditing
+                ])
                 await appState.wizard.clearDraft()
                 if wasEditing {
                     router.path = [.entryDetail(id: record.id)]

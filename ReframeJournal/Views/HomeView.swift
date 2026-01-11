@@ -398,6 +398,7 @@ struct HomeView: View {
     
     private func startNewThoughtRecord() {
         if appState.thoughtUsage.canCreateThought() {
+            AnalyticsService.shared.trackEvent("thought_started")
             router.push(.thoughtEntry(id: nil))
         } else {
             showDailyLimitAlert = true
