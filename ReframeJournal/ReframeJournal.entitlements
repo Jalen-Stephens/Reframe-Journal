@@ -2,6 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- CloudKit/iCloud entitlements removed - requires paid Apple Developer account ($99/year) -->
+	<!-- To enable iCloud sync, upgrade to paid account and uncomment below: -->
+	<!--
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
 		<string>iCloud.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
@@ -10,5 +13,6 @@
 	<array>
 		<string>CloudKit</string>
 	</array>
+	-->
 </dict>
 </plist>

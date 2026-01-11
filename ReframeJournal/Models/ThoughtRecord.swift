@@ -45,6 +45,7 @@ struct ThoughtRecord: Codable, Identifiable, Hashable {
     var outcomesByThought: [String: ThoughtOutcome]
     var beliefAfterMainThought: Int?
     var notes: String?
+    var selectedValues: SelectedValues?
     var aiReframe: AIReframeResult?
     var aiReframeCreatedAt: Date?
     var aiReframeModel: String?
@@ -66,6 +67,7 @@ struct ThoughtRecord: Codable, Identifiable, Hashable {
             outcomesByThought: [:],
             beliefAfterMainThought: nil,
             notes: "",
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,

@@ -2,9 +2,9 @@
 import XCTest
 @testable import ReframeJournal
 
-@MainActor
 final class LimitsManagerTests: XCTestCase {
     
+    @MainActor
     private func createManager(suiteName: String, nowProvider: @escaping () -> Date) -> (LimitsManager, UserDefaults, Calendar) {
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
@@ -18,8 +18,9 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - Initial State Tests
     
-    func testInitialStateHasZeroCounts() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testInitialStateHasZeroCounts() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.initial.\(UUID().uuidString)") { now }
         
         XCTAssertEqual(manager.dailyThoughtCount, 0)
@@ -29,8 +30,9 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - Thought Recording Tests
     
-    func testRecordThoughtIncrementsCount() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testRecordThoughtIncrementsCount() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.record.thought.\(UUID().uuidString)") { now }
         
         manager.recordThought()
@@ -38,8 +40,9 @@ final class LimitsManagerTests: XCTestCase {
         XCTAssertEqual(manager.dailyThoughtCount, 1)
     }
     
-    func testRecordMultipleThoughts() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testRecordMultipleThoughts() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.multiple.thoughts.\(UUID().uuidString)") { now }
         
         manager.recordThought()
@@ -51,8 +54,9 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - Reframe Recording Tests
     
-    func testRecordReframeIncrementsCount() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testRecordReframeIncrementsCount() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.record.reframe.\(UUID().uuidString)") { now }
         
         manager.recordReframe()
@@ -61,8 +65,9 @@ final class LimitsManagerTests: XCTestCase {
         XCTAssertEqual(manager.recentReframeCount, 1)
     }
     
-    func testRecordMultipleReframes() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testRecordMultipleReframes() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.multiple.reframes.\(UUID().uuidString)") { now }
         
         manager.recordReframe()
@@ -75,7 +80,8 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - Daily Reset Tests
     
-    func testDailyResetResetsCounts() {
+    @MainActor
+    func testDailyResetResetsCounts() async {
         let suiteName = "limits.tests.daily.reset.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
@@ -95,7 +101,8 @@ final class LimitsManagerTests: XCTestCase {
         XCTAssertEqual(manager.dailyReframeCount, 0)
     }
     
-    func testNoResetOnSameDay() {
+    @MainActor
+    func testNoResetOnSameDay() async {
         var now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.same.day.\(UUID().uuidString)") { now }
         
@@ -112,8 +119,9 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - assertCanCreateThought Tests
     
-    func testAssertCanCreateThoughtProUserNoLimit() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testAssertCanCreateThoughtProUserNoLimit() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.pro.user.\(UUID().uuidString)") { now }
         
         // Record 10 thoughts (way over free limit)
@@ -125,8 +133,9 @@ final class LimitsManagerTests: XCTestCase {
         XCTAssertNoThrow(try manager.assertCanCreateThought(isPro: true))
     }
     
-    func testAssertCanCreateThoughtFreeUserWithinLimit() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testAssertCanCreateThoughtFreeUserWithinLimit() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.free.within.\(UUID().uuidString)") { now }
         
         // Free users get 3 thoughts/day
@@ -136,8 +145,9 @@ final class LimitsManagerTests: XCTestCase {
         XCTAssertNoThrow(try manager.assertCanCreateThought(isPro: false))
     }
     
-    func testAssertCanCreateThoughtFreeUserAtLimit() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testAssertCanCreateThoughtFreeUserAtLimit() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.free.at.limit.\(UUID().uuidString)") { now }
         
         // Free users get 3 thoughts/day
@@ -152,14 +162,16 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - assertCanGenerateReframe Tests
     
-    func testAssertCanGenerateReframeInitially() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testAssertCanGenerateReframeInitially() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.reframe.initial.\(UUID().uuidString)") { now }
         
         XCTAssertNoThrow(try manager.assertCanGenerateReframe())
     }
 
-    func testRollingWindowEnforcement() {
+    @MainActor
+    func testRollingWindowEnforcement() async {
         let suiteName = "limits.tests.rolling.window.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
@@ -180,8 +192,9 @@ final class LimitsManagerTests: XCTestCase {
         XCTAssertNoThrow(try manager.assertCanGenerateReframe())
     }
     
-    func testRollingWindowPartialExpiry() {
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+    @MainActor
+    func testRollingWindowPartialExpiry() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.partial.expiry.\(UUID().uuidString)") { now }
         
         // Record 3 reframes
@@ -200,7 +213,8 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - LimitError Tests
     
-    func testLimitErrorDescriptions() {
+    @MainActor
+    func testLimitErrorDescriptions() async {
         XCTAssertNotNil(LimitsManager.LimitError.dailyThoughtLimitReached.errorDescription)
         XCTAssertNotNil(LimitsManager.LimitError.dailyReframeLimitReached.errorDescription)
         XCTAssertNotNil(LimitsManager.LimitError.rollingWindowLimitReached.errorDescription)
@@ -212,9 +226,10 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - Persistence Tests
     
-    func testCountsPersistAcrossInstances() {
+    @MainActor
+    func testCountsPersistAcrossInstances() async {
         let suiteName = "limits.tests.persistence.\(UUID().uuidString)"
-        var now = Date(timeIntervalSince1970: 1_700_000_000)
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
         
         // Create first instance and record
         let defaults1 = UserDefaults(suiteName: suiteName)!
@@ -237,7 +252,8 @@ final class LimitsManagerTests: XCTestCase {
     
     // MARK: - Edge Case Tests
     
-    func testRefreshWithClockMovedBackward() {
+    @MainActor
+    func testRefreshWithClockMovedBackward() async {
         let suiteName = "limits.tests.clock.backward.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
@@ -257,12 +273,13 @@ final class LimitsManagerTests: XCTestCase {
         XCTAssertEqual(manager.dailyThoughtCount, 0)
     }
     
-    func testDailyReframeLimitEnforcement() {
+    @MainActor
+    func testDailyReframeLimitEnforcement() async {
         var now = Date(timeIntervalSince1970: 1_700_000_000)
         let (manager, _, _) = createManager(suiteName: "limits.tests.daily.reframe.limit.\(UUID().uuidString)") { now }
         
         // Record 30 reframes (daily limit), spreading them over time to avoid rolling window
-        for i in 0..<30 {
+        for _ in 0..<30 {
             manager.recordReframe()
             now = now.addingTimeInterval(61) // Move 1 minute between each to clear rolling window
             manager.refreshIfNeeded()

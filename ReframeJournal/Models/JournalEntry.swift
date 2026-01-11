@@ -44,6 +44,9 @@ final class JournalEntry {
     /// Optional notes
     var notes: String?
     
+    /// Selected values for this entry (for personalized AI reframes)
+    var selectedValuesData: Data?
+    
     // MARK: - AI Reframe Fields
     
     var aiReframeData: Data?
@@ -119,6 +122,16 @@ final class JournalEntry {
         }
     }
     
+    var selectedValues: SelectedValues? {
+        get {
+            guard let data = selectedValuesData else { return nil }
+            return try? JSONDecoder().decode(SelectedValues.self, from: data)
+        }
+        set {
+            selectedValuesData = newValue.flatMap { try? JSONEncoder().encode($0) }
+        }
+    }
+    
     // MARK: - Initialization
     
     init(
@@ -135,6 +148,7 @@ final class JournalEntry {
         outcomesByThought: [String: ThoughtOutcome] = [:],
         beliefAfterMainThought: Int? = nil,
         notes: String? = nil,
+        selectedValues: SelectedValues? = nil,
         aiReframe: AIReframeResult? = nil,
         aiReframeCreatedAt: Date? = nil,
         aiReframeModel: String? = nil,
@@ -162,6 +176,7 @@ final class JournalEntry {
         self.emotionsData = try? JSONEncoder().encode(emotions)
         self.adaptiveResponsesData = try? JSONEncoder().encode(adaptiveResponses)
         self.outcomesByThoughtData = try? JSONEncoder().encode(outcomesByThought)
+        self.selectedValuesData = selectedValues.flatMap { try? JSONEncoder().encode($0) }
         self.aiReframeData = aiReframe.flatMap { try? JSONEncoder().encode($0) }
     }
     
@@ -198,6 +213,7 @@ extension JournalEntry {
             outcomesByThought: record.outcomesByThought,
             beliefAfterMainThought: record.beliefAfterMainThought,
             notes: record.notes,
+            selectedValues: record.selectedValues,
             aiReframe: record.aiReframe,
             aiReframeCreatedAt: record.aiReframeCreatedAt,
             aiReframeModel: record.aiReframeModel,
@@ -223,6 +239,7 @@ extension JournalEntry {
             outcomesByThought: outcomesByThought,
             beliefAfterMainThought: beliefAfterMainThought,
             notes: notes,
+            selectedValues: selectedValues,
             aiReframe: aiReframe,
             aiReframeCreatedAt: aiReframeCreatedAt,
             aiReframeModel: aiReframeModel,
@@ -244,6 +261,7 @@ extension JournalEntry {
         outcomesByThought = record.outcomesByThought
         beliefAfterMainThought = record.beliefAfterMainThought
         notes = record.notes
+        selectedValues = record.selectedValues
         aiReframe = record.aiReframe
         aiReframeCreatedAt = record.aiReframeCreatedAt
         aiReframeModel = record.aiReframeModel

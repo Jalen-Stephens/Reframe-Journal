@@ -6,10 +6,11 @@ struct ThoughtEntryNotesView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var entitlementsManager: EntitlementsManager
     @EnvironmentObject private var limitsManager: LimitsManager
-    @EnvironmentObject private var rewardedAdManager: RewardedAdManager
+    @EnvironmentObject private var rewardedAdManager: AnyRewardedAdManager
     @Environment(\.notesPalette) private var notesPalette
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: ThoughtEntryViewModel
+    @StateObject private var valuesService: ValuesProfileService
     @FocusState private var focusedField: ThoughtEntryViewModel.Field?
     @State private var isDateSheetPresented = false
     @State private var showEmotionSuggestions = false
@@ -41,6 +42,8 @@ struct ThoughtEntryNotesView: View {
 
     init(entryId: String?, modelContext: ModelContext, thoughtUsage: ThoughtUsageService) {
         _viewModel = StateObject(wrappedValue: ThoughtEntryViewModel(entryId: entryId, modelContext: modelContext, thoughtUsage: thoughtUsage))
+        let tempContainer = try! ModelContainerConfig.makeContainer()
+        _valuesService = StateObject(wrappedValue: ValuesProfileService(modelContext: tempContainer.mainContext))
     }
 
     var body: some View {
@@ -75,6 +78,9 @@ struct ThoughtEntryNotesView: View {
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            valuesService.updateModelContext(modelContext)
         }
         .task {
             await viewModel.loadIfNeeded()
@@ -254,14 +260,33 @@ struct ThoughtEntryNotesView: View {
             GlassDivider()
             automaticThoughtsSection
         }
-                    if viewModel.isSectionVisible(.adaptiveResponses) {
-                        GlassDivider()
-                        adaptiveResponsesSection
-                    }
+        if viewModel.isSectionVisible(.adaptiveResponses) {
+            GlassDivider()
+            adaptiveResponsesSection
+        }
+        if viewModel.isSectionVisible(.values) {
+            GlassDivider()
+            valuesSection
+        }
         if viewModel.isSectionVisible(.outcome) {
             GlassDivider()
             outcomeSection
         }
+    }
+    
+    // MARK: - Values Section
+    
+    private var valuesSection: some View {
+        ValuesSelectionSection(
+            selectedValues: Binding(
+                get: { viewModel.selectedValues ?? .empty },
+                set: { newValue in
+                    viewModel.selectedValues = newValue.hasSelection ? newValue : nil
+                    viewModel.scheduleAutosave()
+                }
+            )
+        )
+        .id(ThoughtEntryViewModel.Section.values)
     }
 
     private var situationSection: some View {
@@ -1029,7 +1054,7 @@ struct ThoughtEntryNotesView: View {
         guard !isGeneratingReframe else { return }
         isGeneratingReframe = true
         defer { isGeneratingReframe = false }
-        let service = AIReframeService()
+        let service = AIReframeService(valuesService: valuesService)
         let record = viewModel.currentRecordSnapshot()
         do {
             let depth = viewModel.aiReframeDepth ?? .deep

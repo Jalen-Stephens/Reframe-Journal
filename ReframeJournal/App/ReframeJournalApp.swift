@@ -15,28 +15,50 @@ struct ReframeJournalApp: App {
     @StateObject private var router = AppRouter()
     @StateObject private var entitlementsManager = EntitlementsManager()
     @StateObject private var limitsManager: LimitsManager
-    @StateObject private var rewardedAdManager: RewardedAdManager
+    @StateObject private var rewardedAdManager: AnyRewardedAdManager
 
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        // Detect test environment
+        let isTestEnvironment = NSClassFromString("XCTestCase") != nil
+        
         // Initialize SwiftData ModelContainer
-        do {
-            let container = try ModelContainerConfig.makeContainer()
-            self.modelContainer = container
+        if isTestEnvironment {
+            // Always use in-memory container for tests
+            do {
+                let config = ModelConfiguration(isStoredInMemoryOnly: true)
+                let container = try ModelContainer(
+                    for: JournalEntry.self, ValuesProfileData.self, ValuesCategoryEntryData.self,
+                    configurations: config
+                )
+                self.modelContainer = container
+                let context = container.mainContext
+                _appState = StateObject(wrappedValue: AppState(modelContext: context))
+            } catch {
+                fatalError("Failed to initialize test ModelContainer: \(error)")
+            }
             
-            // Initialize AppState with the model context
-            let context = container.mainContext
-            _appState = StateObject(wrappedValue: AppState(modelContext: context))
-        } catch {
-            fatalError("Failed to initialize SwiftData ModelContainer: \(error)")
+            // Use mock RewardedAdManager to avoid GoogleMobileAds issues
+            let mock = MockRewardedAdManager()
+            _rewardedAdManager = StateObject(wrappedValue: AnyRewardedAdManager(mock))
+        } else {
+            // Production initialization
+            do {
+                let container = try ModelContainerConfig.makeContainer()
+                self.modelContainer = container
+                let context = container.mainContext
+                _appState = StateObject(wrappedValue: AppState(modelContext: context))
+            } catch {
+                fatalError("Failed to initialize SwiftData ModelContainer: \(error)")
+            }
+            
+            let rewarded = RewardedAdManager(adUnitID: RewardedAdManager.loadAdUnitID())
+            _rewardedAdManager = StateObject(wrappedValue: AnyRewardedAdManager(rewarded))
         }
         
-        let limits = LimitsManager()
-        let rewarded = RewardedAdManager(adUnitID: RewardedAdManager.loadAdUnitID())
-        _limitsManager = StateObject(wrappedValue: limits)
-        _rewardedAdManager = StateObject(wrappedValue: rewarded)
+        _limitsManager = StateObject(wrappedValue: LimitsManager())
     }
 
     private var appAppearance: AppAppearance {

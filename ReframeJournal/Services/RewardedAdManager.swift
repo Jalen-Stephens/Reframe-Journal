@@ -4,26 +4,9 @@ import GoogleMobileAds
 import UIKit
 
 @MainActor
-final class RewardedAdManager: NSObject, ObservableObject {
+final class RewardedAdManager: NSObject, ObservableObject, RewardedAdManagerProtocol {
     static let testAdUnitID = "ca-app-pub-3940256099942544/1712485313"
     private static let adUnitInfoKey = "ADMOB_REWARDED_AD_UNIT_ID"
-
-    enum RewardedAdError: LocalizedError {
-        case noAdAvailable
-        case noViewController
-        case presentationFailed
-
-        var errorDescription: String? {
-            switch self {
-            case .noAdAvailable:
-                return "Ad unavailable. Try again later or upgrade to Pro."
-            case .noViewController:
-                return "Ad unavailable. Try again later or upgrade to Pro."
-            case .presentationFailed:
-                return "Ad unavailable. Try again later or upgrade to Pro."
-            }
-        }
-    }
 
     private let adUnitID: String
     private var rewardedAd: GADRewardedAd?
@@ -34,7 +17,10 @@ final class RewardedAdManager: NSObject, ObservableObject {
     init(adUnitID: String) {
         self.adUnitID = adUnitID
         super.init()
-        Task { await loadAd() }
+        // Skip ad loading in test environment or if adUnitID is empty
+        if !adUnitID.isEmpty && NSClassFromString("XCTestCase") == nil {
+            Task { await loadAd() }
+        }
     }
 
     static func loadAdUnitID() -> String {
@@ -52,7 +38,13 @@ final class RewardedAdManager: NSObject, ObservableObject {
     }
 
     func loadAd() async {
+        // Skip entirely in test environment
+        guard NSClassFromString("XCTestCase") == nil else {
+            return
+        }
         guard !isLoading else { return }
+        guard !adUnitID.isEmpty else { return }
+        
         isLoading = true
         defer { isLoading = false }
 
@@ -86,6 +78,11 @@ final class RewardedAdManager: NSObject, ObservableObject {
     }
 
     func presentAd() async throws -> Bool {
+        // Skip entirely in test environment
+        guard NSClassFromString("XCTestCase") == nil else {
+            throw RewardedAdError.noAdAvailable
+        }
+        
         if rewardedAd == nil {
             await loadAd()
         }

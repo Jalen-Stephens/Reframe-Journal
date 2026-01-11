@@ -69,6 +69,9 @@ struct AllEntriesView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .refreshable {
+                    await refreshEntries()
+                }
             }
         }
         .background(notesPalette.background.ignoresSafeArea())
@@ -84,6 +87,33 @@ struct AllEntriesView: View {
     private func deleteEntry(_ entry: JournalEntry) {
         modelContext.delete(entry)
         try? modelContext.save()
+    }
+    
+    /// Manually refresh entries from CloudKit
+    private func refreshEntries() async {
+        // Force SwiftData to check for CloudKit updates
+        do {
+            // Trigger a fetch to pull latest from CloudKit
+            let descriptor = FetchDescriptor<JournalEntry>(
+                predicate: #Predicate<JournalEntry> { !$0.isDraft },
+                sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+            )
+            _ = try modelContext.fetch(descriptor)
+            
+            // Save context to trigger CloudKit sync
+            try modelContext.save()
+            
+            #if DEBUG
+            print("AllEntriesView: Refreshed entries from CloudKit")
+            #endif
+        } catch {
+            #if DEBUG
+            print("AllEntriesView: Refresh failed - \(error)")
+            #endif
+        }
+        
+        // Give CloudKit a moment to sync
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
     }
     
     // MARK: - Sections

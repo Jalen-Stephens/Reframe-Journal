@@ -74,6 +74,7 @@ final class JournalEntryStore: ObservableObject {
             existing.outcomesByThought = entry.outcomesByThought
             existing.beliefAfterMainThought = entry.beliefAfterMainThought
             existing.notes = entry.notes
+            existing.selectedValues = entry.selectedValues
             existing.aiReframe = entry.aiReframe
             existing.aiReframeCreatedAt = entry.aiReframeCreatedAt
             existing.aiReframeModel = entry.aiReframeModel

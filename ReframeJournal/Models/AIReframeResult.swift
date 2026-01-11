@@ -152,6 +152,8 @@ struct AIReframeResult: Codable, Equatable, Hashable {
     let selfCompassion: [String]?
     let realityCheckQuestions: [String]?
     let oneSmallExperiment: OneSmallExperiment?
+    let valuesAlignedIntention: String?
+    let nextBestStep: String?
     let summary: String?
     let rawResponse: String?
 
@@ -176,6 +178,8 @@ No placeholders like "(item)".
             selfCompassion: nil,
             realityCheckQuestions: nil,
             oneSmallExperiment: nil,
+            valuesAlignedIntention: nil,
+            nextBestStep: nil,
             summary: nil,
             rawResponse: rawText
         )
@@ -202,6 +206,8 @@ No placeholders like "(item)".
         case selfCompassion = "self_compassion"
         case realityCheckQuestions = "reality_check_questions"
         case oneSmallExperiment = "one_small_experiment"
+        case valuesAlignedIntention = "values_aligned_intention"
+        case nextBestStep = "next_best_step"
         case summary
         case rawResponse = "raw_response"
     }
@@ -216,6 +222,8 @@ No placeholders like "(item)".
         selfCompassion: [String]?,
         realityCheckQuestions: [String]?,
         oneSmallExperiment: OneSmallExperiment?,
+        valuesAlignedIntention: String? = nil,
+        nextBestStep: String? = nil,
         summary: String?,
         rawResponse: String?
     ) {
@@ -228,6 +236,8 @@ No placeholders like "(item)".
         self.selfCompassion = selfCompassion
         self.realityCheckQuestions = realityCheckQuestions
         self.oneSmallExperiment = oneSmallExperiment
+        self.valuesAlignedIntention = valuesAlignedIntention
+        self.nextBestStep = nextBestStep
         self.summary = summary
         self.rawResponse = rawResponse
     }
@@ -239,6 +249,8 @@ No placeholders like "(item)".
         balancedThought = try container.decodeIfPresent(String.self, forKey: .balancedThought)
         summary = try container.decodeIfPresent(String.self, forKey: .summary)
         rawResponse = try container.decodeIfPresent(String.self, forKey: .rawResponse)
+        valuesAlignedIntention = try container.decodeIfPresent(String.self, forKey: .valuesAlignedIntention)
+        nextBestStep = try container.decodeIfPresent(String.self, forKey: .nextBestStep)
 
         whatMightBeHappening = Self.decodeList(from: container, key: .whatMightBeHappening)
         selfCompassion = Self.decodeList(from: container, key: .selfCompassion)
@@ -261,6 +273,8 @@ No placeholders like "(item)".
         try container.encodeIfPresent(selfCompassion, forKey: .selfCompassion)
         try container.encodeIfPresent(realityCheckQuestions, forKey: .realityCheckQuestions)
         try container.encodeIfPresent(oneSmallExperiment, forKey: .oneSmallExperiment)
+        try container.encodeIfPresent(valuesAlignedIntention, forKey: .valuesAlignedIntention)
+        try container.encodeIfPresent(nextBestStep, forKey: .nextBestStep)
         try container.encodeIfPresent(summary, forKey: .summary)
         try container.encodeIfPresent(rawResponse, forKey: .rawResponse)
     }
@@ -282,6 +296,8 @@ No placeholders like "(item)".
                     selfCompassion: decoded.selfCompassion,
                     realityCheckQuestions: decoded.realityCheckQuestions,
                     oneSmallExperiment: decoded.oneSmallExperiment,
+                    valuesAlignedIntention: decoded.valuesAlignedIntention,
+                    nextBestStep: decoded.nextBestStep,
                     summary: decoded.summary,
                     rawResponse: rawText
                 )
@@ -334,6 +350,8 @@ No placeholders like "(item)".
             selfCompassion: resolvedSelf,
             realityCheckQuestions: resolvedQuestions,
             oneSmallExperiment: normalizedExperiment,
+            valuesAlignedIntention: result.valuesAlignedIntention,
+            nextBestStep: result.nextBestStep,
             summary: result.summary,
             rawResponse: result.rawResponse
         )

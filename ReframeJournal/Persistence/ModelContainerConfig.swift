@@ -9,19 +9,22 @@ import SwiftData
 enum ModelContainerConfig {
     /// Schema containing all SwiftData models
     static let schema = Schema([
-        JournalEntry.self
+        JournalEntry.self,
+        ValuesProfileData.self,
+        ValuesCategoryEntryData.self
     ])
     
-    /// Creates a ModelContainer with iCloud sync enabled.
-    /// Data automatically syncs across all devices signed into the same iCloud account.
-    /// Requires iCloud capability to be enabled in Xcode Signing & Capabilities.
+    /// Creates a ModelContainer with local storage only.
+    /// Note: iCloud sync requires a paid Apple Developer account ($99/year).
+    /// Personal/free accounts cannot use CloudKit/iCloud capabilities.
+    /// To enable iCloud sync, upgrade to paid account and change cloudKitDatabase to .automatic
     static func makeContainer() throws -> ModelContainer {
         let configuration = ModelConfiguration(
             "ReframeJournal",
             schema: schema,
             isStoredInMemoryOnly: false,
-            // iCloud sync enabled - data syncs automatically across devices
-            cloudKitDatabase: .automatic
+            // CloudKit disabled for personal accounts - change to .automatic with paid account
+            cloudKitDatabase: .none
         )
         
         return try ModelContainer(

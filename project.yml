@@ -1,12 +1,13 @@
 name: ReframeJournal
 options:
-  bundleIdPrefix: com.yourname
+  bundleIdPrefix: com.JalenStephens
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "17.0"
+  xcodeVersion: "15.0"
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     DEVELOPMENT_TEAM: ""
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "1.0.0"
@@ -18,6 +19,11 @@ settings:
     INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
     INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
 
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
+    from: 11.5.0
+
 targets:
   ReframeJournal:
     type: application
@@ -28,9 +34,12 @@ targets:
       path: ReframeJournal/Resources/Info.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.ReframeJournal
+        PRODUCT_BUNDLE_IDENTIFIER: com.JalenStephens.ReframeJournal
         INFOPLIST_KEY_CFBundleName: ReframeJournal
         TARGETED_DEVICE_FAMILY: "1"
+    dependencies:
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
     scheme:
       testTargets:
         - ReframeJournalTests
@@ -46,6 +55,8 @@ targets:
       - target: ReframeJournal
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.ReframeJournalTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.JalenStephens.ReframeJournalTests
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ReframeJournal.app/ReframeJournal"
         BUNDLE_LOADER: "$(TEST_HOST)"
+        # Prevent GoogleMobileAds from verifying initialization in tests
+        OTHER_LDFLAGS: -weak_framework GoogleMobileAds

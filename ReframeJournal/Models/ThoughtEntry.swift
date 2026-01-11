@@ -13,6 +13,7 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
     var adaptiveResponses: [String: AdaptiveResponsesForThought]
     var outcomesByThought: [String: ThoughtOutcome]
     var beliefAfterMainThought: Int?
+    var selectedValues: SelectedValues?
     var aiReframe: AIReframeResult?
     var aiReframeCreatedAt: Date?
     var aiReframeModel: String?
@@ -34,6 +35,7 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
         adaptiveResponses: [String: AdaptiveResponsesForThought],
         outcomesByThought: [String: ThoughtOutcome],
         beliefAfterMainThought: Int?,
+        selectedValues: SelectedValues?,
         aiReframe: AIReframeResult?,
         aiReframeCreatedAt: Date?,
         aiReframeModel: String?,
@@ -54,6 +56,7 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
         self.adaptiveResponses = adaptiveResponses
         self.outcomesByThought = outcomesByThought
         self.beliefAfterMainThought = beliefAfterMainThought
+        self.selectedValues = selectedValues
         self.aiReframe = aiReframe
         self.aiReframeCreatedAt = aiReframeCreatedAt
         self.aiReframeModel = aiReframeModel
@@ -79,6 +82,7 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
             adaptiveResponses: [:],
             outcomesByThought: [:],
             beliefAfterMainThought: nil,
+            selectedValues: nil,
             aiReframe: nil,
             aiReframeCreatedAt: nil,
             aiReframeModel: nil,
@@ -108,6 +112,7 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
         adaptiveResponses = record.adaptiveResponses
         outcomesByThought = record.outcomesByThought
         beliefAfterMainThought = record.beliefAfterMainThought
+        selectedValues = record.selectedValues
         aiReframe = record.aiReframe
         aiReframeCreatedAt = record.aiReframeCreatedAt
         aiReframeModel = record.aiReframeModel
@@ -147,6 +152,7 @@ struct ThoughtEntry: Codable, Identifiable, Hashable {
             outcomesByThought: outcomesByThought,
             beliefAfterMainThought: beliefAfterMainThought,
             notes: baseRecord.notes,
+            selectedValues: selectedValues,
             aiReframe: aiReframe,
             aiReframeCreatedAt: aiReframeCreatedAt,
             aiReframeModel: aiReframeModel,

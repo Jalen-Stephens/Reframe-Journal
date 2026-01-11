@@ -2,22 +2,27 @@ import Foundation
 
 struct AIReframeService {
     private let clientProvider: () throws -> LegacyOpenAIClient
+    private let valuesService: ValuesProfileService?
     let modelName = "gpt-4o-mini"
-    let promptVersion = "v2"
+    let promptVersion = "v3"
 
-    init(clientProvider: @escaping () throws -> LegacyOpenAIClient = {
-        guard let key = LegacyOpenAIClient.loadAPIKey() else {
-            throw LegacyOpenAIClient.OpenAIError.missingAPIKey
-        }
-        return LegacyOpenAIClient(apiKey: key)
-    }) {
+    init(
+        clientProvider: @escaping () throws -> LegacyOpenAIClient = {
+            guard let key = LegacyOpenAIClient.loadAPIKey() else {
+                throw LegacyOpenAIClient.OpenAIError.missingAPIKey
+            }
+            return LegacyOpenAIClient(apiKey: key)
+        },
+        valuesService: ValuesProfileService? = nil
+    ) {
         self.clientProvider = clientProvider
+        self.valuesService = valuesService
     }
 
     func generateReframe(for record: ThoughtRecord, depth: AIReframeDepth) async throws -> AIReframeResult {
         let client = try clientProvider()
         let systemMessage = systemPrompt
-        let userMessage = buildUserMessage(for: record, depth: depth)
+        let userMessage = await buildUserMessage(for: record, depth: depth)
         let content = try await client.chatCompletion(systemMessage: systemMessage, userMessage: userMessage, model: modelName)
         return AIReframeResult.decodeAIReframe(from: content)
     }
@@ -26,13 +31,15 @@ struct AIReframeService {
         "You are a supportive CBT-style journaling assistant. Do not diagnose. Do not provide medical advice. Be kind, practical, and specific. Return STRICT JSON only."
     }
 
-    func buildUserMessage(for record: ThoughtRecord, depth: AIReframeDepth) -> String {
+    @MainActor
+    func buildUserMessage(for record: ThoughtRecord, depth: AIReframeDepth) async -> String {
         let emotionsText = listOrPlaceholder(record.emotions.map { "\($0.label) (\($0.intensityBefore)%)" })
         let sensationsText = listOrPlaceholder(record.sensations)
         let thoughtsText = listOrPlaceholder(record.automaticThoughts.map { "\($0.text) (belief \($0.beliefBefore)%)" })
         let distortionsText = listOrPlaceholder(record.thinkingStyles ?? [])
         let adaptiveText = adaptiveResponsesText(record)
         let outcomesText = outcomesSummaryText(record)
+        let valuesText = await valuesContextText(record)
 
         return """
 Here is the full thought record. Use the details below even if some fields are empty.
@@ -46,7 +53,7 @@ Cognitive distortions: \(distortionsText)
 Evidence for/against: \(adaptiveText.evidence)
 Alternative responses / adaptive responses: \(adaptiveText.alternatives)
 Outcome / reflection: \(outcomesText)
-
+\(valuesText)
 Depth: \(depth.promptLabel)
 
 Constraints:
@@ -54,6 +61,7 @@ Constraints:
 - Avoid generic filler; tie statements to the entry details.
 - No diagnosis and no medical advice.
 - Do not use placeholders like "(item)" or "..."; provide real, specific text.
+- If values are provided, incorporate them naturally into the reframe and action plan. Do NOT be preachy or moralizing—keep it calm, personal, and user-led.
 \(AIReframeResult.schemaForcingPrompt)
 
 Please return STRICT JSON with this shape:
@@ -84,9 +92,65 @@ Please return STRICT JSON with this shape:
     "experiment": "one small test they can try",
     "what_to_observe": ["...", "..."]
   },
+  "values_aligned_intention": "1–2 sentences connecting the reframe to the user's stated values (only if values provided, otherwise null)",
+  "next_best_step": "1 concrete, values-aligned action the user can take (only if values provided, otherwise null)",
   "summary": "short wrap-up paragraph"
 }
 """
+    }
+    
+    @MainActor
+    private func valuesContextText(_ record: ThoughtRecord) async -> String {
+        guard let selected = record.selectedValues, selected.hasSelection else {
+            return ""
+        }
+        
+        var parts: [String] = []
+        
+        // Categories
+        if !selected.categories.isEmpty {
+            let categoryNames = selected.categories.map { $0.title }.joined(separator: ", ")
+            parts.append("Values categories: \(categoryNames)")
+            
+            // Include snippets from profile if available
+            if let service = valuesService {
+                // Ensure service is loaded
+                await service.load()
+                for category in selected.categories {
+                    let entry = service.entry(for: category)
+                    if entry.hasContent {
+                        var snippetParts: [String] = []
+                        if !entry.whatMatters.isEmpty {
+                            let trimmed = entry.whatMatters.trimmingCharacters(in: .whitespacesAndNewlines)
+                            let snippet = trimmed.count > 150 ? String(trimmed.prefix(150)) + "…" : trimmed
+                            snippetParts.append("What matters: \(snippet)")
+                        }
+                        if !entry.howToShowUp.isEmpty {
+                            let trimmed = entry.howToShowUp.trimmingCharacters(in: .whitespacesAndNewlines)
+                            let snippet = trimmed.count > 100 ? String(trimmed.prefix(100)) + "…" : trimmed
+                            snippetParts.append("How to show up: \(snippet)")
+                        }
+                        if !snippetParts.isEmpty {
+                            parts.append("  \(category.title): \(snippetParts.joined(separator: "; "))")
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Keywords
+        if !selected.keywords.isEmpty {
+            parts.append("Value keywords: \(selected.keywords.joined(separator: ", "))")
+        }
+        
+        // How to show up (situation-specific)
+        let howToShowUp = selected.howToShowUp.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !howToShowUp.isEmpty {
+            parts.append("How I want to show up here: \(howToShowUp)")
+        }
+        
+        guard !parts.isEmpty else { return "" }
+        return "\nUser's values context:\n" + parts.joined(separator: "\n") + "\n"
     }
 
     private func parseResult(from content: String) -> AIReframeResult {
