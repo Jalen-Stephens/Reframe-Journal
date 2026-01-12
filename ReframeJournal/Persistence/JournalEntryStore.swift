@@ -102,6 +102,25 @@ final class JournalEntryStore: ObservableObject {
         try modelContext.save()
     }
     
+    /// Creates or updates an entry from an UrgeRecord
+    func upsert(_ record: UrgeRecord) throws {
+        if let existing = try fetch(id: record.id) {
+            existing.urgeRecord = record
+            existing.updatedAt = Date()
+            existing.title = record.title
+            existing.situationText = record.situationText
+            existing.sensations = record.sensations
+            existing.emotions = record.emotions
+            existing.isDraft = false
+        } else {
+            let entry = JournalEntry(from: record)
+            entry.isDraft = false
+            modelContext.insert(entry)
+        }
+        
+        try modelContext.save()
+    }
+    
     /// Deletes an entry by ID
     func delete(id: String) throws {
         if let entry = try fetch(id: id) {

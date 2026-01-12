@@ -103,6 +103,11 @@ struct HomeView: View {
                 primaryActionCard
                     .padding(.horizontal, 16)
                 
+                // Entry type chips
+                entryTypeChips
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                
                 // Entries for selected day
                 entriesSection
                     .padding(.horizontal, 16)
@@ -292,9 +297,13 @@ struct HomeView: View {
                 
                 // Entry list (max 2 to save space)
                 ForEach(Array(filteredEntries.prefix(2))) { entry in
-                    let record = entry.toThoughtRecord()
-                    EntryListItemView(entry: record) {
-                        router.push(.thoughtEntry(id: entry.recordId))
+                    EntryListItemView(entry: entry) {
+                        switch entry.entryType {
+                        case .thought:
+                            router.push(.thoughtEntry(id: entry.recordId))
+                        case .urge:
+                            router.push(.urgeEntry(id: entry.recordId))
+                        }
                     }
                 }
                 
@@ -370,12 +379,67 @@ struct HomeView: View {
         }
     }
     
+    // MARK: - Entry Type Chips
+    
+    private var entryTypeChips: some View {
+        HStack(spacing: 12) {
+            Button {
+                startNewThoughtRecord()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("Thought Entry")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .foregroundStyle(notesPalette.textPrimary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(chipBackground)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            
+            Button {
+                startNewUrgeEntry()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "waveform.path")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("Urge Entry")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .foregroundStyle(notesPalette.textPrimary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(chipBackground)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            
+            Spacer()
+        }
+    }
+    
+    private var chipBackground: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.04)
+    }
+    
     // MARK: - Actions
     
     private func startNewThoughtRecord() {
         if appState.thoughtUsage.canCreateThought() {
             AnalyticsService.shared.trackEvent("thought_started")
             router.push(.thoughtEntry(id: nil))
+        } else {
+            showDailyLimitAlert = true
+        }
+    }
+    
+    private func startNewUrgeEntry() {
+        if appState.thoughtUsage.canCreateThought() {
+            AnalyticsService.shared.trackEvent("urge_started")
+            router.push(.urgeEntry(id: nil))
         } else {
             showDailyLimitAlert = true
         }

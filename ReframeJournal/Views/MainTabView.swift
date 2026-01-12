@@ -330,13 +330,22 @@ private struct HomeContentView: View {
                 // Entry list (max 3 entries) with swipe actions
                 List {
                     ForEach(Array(filteredEntries.prefix(3))) { entry in
-                        let record = entry.toThoughtRecord()
-                        EntryListItemView(entry: record) {
-                            router.push(.thoughtEntry(id: entry.recordId))
+                        EntryListItemView(entry: entry) {
+                            switch entry.entryType {
+                            case .thought:
+                                router.push(.thoughtEntry(id: entry.recordId))
+                            case .urge:
+                                router.push(.urgeEntry(id: entry.recordId))
+                            }
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button {
-                                router.push(.thoughtEntry(id: entry.recordId))
+                                switch entry.entryType {
+                                case .thought:
+                                    router.push(.thoughtEntry(id: entry.recordId))
+                                case .urge:
+                                    router.push(.urgeEntry(id: entry.recordId))
+                                }
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }

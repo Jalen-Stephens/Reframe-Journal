@@ -21,9 +21,21 @@ struct AIReframeService {
         let content = try await client.chatCompletion(systemMessage: systemMessage, userMessage: userMessage, model: modelName)
         return AIReframeResult.decodeAIReframe(from: content)
     }
+    
+    func generateUrgeReframe(for record: UrgeRecord, depth: AIReframeDepth) async throws -> AIReframeResult {
+        let client = try clientProvider()
+        let systemMessage = urgeSystemPrompt
+        let userMessage = buildUrgeUserMessage(for: record, depth: depth)
+        let content = try await client.chatCompletion(systemMessage: systemMessage, userMessage: userMessage, model: modelName)
+        return AIReframeResult.decodeAIReframe(from: content)
+    }
 
     var systemPrompt: String {
         "You are a supportive CBT-style journaling assistant. Do not diagnose. Do not provide medical advice. Be kind, practical, and specific. Return STRICT JSON only."
+    }
+    
+    var urgeSystemPrompt: String {
+        "You are a supportive DBT-style mindfulness assistant helping with urge management. Use DBT mindfulness skills (Observe, Describe, Participate, Nonjudgmentally, One-Mindfully, Effectively) to guide users. Do not diagnose. Do not provide medical advice. Be kind, practical, and specific. Return STRICT JSON only."
     }
 
     func buildUserMessage(for record: ThoughtRecord, depth: AIReframeDepth) -> String {
@@ -51,6 +63,65 @@ Depth: \(depth.promptLabel)
 
 Constraints:
 - Keep tone supportive, non-judgmental, and non-clinical.
+- Avoid generic filler; tie statements to the entry details.
+- No diagnosis and no medical advice.
+- Do not use placeholders like "(item)" or "..."; provide real, specific text.
+\(AIReframeResult.schemaForcingPrompt)
+
+Please return STRICT JSON with this shape:
+{
+  "validation": "1–2 sentences validating feelings",
+  "what_might_be_happening": ["3–6 alternative explanations"],
+  "cognitive_distortions": [
+    {
+      "label": "e.g., mind reading",
+      "why_it_fits": "1 sentence",
+      "gentle_reframe": "1 sentence"
+    }
+  ],
+  "balanced_thought": "2–4 sentences, specific and believable",
+  "micro_action_plan": [
+    { "title": "Right now (2 minutes)", "steps": ["...", "..."] },
+    { "title": "Today", "steps": ["...", "..."] },
+    { "title": "If it happens again", "steps": ["...", "..."] }
+  ],
+  "communication_script": {
+    "text_message": "short supportive text message",
+    "in_person": "short in-person script"
+  },
+  "self_compassion": ["2–4 sentences"],
+  "reality_check_questions": ["5–8 questions"],
+  "one_small_experiment": {
+    "hypothesis": "what the user fears",
+    "experiment": "one small test they can try",
+    "what_to_observe": ["...", "..."]
+  },
+  "summary": "short wrap-up paragraph"
+}
+"""
+    }
+
+    func buildUrgeUserMessage(for record: UrgeRecord, depth: AIReframeDepth) -> String {
+        let emotionsText = listOrPlaceholder(record.emotions.map { "\($0.label) (\($0.intensityBefore)%)" })
+        let sensationsText = listOrPlaceholder(record.sensations)
+        let mindfulnessSkillsText = listOrPlaceholder(record.mindfulnessSkillsPracticed ?? [])
+
+        return """
+Here is the full urge record. Use the details below even if some fields are empty.
+
+Date/time: \(record.createdAt)
+Situation: \(record.situationText.isEmpty ? "(none provided)" : record.situationText)
+Physical sensations: \(sensationsText)
+Emotions: \(emotionsText)
+Urge description: \(record.urgeDescription.isEmpty ? "(none provided)" : record.urgeDescription)
+Mindfulness skills practiced: \(mindfulnessSkillsText)
+
+Depth: \(depth.promptLabel)
+
+Constraints:
+- Keep tone supportive, non-judgmental, and non-clinical.
+- Focus on DBT mindfulness skills (Observe, Describe, Participate, Nonjudgmentally, One-Mindfully, Effectively).
+- Provide guidance on resisting urges using mindfulness techniques.
 - Avoid generic filler; tie statements to the entry details.
 - No diagnosis and no medical advice.
 - Do not use placeholders like "(item)" or "..."; provide real, specific text.

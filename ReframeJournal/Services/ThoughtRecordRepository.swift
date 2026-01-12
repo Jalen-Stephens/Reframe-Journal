@@ -74,6 +74,23 @@ final class ThoughtRecordRepository: ObservableObject {
         try store.deleteDraft()
     }
     
+    // MARK: - Urge Entry Operations
+    
+    func upsertUrge(_ record: UrgeRecord) async throws {
+        do {
+            try store.upsert(record)
+        } catch {
+            throw RepositoryError.saveFailed(error)
+        }
+    }
+    
+    func fetchUrge(id: String) async throws -> UrgeRecord? {
+        guard let entry = try store.fetch(id: id), entry.entryType == .urge else {
+            return nil
+        }
+        return entry.urgeRecord
+    }
+    
     // MARK: - AI Reframe Operations
     
     func upsertAIReframe(
