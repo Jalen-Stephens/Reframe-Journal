@@ -16,6 +16,7 @@ struct MainTabView: View {
     @State private var selectedTab: MainTab = .home
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
+    @State private var showEntryTypeSheet = false
     
     var body: some View {
         ZStack {
@@ -41,7 +42,7 @@ struct MainTabView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 MainTabBar(selectedTab: $selectedTab) {
-                    startNewThoughtRecord()
+                    showEntryTypeSheet = true
                 }
             }
         }
@@ -56,6 +57,17 @@ struct MainTabView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView()
         }
+        .sheet(isPresented: $showEntryTypeSheet) {
+            EntryTypeActionSheet(
+                onThoughtEntry: {
+                    startNewThoughtRecord()
+                },
+                onUrgeEntry: {
+                    startNewUrgeEntry()
+                }
+            )
+            .presentationDetents([.medium])
+        }
     }
     
     // MARK: - Actions
@@ -64,6 +76,15 @@ struct MainTabView: View {
         if appState.thoughtUsage.canCreateThought() {
             AnalyticsService.shared.trackEvent("thought_started")
             router.push(.thoughtEntry(id: nil))
+        } else {
+            showDailyLimitAlert = true
+        }
+    }
+    
+    private func startNewUrgeEntry() {
+        if appState.thoughtUsage.canCreateThought() {
+            AnalyticsService.shared.trackEvent("urge_started")
+            router.push(.urgeEntry(id: nil))
         } else {
             showDailyLimitAlert = true
         }

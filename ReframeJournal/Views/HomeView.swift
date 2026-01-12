@@ -25,6 +25,8 @@ struct HomeView: View {
     @State private var selectedTab: MainTab = .home
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
+    @State private var showEntryTypeSheet = false
+    @State private var showReframeDropdown = false
     
     var body: some View {
         ZStack {
@@ -48,7 +50,7 @@ struct HomeView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 MainTabBar(selectedTab: $selectedTab) {
-                    startNewThoughtRecord()
+                    showEntryTypeSheet = true
                 }
             }
         }
@@ -71,6 +73,17 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showPaywall) {
             PaywallView()
+        }
+        .sheet(isPresented: $showEntryTypeSheet) {
+            EntryTypeActionSheet(
+                onThoughtEntry: {
+                    startNewThoughtRecord()
+                },
+                onUrgeEntry: {
+                    startNewUrgeEntry()
+                }
+            )
+            .presentationDetents([.medium])
         }
     }
     
@@ -100,13 +113,8 @@ struct HomeView: View {
                     .padding(.top, 12)
                 
                 // Primary CTA card
-                primaryActionCard
+                reframeCard
                     .padding(.horizontal, 16)
-                
-                // Entry type chips
-                entryTypeChips
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
                 
                 // Entries for selected day
                 entriesSection
@@ -204,43 +212,146 @@ struct HomeView: View {
         )
     }
     
-    // MARK: - Primary Action Card
+    // MARK: - Reframe Card
     
-    private var primaryActionCard: some View {
+    private var reframeCard: some View {
+        VStack(spacing: 0) {
+            // Main card button
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showReframeDropdown.toggle()
+                }
+            } label: {
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Reframe")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(cardTextPrimary)
+                        
+                        Text("Work through a difficult moment")
+                            .font(.system(size: 14))
+                            .foregroundStyle(cardTextSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    // Icon circle
+                    ZStack {
+                        Circle()
+                            .fill(cardIconBackground)
+                            .frame(width: 48, height: 48)
+                        
+                        Image(systemName: "brain.head.profile")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(cardIconForeground)
+                    }
+                    
+                    // Chevron
+                    Image(systemName: showReframeDropdown ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(notesPalette.textTertiary)
+                        .animation(.none, value: showReframeDropdown)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(cardBackground)
+                .clipShape(UnevenRoundedRectangle(
+                    cornerRadii: .init(
+                        topLeading: 20,
+                        bottomLeading: showReframeDropdown ? 0 : 20,
+                        bottomTrailing: showReframeDropdown ? 0 : 20,
+                        topTrailing: 20
+                    )
+                ))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Reframe. Work through a difficult moment.")
+            
+            // Dropdown options
+            if showReframeDropdown {
+                VStack(spacing: 0) {
+                    Divider()
+                        .background(notesPalette.separator)
+                    
+                    reframeOption(
+                        title: "Thought Entry",
+                        subtitle: "Reframe difficult thoughts",
+                        icon: "brain.head.profile",
+                        action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                showReframeDropdown = false
+                            }
+                            startNewThoughtRecord()
+                        }
+                    )
+                    
+                    Divider()
+                        .background(notesPalette.separator)
+                    
+                    reframeOption(
+                        title: "Urge Entry",
+                        subtitle: "Resist urges with mindfulness",
+                        icon: "waveform.path",
+                        action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                showReframeDropdown = false
+                            }
+                            startNewUrgeEntry()
+                        }
+                    )
+                }
+                .background(cardBackground)
+                .clipShape(UnevenRoundedRectangle(
+                    cornerRadii: .init(
+                        topLeading: 0,
+                        bottomLeading: 20,
+                        bottomTrailing: 20,
+                        topTrailing: 0
+                    )
+                ))
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func reframeOption(
+        title: String,
+        subtitle: String,
+        icon: String,
+        action: @escaping () -> Void
+    ) -> some View {
         Button {
-            startNewThoughtRecord()
+            action()
         } label: {
             HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Reframe a thought")
-                        .font(.system(size: 18, weight: .semibold))
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(cardIconBackground)
+                        .frame(width: 40, height: 40)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(cardIconForeground)
+                }
+                
+                // Text
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(cardTextPrimary)
                     
-                    Text("Work through a difficult moment")
+                    Text(subtitle)
                         .font(.system(size: 14))
                         .foregroundStyle(cardTextSecondary)
                 }
                 
                 Spacer()
-                
-                // Icon circle
-                ZStack {
-                    Circle()
-                        .fill(cardIconBackground)
-                        .frame(width: 48, height: 48)
-                    
-                    Image(systemName: "brain.head.profile")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(cardIconForeground)
-                }
             }
             .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Reframe a thought. Work through a difficult moment.")
     }
     
     // MARK: - Card Colors
@@ -377,52 +488,6 @@ struct HomeView: View {
         default:
             break
         }
-    }
-    
-    // MARK: - Entry Type Chips
-    
-    private var entryTypeChips: some View {
-        HStack(spacing: 12) {
-            Button {
-                startNewThoughtRecord()
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "brain.head.profile")
-                        .font(.system(size: 14, weight: .medium))
-                    Text("Thought Entry")
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .foregroundStyle(notesPalette.textPrimary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(chipBackground)
-                .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
-            
-            Button {
-                startNewUrgeEntry()
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "waveform.path")
-                        .font(.system(size: 14, weight: .medium))
-                    Text("Urge Entry")
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .foregroundStyle(notesPalette.textPrimary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(chipBackground)
-                .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
-            
-            Spacer()
-        }
-    }
-    
-    private var chipBackground: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.04)
     }
     
     // MARK: - Actions

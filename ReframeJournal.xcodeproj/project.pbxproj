@@ -36,6 +36,7 @@
 		6F6362CC2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362CB2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift */; };
 		6F6362CE2F14AA58006BC5F2 /* EntryStatusPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362CD2F14AA58006BC5F2 /* EntryStatusPicker.swift */; };
 		6F6362D02F14AA9A006BC5F2 /* MindfulnessContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362CF2F14AA99006BC5F2 /* MindfulnessContent.swift */; };
+		6F6362D22F14ADD7006BC5F2 /* EntryTypeActionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362D12F14ADD7006BC5F2 /* EntryTypeActionSheet.swift */; };
 		6F647A452F079895005309DD /* ReframeJournal.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 6F647A442F079895005309DD /* ReframeJournal.storekit */; };
 		6FFB15E22C2CEC0BC540A95D /* AccordionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF93899497F29B20C03F371 /* AccordionView.swift */; };
 		73FDB8B9EA5037DFE8C69B30 /* ReframeJournalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46312FE3978E03DDBCCC38F /* ReframeJournalApp.swift */; };
@@ -184,6 +185,7 @@
 		6F6362CB2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeEntryViewModel.swift; sourceTree = "<group>"; };
 		6F6362CD2F14AA58006BC5F2 /* EntryStatusPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryStatusPicker.swift; sourceTree = "<group>"; };
 		6F6362CF2F14AA99006BC5F2 /* MindfulnessContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindfulnessContent.swift; sourceTree = "<group>"; };
+		6F6362D12F14ADD7006BC5F2 /* EntryTypeActionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTypeActionSheet.swift; sourceTree = "<group>"; };
 		6F647A442F079895005309DD /* ReframeJournal.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReframeJournal.storekit; sourceTree = "<group>"; };
 		7593019C057F861DCFFECBA6 /* ThoughtCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtCardView.swift; sourceTree = "<group>"; };
 		7685FB9A44932CF9C0F3349F /* WizardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WizardViewModel.swift; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 		C0D1E2F3A4B5061728394A5B /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				6F6362D12F14ADD7006BC5F2 /* EntryTypeActionSheet.swift */,
 				6F6362CD2F14AA58006BC5F2 /* EntryStatusPicker.swift */,
 				A10000000000000000000031 /* CalendarStripView.swift */,
 				A10000000000000000000032 /* MainTabBar.swift */,
@@ -702,6 +705,7 @@
 				3F0788150F2C442B8A7E8933 /* EntryListItemView.swift in Sources */,
 				6F6362BE2F1441A9006BC5F2 /* AnalyticsService.swift in Sources */,
 				3A4B5C6D7E8F901234567891 /* ReframeLoadingView.swift in Sources */,
+				6F6362D22F14ADD7006BC5F2 /* EntryTypeActionSheet.swift in Sources */,
 				510D8D7CC3B582128B31BEDE /* ExpandableTextView.swift in Sources */,
 				BA140D589F48239A7AB796DA /* HomeView.swift in Sources */,
 				B10000000000000000000033 /* MainTabView.swift in Sources */,

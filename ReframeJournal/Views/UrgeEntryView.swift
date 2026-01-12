@@ -15,6 +15,13 @@ struct UrgeEntryView: View {
     @State private var showStatusPicker = false
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @FocusState private var focusedField: UrgeField?
+    
+    enum UrgeField: Hashable {
+        case situation
+        case sensations
+        case urgeDescription
+    }
     
     private let sensationSuggestionList = [
         "Tight chest", "Racing heart", "Shallow breathing", "Tense shoulders",
@@ -39,27 +46,39 @@ struct UrgeEntryView: View {
             backgroundColor.ignoresSafeArea()
             VStack(spacing: 0) {
                 header
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        dateSection
-                        situationSection
-                        if viewModel.isSectionVisible(.sensations) {
-                            sensationsSection
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            dateSection
+                            situationSection
+                                .id("situation")
+                            if viewModel.isSectionVisible(.sensations) {
+                                sensationsSection
+                                    .id("sensations")
+                            }
+                            if viewModel.isSectionVisible(.emotions) {
+                                emotionsSection
+                                    .id("emotions")
+                            }
+                            if viewModel.isSectionVisible(.urgeDescription) {
+                                urgeDescriptionSection
+                                    .id("urgeDescription")
+                            }
+                            if viewModel.isSectionVisible(.mindfulnessSkills) {
+                                mindfulnessSkillsSection
+                            }
+                            Color.clear.frame(height: 300)
                         }
-                        if viewModel.isSectionVisible(.emotions) {
-                            emotionsSection
-                        }
-                        if viewModel.isSectionVisible(.urgeDescription) {
-                            urgeDescriptionSection
-                        }
-                        if viewModel.isSectionVisible(.mindfulnessSkills) {
-                            mindfulnessSkillsSection
-                        }
-                        Color.clear.frame(height: 300)
+                        .padding(.horizontal, 20)
                     }
-                    .padding(.horizontal, 20)
+                    .scrollDismissesKeyboard(.interactively)
+                    .onChange(of: focusedField) { _, newField in
+                        guard let newField else { return }
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            proxy.scrollTo(scrollId(for: newField), anchor: .top)
+                        }
+                    }
                 }
-                .scrollDismissesKeyboard(.interactively)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -187,15 +206,17 @@ struct UrgeEntryView: View {
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("WHAT HAPPENED")
             
-            TextEditor(text: $viewModel.situation)
-                .font(.body)
-                .frame(minHeight: 100)
-                .foregroundStyle(textPrimary)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .onTapGesture {
-                    viewModel.reveal(.sensations)
+            UrgeExpandingTextArea(
+                text: $viewModel.situation,
+                placeholder: "Describe the situation...",
+                isFocused: focusBinding(for: .situation),
+                onSubmit: {
+                    #if DEBUG
+                    print("🟢 Situation onSubmit called")
+                    #endif
+                    advanceToNextField(from: .situation)
                 }
+            )
             
             sectionDivider
         }
@@ -207,15 +228,17 @@ struct UrgeEntryView: View {
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("PHYSICAL SENSATIONS")
             
-            TextEditor(text: $viewModel.sensations)
-                .font(.body)
-                .frame(minHeight: 80)
-                .foregroundStyle(textPrimary)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .onTapGesture {
-                    viewModel.reveal(.emotions)
+            UrgeExpandingTextArea(
+                text: $viewModel.sensations,
+                placeholder: "What did you notice in your body?",
+                isFocused: focusBinding(for: .sensations),
+                onSubmit: {
+                    #if DEBUG
+                    print("🟢 Sensations onSubmit called")
+                    #endif
+                    advanceToNextField(from: .sensations)
                 }
+            )
             
             sectionDivider
         }
@@ -319,15 +342,18 @@ struct UrgeEntryView: View {
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("THE URGE")
             
-            TextEditor(text: $viewModel.urgeDescription)
-                .font(.body)
-                .frame(minHeight: 120)
-                .foregroundStyle(textPrimary)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .onTapGesture {
+            UrgeExpandingTextArea(
+                text: $viewModel.urgeDescription,
+                placeholder: "Describe the urge...",
+                isFocused: focusBinding(for: .urgeDescription),
+                onSubmit: {
+                    #if DEBUG
+                    print("🟢 UrgeDescription onSubmit called")
+                    #endif
                     viewModel.reveal(.mindfulnessSkills)
+                    focusedField = nil
                 }
+            )
             
             sectionDivider
         }
@@ -502,5 +528,186 @@ struct UrgeEntryView: View {
     
     private var chipSelectedColor: Color {
         colorScheme == .dark ? Color.white.opacity(0.2) : Color.black.opacity(0.1)
+    }
+    
+    // MARK: - Focus Management
+    
+    private func focusBinding(for field: UrgeField) -> Binding<Bool> {
+        Binding(
+            get: { focusedField == field },
+            set: { isFocused in
+                if isFocused {
+                    focusedField = field
+                } else if focusedField == field {
+                    focusedField = nil
+                }
+            }
+        )
+    }
+    
+    private func advanceToNextField(from current: UrgeField) {
+        #if DEBUG
+        print("🟡 advanceToNextField: Current field = \(current)")
+        #endif
+        
+        let next: UrgeField? = {
+            switch current {
+            case .situation:
+                viewModel.reveal(.sensations)
+                return .sensations
+            case .sensations:
+                viewModel.reveal(.emotions)
+                viewModel.reveal(.urgeDescription)
+                return .urgeDescription
+            case .urgeDescription:
+                viewModel.reveal(.mindfulnessSkills)
+                return nil
+            }
+        }()
+        
+        if let next {
+            #if DEBUG
+            print("🟡 advanceToNextField: Setting focus to \(next)")
+            #endif
+            // Small delay to ensure view updates
+            DispatchQueue.main.async {
+                self.focusedField = next
+            }
+        } else {
+            #if DEBUG
+            print("🟡 advanceToNextField: Clearing focus (reached end)")
+            #endif
+            focusedField = nil
+        }
+    }
+    
+    private func scrollId(for field: UrgeField) -> String {
+        switch field {
+        case .situation: return "situation"
+        case .sensations: return "sensations"
+        case .urgeDescription: return "urgeDescription"
+        }
+    }
+}
+
+// MARK: - Expanding Text Area Component
+
+private struct UrgeExpandingTextArea: View {
+    @Binding var text: String
+    let placeholder: String
+    @Binding var isFocused: Bool
+    var onSubmit: (() -> Void)?
+    
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            // Placeholder text
+            if text.isEmpty {
+                Text(placeholder)
+                    .font(.body)
+                    .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.3) : Color.black.opacity(0.25))
+                    .padding(.top, 8)
+                    .allowsHitTesting(false)
+            }
+            
+            // The actual text editor
+            UrgeExpandingTextEditor(
+                text: $text,
+                isFocused: $isFocused,
+                onSubmit: onSubmit
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Expanding Text Editor (UIKit with proper sizing)
+
+private struct UrgeExpandingTextEditor: UIViewRepresentable {
+    @Binding var text: String
+    @Binding var isFocused: Bool
+    var onSubmit: (() -> Void)?
+    
+    func makeUIView(context: Context) -> UITextView {
+        let view = UITextView()
+        view.delegate = context.coordinator
+        view.isScrollEnabled = false
+        view.backgroundColor = .clear
+        view.font = UIFont.preferredFont(forTextStyle: .body)
+        view.adjustsFontForContentSizeCategory = true
+        view.textContainerInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+        view.textContainer.lineFragmentPadding = 0
+        view.textContainer.lineBreakMode = .byWordWrapping
+        view.textContainer.widthTracksTextView = true
+        view.textColor = .label
+        view.returnKeyType = .next
+        view.autocorrectionType = .yes
+        view.autocapitalizationType = .sentences
+        view.keyboardDismissMode = .interactive
+        view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        view.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        // Ensure delegate is set
+        if view.delegate == nil {
+            view.delegate = context.coordinator
+        }
+        return view
+    }
+    
+    func updateUIView(_ uiView: UITextView, context: Context) {
+        if uiView.text != text {
+            uiView.text = text
+            uiView.invalidateIntrinsicContentSize()
+        }
+        if isFocused, !uiView.isFirstResponder {
+            uiView.becomeFirstResponder()
+        }
+    }
+    
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
+        let width = proposal.width ?? (UIScreen.main.bounds.width - 40)
+        let fittingSize = uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        let height = max(44, ceil(fittingSize.height))
+        return CGSize(width: width, height: height)
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    final class Coordinator: NSObject, UITextViewDelegate {
+        private let parent: UrgeExpandingTextEditor
+        
+        init(_ parent: UrgeExpandingTextEditor) {
+            self.parent = parent
+        }
+        
+        func textViewDidChange(_ textView: UITextView) {
+            parent.text = textView.text ?? ""
+            textView.invalidateIntrinsicContentSize()
+        }
+        
+        func textViewDidBeginEditing(_ textView: UITextView) {
+            #if DEBUG
+            print("🔵 UrgeExpandingTextEditor: textViewDidBeginEditing")
+            #endif
+            parent.isFocused = true
+        }
+        
+        func textViewDidEndEditing(_ textView: UITextView) {
+            // Let SwiftUI manage focus state
+        }
+        
+        func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+            // Handle Enter/Return key
+            if text == "\n" {
+                #if DEBUG
+                print("🔵 UrgeExpandingTextEditor: Enter key pressed, calling onSubmit")
+                #endif
+                parent.onSubmit?()
+                return false
+            }
+            return true
+        }
     }
 }
