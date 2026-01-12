@@ -38,8 +38,8 @@ struct HomeView: View {
                     homeContent
                 case .entries:
                     homeContent // Will navigate
-                case .insights:
-                    insightsPlaceholder
+                case .values:
+                    ValuesView()
                 case .settings:
                     homeContent // Will navigate
                 case .newEntry:
@@ -348,30 +348,6 @@ struct HomeView: View {
         .padding(.vertical, 16)
     }
     
-    // MARK: - Placeholder Views for Other Tabs
-    
-    private var insightsPlaceholder: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.system(size: 48, weight: .light))
-                .foregroundStyle(notesPalette.textTertiary)
-            
-            Text("Insights coming soon")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(notesPalette.textPrimary)
-            
-            Text("Track your progress and discover patterns in your thinking over time.")
-                .font(.system(size: 14))
-                .foregroundStyle(notesPalette.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
     
     // MARK: - Tab Navigation
     

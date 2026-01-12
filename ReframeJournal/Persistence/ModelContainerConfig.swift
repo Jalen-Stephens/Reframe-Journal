@@ -9,7 +9,8 @@ import SwiftData
 enum ModelContainerConfig {
     /// Schema containing all SwiftData models
     static let schema = Schema([
-        JournalEntry.self
+        JournalEntry.self,
+        PersonalValues.self
     ])
     
     /// Creates a ModelContainer with iCloud sync enabled.

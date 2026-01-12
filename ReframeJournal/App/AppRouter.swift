@@ -15,6 +15,7 @@ enum Route: Hashable {
     case wizardStep6
     case settings
     case termsPrivacy
+    case valuesCategoryDetail(category: ValuesCategory)
 }
 
 enum AIReframeAction: Hashable {

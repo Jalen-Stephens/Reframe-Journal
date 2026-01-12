@@ -30,8 +30,8 @@ struct MainTabView: View {
                         HomeContentView(selectedTab: $selectedTab)
                     case .entries:
                         AllEntriesView()
-                    case .insights:
-                        InsightsPlaceholderView()
+                    case .values:
+                        ValuesView()
                     case .settings:
                         SettingsView()
                     case .newEntry:
@@ -438,31 +438,3 @@ private struct HomeContentView: View {
     }
 }
 
-// MARK: - Insights Placeholder View
-
-private struct InsightsPlaceholderView: View {
-    @Environment(\.notesPalette) private var notesPalette
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.system(size: 48, weight: .light))
-                .foregroundStyle(notesPalette.textTertiary)
-            
-            Text("Insights coming soon")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(notesPalette.textPrimary)
-            
-            Text("Track your progress and discover patterns in your thinking over time.")
-                .font(.system(size: 14))
-                .foregroundStyle(notesPalette.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}

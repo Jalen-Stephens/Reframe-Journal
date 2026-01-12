@@ -9,7 +9,7 @@ enum MainTab: CaseIterable, Identifiable {
     case home
     case entries
     case newEntry // Center FAB
-    case insights
+    case values
     case settings
     
     var id: Self { self }
@@ -19,7 +19,7 @@ enum MainTab: CaseIterable, Identifiable {
         case .home: return "Home"
         case .entries: return "Entries"
         case .newEntry: return "New"
-        case .insights: return "Insights"
+        case .values: return "Values"
         case .settings: return "Settings"
         }
     }
@@ -29,7 +29,7 @@ enum MainTab: CaseIterable, Identifiable {
         case .home: return "house.fill"
         case .entries: return "book.closed.fill"
         case .newEntry: return "plus"
-        case .insights: return "chart.line.uptrend.xyaxis"
+        case .values: return "heart.text.square.fill"
         case .settings: return "gearshape.fill"
         }
     }
