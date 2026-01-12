@@ -29,7 +29,6 @@ struct NotesStyleEntryView: View {
     @State private var isLoadingAd = false
     @State private var showAdErrorAlert = false
     
-    @AppStorage("aiReframeEnabled") private var isAIReframeEnabled = false
     
     // MARK: - Suggestion Data
     
@@ -842,7 +841,7 @@ struct NotesStyleEntryView: View {
                     )
                 }
                 .buttonStyle(.plain)
-            } else if isAIReframeEnabled {
+            } else {
                 Button {
                     handleUnlockTap()
                 } label: {
@@ -1022,7 +1021,6 @@ struct NotesStyleEntryView: View {
     // MARK: - AI Reframe
     
     private func handleUnlockTap() {
-        guard isAIReframeEnabled else { return }
         guard validateReframeLimits() else { return }
         if entitlementsManager.isPro {
             Task { await generateReframe() }
