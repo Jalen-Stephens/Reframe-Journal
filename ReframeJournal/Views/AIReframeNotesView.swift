@@ -69,6 +69,9 @@ struct AIReframeNotesView: View {
         .task {
             await viewModel.loadIfNeeded(entryId: entryId)
         }
+        .onAppear {
+            AnalyticsService.shared.trackEvent("ai_reframe_accepted")
+        }
     }
     
     // MARK: - Header

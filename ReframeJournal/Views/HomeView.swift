@@ -39,8 +39,8 @@ struct HomeView: View {
                     homeContent
                 case .entries:
                     homeContent // Will navigate
-                case .insights:
-                    insightsPlaceholder
+                case .values:
+                    ValuesView()
                 case .settings:
                     homeContent // Will navigate
                 case .newEntry:
@@ -112,7 +112,7 @@ struct HomeView: View {
                     // Spacer to push content up
                     Spacer(minLength: 0)
                 }
-            }
+            )
         }
         .refreshable {
             await refreshEntries()
@@ -213,7 +213,7 @@ struct HomeView: View {
         } label: {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Reframe a thought")
+                    Text("Reframe")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(cardTextPrimary)
                     
@@ -241,7 +241,7 @@ struct HomeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Reframe a thought. Work through a difficult moment.")
+        .accessibilityLabel("Reframe. Work through a difficult moment.")
     }
     
     // MARK: - Card Colors
@@ -298,8 +298,7 @@ struct HomeView: View {
                 
                 // Entry list (max 2 to save space)
                 ForEach(Array(filteredEntries.prefix(2))) { entry in
-                    let record = entry.toThoughtRecord()
-                    EntryListItemView(entry: record) {
+                    EntryListItemView(entry: entry) {
                         router.push(.thoughtEntry(id: entry.recordId))
                     }
                 }
@@ -357,30 +356,6 @@ struct HomeView: View {
         .padding(.vertical, 16)
     }
     
-    // MARK: - Placeholder Views for Other Tabs
-    
-    private var insightsPlaceholder: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.system(size: 48, weight: .light))
-                .foregroundStyle(notesPalette.textTertiary)
-            
-            Text("Insights coming soon")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(notesPalette.textPrimary)
-            
-            Text("Track your progress and discover patterns in your thinking over time.")
-                .font(.system(size: 14))
-                .foregroundStyle(notesPalette.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
     
     // MARK: - Tab Navigation
     
@@ -407,6 +382,7 @@ struct HomeView: View {
     
     private func startNewThoughtRecord() {
         if appState.thoughtUsage.canCreateThought() {
+            AnalyticsService.shared.trackEvent("thought_started")
             router.push(.thoughtEntry(id: nil))
         } else {
             showDailyLimitAlert = true

@@ -11,7 +11,8 @@ enum ModelContainerConfig {
     static let schema = Schema([
         JournalEntry.self,
         ValuesProfileData.self,
-        ValuesCategoryEntryData.self
+        ValuesCategoryEntryData.self,
+        PersonalValues.self
     ])
     
     /// Creates a ModelContainer with local storage only.

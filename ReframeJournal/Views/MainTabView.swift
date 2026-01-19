@@ -30,8 +30,8 @@ struct MainTabView: View {
                         HomeContentView(selectedTab: $selectedTab)
                     case .entries:
                         AllEntriesView()
-                    case .insights:
-                        InsightsPlaceholderView()
+                    case .values:
+                        ValuesView()
                     case .settings:
                         SettingsView()
                     case .newEntry:
@@ -62,6 +62,7 @@ struct MainTabView: View {
     
     private func startNewThoughtRecord() {
         if appState.thoughtUsage.canCreateThought() {
+            AnalyticsService.shared.trackEvent("thought_started")
             router.push(.thoughtEntry(id: nil))
         } else {
             showDailyLimitAlert = true
@@ -329,8 +330,7 @@ private struct HomeContentView: View {
                 // Entry list (max 3 entries) with swipe actions
                 List {
                     ForEach(Array(filteredEntries.prefix(3))) { entry in
-                        let record = entry.toThoughtRecord()
-                        EntryListItemView(entry: record) {
+                        EntryListItemView(entry: entry) {
                             router.push(.thoughtEntry(id: entry.recordId))
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -429,6 +429,7 @@ private struct HomeContentView: View {
     
     private func startNewThoughtRecord() {
         if appState.thoughtUsage.canCreateThought() {
+            AnalyticsService.shared.trackEvent("thought_started")
             router.push(.thoughtEntry(id: nil))
         } else {
             showDailyLimitAlert = true
@@ -436,31 +437,3 @@ private struct HomeContentView: View {
     }
 }
 
-// MARK: - Insights Placeholder View
-
-private struct InsightsPlaceholderView: View {
-    @Environment(\.notesPalette) private var notesPalette
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.system(size: 48, weight: .light))
-                .foregroundStyle(notesPalette.textTertiary)
-            
-            Text("Insights coming soon")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(notesPalette.textPrimary)
-            
-            Text("Track your progress and discover patterns in your thinking over time.")
-                .font(.system(size: 14))
-                .foregroundStyle(notesPalette.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}

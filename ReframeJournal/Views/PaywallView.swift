@@ -70,6 +70,9 @@ struct PaywallView: View {
             didLoad = true
             _ = await entitlements.loadProducts()
         }
+        .onAppear {
+            AnalyticsService.shared.trackEvent("upgrade_viewed")
+        }
     }
     
     // MARK: - Hero Section
@@ -317,6 +320,9 @@ struct PaywallView: View {
 
     private func purchase() async {
         errorMessage = nil
+        AnalyticsService.shared.trackEvent("upgrade_clicked", properties: [
+            "plan": entitlements.selectedPlan.rawValue
+        ])
         do {
             try await entitlements.purchase()
             if entitlements.isPro {

@@ -55,6 +55,11 @@ final class JournalEntry {
     var aiReframePromptVersion: String?
     var aiReframeDepthRaw: String?
     
+    // MARK: - Entry Status
+    
+    /// Optional status for the entry (reviewed with therapist, revisit, etc.)
+    var entryStatusRaw: String?
+    
     // MARK: - Draft Flag
     
     /// Indicates this is a draft entry (not yet finalized)
@@ -132,6 +137,16 @@ final class JournalEntry {
         }
     }
     
+    var entryStatus: EntryStatus? {
+        get {
+            guard let raw = entryStatusRaw else { return nil }
+            return EntryStatus(rawValue: raw)
+        }
+        set {
+            entryStatusRaw = newValue?.rawValue
+        }
+    }
+    
     // MARK: - Initialization
     
     init(
@@ -154,7 +169,8 @@ final class JournalEntry {
         aiReframeModel: String? = nil,
         aiReframePromptVersion: String? = nil,
         aiReframeDepth: AIReframeDepth? = nil,
-        isDraft: Bool = false
+        isDraft: Bool = false,
+        entryStatus: EntryStatus? = nil
     ) {
         self.recordId = recordId
         self.title = title
@@ -170,6 +186,7 @@ final class JournalEntry {
         self.aiReframePromptVersion = aiReframePromptVersion
         self.aiReframeDepthRaw = aiReframeDepth?.rawValue
         self.isDraft = isDraft
+        self.entryStatusRaw = entryStatus?.rawValue
         
         // Set encoded data
         self.automaticThoughtsData = try? JSONEncoder().encode(automaticThoughts)

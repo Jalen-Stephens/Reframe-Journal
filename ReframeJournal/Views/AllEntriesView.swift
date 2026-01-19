@@ -38,8 +38,7 @@ struct AllEntriesView: View {
                     ForEach(sections()) { section in
                         Section {
                             ForEach(section.entries) { entry in
-                                let record = entry.toThoughtRecord()
-                                EntryListItemView(entry: record) {
+                                EntryListItemView(entry: entry) {
                                     router.push(.thoughtEntry(id: entry.recordId))
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {

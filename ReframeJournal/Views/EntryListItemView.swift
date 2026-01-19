@@ -3,7 +3,7 @@ import SwiftUI
 struct EntryListItemView: View {
     @Environment(\.notesPalette) private var notesPalette
 
-    let entry: ThoughtRecord
+    let entry: JournalEntry
     let onTap: () -> Void
 
     var body: some View {
@@ -17,9 +17,23 @@ struct EntryListItemView: View {
                             .foregroundStyle(.primary)
                             .lineLimit(1)
                             .truncationMode(.tail)
-                        Text(DateUtils.formatRelativeDateTime(entry.createdAt))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                        
+                        HStack(spacing: 8) {
+                            Text(DateUtils.formatRelativeDateTime(DateUtils.isoString(from: entry.createdAt)))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            
+                            // Status badge
+                            if let entryStatus = entry.entryStatus {
+                                HStack(spacing: 4) {
+                                    Image(systemName: entryStatus.icon)
+                                        .font(.system(size: 10))
+                                    Text(entryStatus.displayName)
+                                        .font(.caption2)
+                                }
+                                .foregroundStyle(notesPalette.textTertiary)
+                            }
+                        }
                     }
                     Spacer(minLength: 8)
                     AppIconView(icon: status.icon, size: 20)
@@ -34,16 +48,17 @@ struct EntryListItemView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(titleLabel(for: entry)). \(status.accessibilityLabel).")
     }
+    
+    @Environment(\.colorScheme) private var colorScheme
 
-    private func titleLabel(for record: ThoughtRecord) -> String {
-        if let title = record.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
+    private func titleLabel(for entry: JournalEntry) -> String {
+        if let title = entry.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty {
             return title
         }
-        let situation = record.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let situation = entry.situationText.trimmingCharacters(in: .whitespacesAndNewlines)
         if situation.isEmpty {
             return "New Entry"
         }
-        // Get first line and remove any newlines/line breaks
         let firstLine = situation.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? situation
         return firstLine
     }
