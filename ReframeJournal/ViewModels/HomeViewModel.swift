@@ -126,6 +126,9 @@ final class HomeViewModel: ObservableObject {
         withAnimation(.easeInOut(duration: 0.2)) {
             selectedDate = calendar.startOfDay(for: date)
         }
+        AnalyticsService.shared.trackEvent("calendar_day_opened", properties: [
+            "is_today": calendar.isDateInToday(date)
+        ])
     }
     
     func selectToday() {

@@ -3,6 +3,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct ReframeJournalApp: App {
@@ -18,11 +19,15 @@ struct ReframeJournalApp: App {
     @StateObject private var rewardedAdManager: AnyRewardedAdManager
 
     @AppStorage("appAppearance") private var appAppearanceRaw: String = AppAppearance.system.rawValue
-    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         // Detect test environment
         let isTestEnvironment = NSClassFromString("XCTestCase") != nil
+        
+        // Initialize PostHog analytics (skips in test environment)
+        if !isTestEnvironment {
+            AnalyticsService.shared.initialize()
+        }
         
         // Initialize SwiftData ModelContainer
         if isTestEnvironment {
@@ -76,6 +81,17 @@ struct ReframeJournalApp: App {
                 .environmentObject(rewardedAdManager)
                 .preferredColorScheme(overrideScheme)
                 .notesTheme()
+                .onAppear {
+                    Task { @MainActor in
+                        // Set initial user properties
+                        let deviceType = UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone"
+                        AnalyticsService.shared.setUserProperties([
+                            "device_type": deviceType,
+                            "is_pro_user": entitlementsManager.isPro
+                        ])
+                        AnalyticsService.shared.trackEvent("app_opened")
+                    }
+                }
         }
         .modelContainer(modelContainer)
     }

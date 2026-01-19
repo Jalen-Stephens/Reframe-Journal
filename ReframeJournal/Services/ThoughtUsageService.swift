@@ -45,6 +45,9 @@ final class ThoughtUsageService {
     }
 
     func canCreateThought() -> Bool {
+        #if DEBUG
+        return true // Always allow in debug builds for development
+        #endif
         if hasUnlimitedThoughts {
             return true
         }
