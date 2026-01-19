@@ -12,24 +12,11 @@ struct EntryListItemView: View {
             GlassCard(padding: AppTheme.cardPaddingCompact) {
                 HStack(alignment: .center, spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 6) {
-                            Text(titleLabel(for: entry))
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                            
-                            // Entry type indicator
-                            Text(entry.entryType.displayName)
-                                .font(.caption2.weight(.medium))
-                                .foregroundStyle(notesPalette.textTertiary)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(
-                                    Capsule()
-                                        .fill(colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.05))
-                                )
-                        }
+                        Text(titleLabel(for: entry))
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                         
                         HStack(spacing: 8) {
                             Text(DateUtils.formatRelativeDateTime(DateUtils.isoString(from: entry.createdAt)))
@@ -59,7 +46,7 @@ struct EntryListItemView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(titleLabel(for: entry)). \(entry.entryType.displayName). \(status.accessibilityLabel).")
+        .accessibilityLabel("\(titleLabel(for: entry)). \(status.accessibilityLabel).")
     }
     
     @Environment(\.colorScheme) private var colorScheme

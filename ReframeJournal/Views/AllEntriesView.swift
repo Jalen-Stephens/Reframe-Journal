@@ -39,21 +39,11 @@ struct AllEntriesView: View {
                         Section {
                             ForEach(section.entries) { entry in
                                 EntryListItemView(entry: entry) {
-                                    switch entry.entryType {
-                                    case .thought:
-                                        router.push(.thoughtEntry(id: entry.recordId))
-                                    case .urge:
-                                        router.push(.urgeEntry(id: entry.recordId))
-                                    }
+                                    router.push(.thoughtEntry(id: entry.recordId))
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button {
-                                        switch entry.entryType {
-                                        case .thought:
-                                            router.push(.thoughtEntry(id: entry.recordId))
-                                        case .urge:
-                                            router.push(.urgeEntry(id: entry.recordId))
-                                        }
+                                        router.push(.thoughtEntry(id: entry.recordId))
                                     } label: {
                                         Label("Edit", systemImage: "pencil")
                                     }

@@ -52,18 +52,10 @@ final class JournalEntry {
     var aiReframePromptVersion: String?
     var aiReframeDepthRaw: String?
     
-    // MARK: - Entry Type and Status
-    
-    /// Type of entry (thought or urge)
-    var entryTypeRaw: String = "thought"
+    // MARK: - Entry Status
     
     /// Optional status for the entry (reviewed with therapist, revisit, etc.)
     var entryStatusRaw: String?
-    
-    // MARK: - Urge Record Data (stored as Codable)
-    
-    /// Urge record data (for urge entries only)
-    var urgeRecordData: Data?
     
     // MARK: - Draft Flag
     
@@ -132,15 +124,6 @@ final class JournalEntry {
         }
     }
     
-    var entryType: EntryType {
-        get {
-            EntryType(rawValue: entryTypeRaw) ?? .thought
-        }
-        set {
-            entryTypeRaw = newValue.rawValue
-        }
-    }
-    
     var entryStatus: EntryStatus? {
         get {
             guard let raw = entryStatusRaw else { return nil }
@@ -148,16 +131,6 @@ final class JournalEntry {
         }
         set {
             entryStatusRaw = newValue?.rawValue
-        }
-    }
-    
-    var urgeRecord: UrgeRecord? {
-        get {
-            guard let data = urgeRecordData else { return nil }
-            return try? JSONDecoder().decode(UrgeRecord.self, from: data)
-        }
-        set {
-            urgeRecordData = newValue.flatMap { try? JSONEncoder().encode($0) }
         }
     }
     
@@ -183,9 +156,7 @@ final class JournalEntry {
         aiReframePromptVersion: String? = nil,
         aiReframeDepth: AIReframeDepth? = nil,
         isDraft: Bool = false,
-        entryType: EntryType = .thought,
-        entryStatus: EntryStatus? = nil,
-        urgeRecord: UrgeRecord? = nil
+        entryStatus: EntryStatus? = nil
     ) {
         self.recordId = recordId
         self.title = title
@@ -201,7 +172,6 @@ final class JournalEntry {
         self.aiReframePromptVersion = aiReframePromptVersion
         self.aiReframeDepthRaw = aiReframeDepth?.rawValue
         self.isDraft = isDraft
-        self.entryTypeRaw = entryType.rawValue
         self.entryStatusRaw = entryStatus?.rawValue
         
         // Set encoded data
@@ -210,7 +180,6 @@ final class JournalEntry {
         self.adaptiveResponsesData = try? JSONEncoder().encode(adaptiveResponses)
         self.outcomesByThoughtData = try? JSONEncoder().encode(outcomesByThought)
         self.aiReframeData = aiReframe.flatMap { try? JSONEncoder().encode($0) }
-        self.urgeRecordData = urgeRecord.flatMap { try? JSONEncoder().encode($0) }
     }
     
     // MARK: - Convenience Factory
@@ -251,26 +220,7 @@ extension JournalEntry {
             aiReframeModel: record.aiReframeModel,
             aiReframePromptVersion: record.aiReframePromptVersion,
             aiReframeDepth: record.aiReframeDepth,
-            isDraft: false,
-            entryType: .thought
-        )
-    }
-    
-    /// Creates a JournalEntry from an existing UrgeRecord
-    convenience init(from record: UrgeRecord) {
-        let createdDate = DateUtils.parseIso(record.createdAt) ?? Date()
-        let updatedDate = DateUtils.parseIso(record.updatedAt) ?? createdDate
-        
-        self.init(
-            recordId: record.id,
-            title: record.title,
-            createdAt: createdDate,
-            updatedAt: updatedDate,
-            situationText: record.situationText,
-            sensations: record.sensations,
-            isDraft: false,
-            entryType: .urge,
-            urgeRecord: record
+            isDraft: false
         )
     }
     
@@ -322,27 +272,14 @@ extension JournalEntry {
 // MARK: - Completion Status
 
 extension JournalEntry {
-    /// Completion is inferred from saved AI reframe or a completed outcome step (for thoughts) or mindfulness practice (for urges).
+    /// Completion is inferred from saved AI reframe or a completed outcome step.
     var completionStatus: EntryCompletionStatus {
         if aiReframe != nil {
             return .complete
         }
-        switch entryType {
-        case .thought:
-            if outcomesByThought.values.contains(where: { $0.isComplete }) {
-                return .complete
-            }
-        case .urge:
-            if let urgeRecord = urgeRecord, let skills = urgeRecord.mindfulnessSkillsPracticed, !skills.isEmpty {
-                return .complete
-            }
+        if outcomesByThought.values.contains(where: { $0.isComplete }) {
+            return .complete
         }
         return .draft
-    }
-    
-    /// Converts to an UrgeRecord if this is an urge entry
-    func toUrgeRecord() -> UrgeRecord? {
-        guard entryType == .urge, let urgeRecord = urgeRecord else { return nil }
-        return urgeRecord
     }
 }

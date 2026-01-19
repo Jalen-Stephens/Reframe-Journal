@@ -16,7 +16,6 @@ struct MainTabView: View {
     @State private var selectedTab: MainTab = .home
     @State private var showDailyLimitAlert = false
     @State private var showPaywall = false
-    @State private var showEntryTypeSheet = false
     
     var body: some View {
         ZStack {
@@ -42,7 +41,7 @@ struct MainTabView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 MainTabBar(selectedTab: $selectedTab) {
-                    showEntryTypeSheet = true
+                    startNewThoughtRecord()
                 }
             }
         }
@@ -57,17 +56,6 @@ struct MainTabView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView()
         }
-        .sheet(isPresented: $showEntryTypeSheet) {
-            EntryTypeActionSheet(
-                onThoughtEntry: {
-                    startNewThoughtRecord()
-                },
-                onUrgeEntry: {
-                    startNewUrgeEntry()
-                }
-            )
-            .presentationDetents([.medium])
-        }
     }
     
     // MARK: - Actions
@@ -76,15 +64,6 @@ struct MainTabView: View {
         if appState.thoughtUsage.canCreateThought() {
             AnalyticsService.shared.trackEvent("thought_started")
             router.push(.thoughtEntry(id: nil))
-        } else {
-            showDailyLimitAlert = true
-        }
-    }
-    
-    private func startNewUrgeEntry() {
-        if appState.thoughtUsage.canCreateThought() {
-            AnalyticsService.shared.trackEvent("urge_started")
-            router.push(.urgeEntry(id: nil))
         } else {
             showDailyLimitAlert = true
         }
@@ -352,21 +331,11 @@ private struct HomeContentView: View {
                 List {
                     ForEach(Array(filteredEntries.prefix(3))) { entry in
                         EntryListItemView(entry: entry) {
-                            switch entry.entryType {
-                            case .thought:
-                                router.push(.thoughtEntry(id: entry.recordId))
-                            case .urge:
-                                router.push(.urgeEntry(id: entry.recordId))
-                            }
+                            router.push(.thoughtEntry(id: entry.recordId))
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button {
-                                switch entry.entryType {
-                                case .thought:
-                                    router.push(.thoughtEntry(id: entry.recordId))
-                                case .urge:
-                                    router.push(.urgeEntry(id: entry.recordId))
-                                }
+                                router.push(.thoughtEntry(id: entry.recordId))
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }

@@ -25,8 +25,6 @@ struct RootView: View {
                             EntryDetailView(entryId: id, repository: appState.repository)
                         case let .thoughtEntry(id):
                             NotesStyleEntryView(entryId: id, modelContext: modelContext, thoughtUsage: appState.thoughtUsage)
-                        case let .urgeEntry(id):
-                            UrgeEntryView(entryId: id, modelContext: modelContext, thoughtUsage: appState.thoughtUsage)
                         case let .thoughtResponseDetail(entryId, thoughtId):
                             ThoughtResponseDetailView(entryId: entryId, thoughtId: thoughtId, repository: appState.repository)
                         case let .aiReframeResult(entryId, action, depth):

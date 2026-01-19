@@ -28,15 +28,10 @@
 		6EDB00E0B89BF6536EE3AA43 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F8017F762C89F4D0CF0CB64 /* ThemeManager.swift */; };
 		6F6362BC2F14416C006BC5F2 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 6F6362BB2F14416C006BC5F2 /* PostHog */; };
 		6F6362BE2F1441A9006BC5F2 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362BD2F14419C006BC5F2 /* AnalyticsService.swift */; };
-		6F6362C52F14A4BE006BC5F2 /* UrgeEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362C32F14A4BE006BC5F2 /* UrgeEntry.swift */; };
-		6F6362C62F14A4BE006BC5F2 /* UrgeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362C42F14A4BE006BC5F2 /* UrgeRecord.swift */; };
 		6F6362C72F14A4BE006BC5F2 /* EntryStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362C12F14A4BE006BC5F2 /* EntryStatus.swift */; };
 		6F6362C82F14A4BE006BC5F2 /* EntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362C22F14A4BE006BC5F2 /* EntryType.swift */; };
-		6F6362CA2F14A8AB006BC5F2 /* UrgeEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362C92F14A8AB006BC5F2 /* UrgeEntryView.swift */; };
-		6F6362CC2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362CB2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift */; };
 		6F6362CE2F14AA58006BC5F2 /* EntryStatusPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362CD2F14AA58006BC5F2 /* EntryStatusPicker.swift */; };
 		6F6362D02F14AA9A006BC5F2 /* MindfulnessContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362CF2F14AA99006BC5F2 /* MindfulnessContent.swift */; };
-		6F6362D22F14ADD7006BC5F2 /* EntryTypeActionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6362D12F14ADD7006BC5F2 /* EntryTypeActionSheet.swift */; };
 		6F647A452F079895005309DD /* ReframeJournal.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 6F647A442F079895005309DD /* ReframeJournal.storekit */; };
 		6FFB15E22C2CEC0BC540A95D /* AccordionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF93899497F29B20C03F371 /* AccordionView.swift */; };
 		73FDB8B9EA5037DFE8C69B30 /* ReframeJournalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46312FE3978E03DDBCCC38F /* ReframeJournalApp.swift */; };
@@ -179,13 +174,8 @@
 		6F6362BD2F14419C006BC5F2 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		6F6362C12F14A4BE006BC5F2 /* EntryStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryStatus.swift; sourceTree = "<group>"; };
 		6F6362C22F14A4BE006BC5F2 /* EntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryType.swift; sourceTree = "<group>"; };
-		6F6362C32F14A4BE006BC5F2 /* UrgeEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeEntry.swift; sourceTree = "<group>"; };
-		6F6362C42F14A4BE006BC5F2 /* UrgeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeRecord.swift; sourceTree = "<group>"; };
-		6F6362C92F14A8AB006BC5F2 /* UrgeEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeEntryView.swift; sourceTree = "<group>"; };
-		6F6362CB2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeEntryViewModel.swift; sourceTree = "<group>"; };
 		6F6362CD2F14AA58006BC5F2 /* EntryStatusPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryStatusPicker.swift; sourceTree = "<group>"; };
 		6F6362CF2F14AA99006BC5F2 /* MindfulnessContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindfulnessContent.swift; sourceTree = "<group>"; };
-		6F6362D12F14ADD7006BC5F2 /* EntryTypeActionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTypeActionSheet.swift; sourceTree = "<group>"; };
 		6F647A442F079895005309DD /* ReframeJournal.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReframeJournal.storekit; sourceTree = "<group>"; };
 		7593019C057F861DCFFECBA6 /* ThoughtCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtCardView.swift; sourceTree = "<group>"; };
 		7685FB9A44932CF9C0F3349F /* WizardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WizardViewModel.swift; sourceTree = "<group>"; };
@@ -317,8 +307,6 @@
 			children = (
 				6F6362C12F14A4BE006BC5F2 /* EntryStatus.swift */,
 				6F6362C22F14A4BE006BC5F2 /* EntryType.swift */,
-				6F6362C32F14A4BE006BC5F2 /* UrgeEntry.swift */,
-				6F6362C42F14A4BE006BC5F2 /* UrgeRecord.swift */,
 				F3B4C5D6E708192A3B4C5D6E /* AIReframeDepth.swift */,
 				A1B2C3D4E5F60718293A4B6C /* AIReframeResult.swift */,
 				A10000000000000000000002 /* EmotionItem.swift */,
@@ -374,7 +362,6 @@
 				A10000000000000000000005 /* ThoughtEntryNotesView.swift */,
 				628440F7D93AA4374667AC4F /* ThoughtResponseDetailView.swift */,
 				10AFCB6B783A2B675B407889 /* WizardProgressView.swift */,
-				6F6362C92F14A8AB006BC5F2 /* UrgeEntryView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -421,7 +408,6 @@
 		781FD2E6ABADC444F9609FBC /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				6F6362CB2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift */,
 				D1E2F3A4B5061728394A5B6C /* AIReframeViewModel.swift */,
 				D537A34287202955112F8BAB /* EntryDetailViewModel.swift */,
 				A10000000000000000000030 /* HomeViewModel.swift */,
@@ -537,7 +523,6 @@
 		C0D1E2F3A4B5061728394A5B /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				6F6362D12F14ADD7006BC5F2 /* EntryTypeActionSheet.swift */,
 				6F6362CD2F14AA58006BC5F2 /* EntryStatusPicker.swift */,
 				A10000000000000000000031 /* CalendarStripView.swift */,
 				A10000000000000000000032 /* MainTabBar.swift */,
@@ -725,7 +710,6 @@
 				8A1B2C3D4E5F60718293A4B7 /* GlassCard.swift in Sources */,
 				8A1B2C3D4E5F60718293A4B8 /* GlassDivider.swift in Sources */,
 				8A1B2C3D4E5F60718293A4B9 /* GlassIconButton.swift in Sources */,
-				6F6362CA2F14A8AB006BC5F2 /* UrgeEntryView.swift in Sources */,
 				8A1B2C3D4E5F60718293A4BA /* GlassPill.swift in Sources */,
 				8A1B2C3D4E5F60718293A4BB /* GlassSectionHeader.swift in Sources */,
 				8A1B2C3D4E5F60718293A4BC /* AppIcon.swift in Sources */,
@@ -757,12 +741,9 @@
 				F8B1C2D3E4F5061728394A65 /* ReframeResultView.swift in Sources */,
 				F8B1C2D3E4F5061728394A60 /* RewardedAdManager.swift in Sources */,
 				60DADC936ABD5241717A0DF9 /* RootView.swift in Sources */,
-				6F6362CC2F14A9E3006BC5F2 /* UrgeEntryViewModel.swift in Sources */,
 				12274A4E040B47078CCD7560 /* SectionCardView.swift in Sources */,
 				5E2E5DF1AAB3DF819A9863B3 /* SettingsView.swift in Sources */,
 				2F739D9ACA296BC3BFC3273D /* SituationView.swift in Sources */,
-				6F6362C52F14A4BE006BC5F2 /* UrgeEntry.swift in Sources */,
-				6F6362C62F14A4BE006BC5F2 /* UrgeRecord.swift in Sources */,
 				6F6362C72F14A4BE006BC5F2 /* EntryStatus.swift in Sources */,
 				6F6362C82F14A4BE006BC5F2 /* EntryType.swift in Sources */,
 				AF8538F8AD4BE3A44AE431A5 /* SlimMeterRowView.swift in Sources */,
